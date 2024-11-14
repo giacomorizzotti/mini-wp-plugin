@@ -28,6 +28,18 @@ function mini_plugin_checkbox_option(
     >
     ';
 }
+if (!function_exists('get_variable')) {
+    function get_variable($option_group, $option) {
+        $options = get_option( $option_group );
+        $variable = false;
+        if ( 
+            is_array($options) && array_key_exists($option, $options ) && $options[$option] != null 
+        ) {
+            $variable = $options[$option];
+        }
+        return $variable;
+    }
+}
 
 function mini_content_settings_init() {
 
@@ -248,6 +260,66 @@ function news_custom_post_type() {
 		)
 	);
 }
+
+/**
+ * SHORTCODES
+ */
+function get_latest_news_callback() {
+    $args = array(
+        'post_per_page' => 3, /* how many post you need to display */
+        'offset' => 0,
+        'orderby' => 'post_date',
+        'order' => 'DESC',
+        'post_type' => 'news', /* your post type name */
+        'post_status' => 'publish'
+    );
+    $query = new WP_Query($args);
+    if ($query->have_posts()) :
+        $news_list = '';
+        $n = 1;
+        while ($query->have_posts()) : $query->the_post();
+        if ($n==1) {
+            $news_list .= '
+            <div class="box-100 my-0 p-0">
+            ';
+        } else {
+            $news_list .= '
+            <div class="box-50 my-0 p-0">
+            ';
+        }
+        $news_list .= '
+                <div class="boxes">
+        ';
+        if (get_the_post_thumbnail(get_the_ID())!=false) {
+            $news_list .= '
+                    <div class="box-50">
+                    <a href="'.get_the_permalink().'">'.get_the_post_thumbnail(get_the_ID()).'</a>
+                    </div>
+                    <div class="box-50">
+            ';
+        } else {
+            $news_list .= '
+                    <div class="box-100">
+            ';
+        }
+            $news_list .= '
+                        <h3>
+                        <a href="'.get_the_permalink().'">'.get_the_title().'</a>
+                        </h3>
+                        <p class="">'.get_the_excerpt(get_the_ID()).'</p>
+                        <p class="">
+                            <a href="'.get_the_permalink().'" class="btn">'.esc_html__( 'Read more', 'mini' ).'</a>
+                        </p>
+                    </div>
+                </div>
+            </div>';
+            $n++;
+        endwhile;
+        return $news_list;
+    endif;
+}
+add_shortcode('latest_news', 'get_latest_news_callback');
+
 /* END - Custom post type - NEWS */
 
 
