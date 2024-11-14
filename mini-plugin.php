@@ -2,7 +2,7 @@
 /**
 * Plugin Name: mini
 * Plugin URI: https://mini.uwa.agency/
-* Description: A mini plugin to manage mini frontend framework settings
+* Description: A "mini" plugin to extend WP features
 * Version: 0.1
 * Author: Giacomo Rizzotti
 * Author URI: https://www.giacomorizzotti.com/
@@ -31,21 +31,21 @@ function mini_plugin_checkbox_option(
 
 function mini_content_settings_init() {
 
-    register_setting( 'mini-settings', 'mini_content_settings');
+    register_setting( 'mini_content', 'mini_content_settings');
 
     add_settings_section(
-        'mini_content_settings_section',
+        'mini_content_section',
         __( 'Mini content settings', 'mini' ),
-        'mini_content_settings_section_callback',
-        'mini-content-settings'
+        'mini_content_section_callback',
+        'mini-content'
     );
 
     add_settings_field(
-        'mini_field',
+        'mini_content_field',
         __( 'Content settings', 'mini' ),
-        'mini_content_settings_fields_callback',
-        'mini-content-settings',
-        'mini_content_settings_section',
+        'mini_content_fields_callback',
+        'mini-content',
+        'mini_content_section',
         array(
             'label_for'         => 'mini',
             'class'             => 'mini_row',
@@ -57,7 +57,35 @@ function mini_content_settings_init() {
 
 add_action( 'admin_init', 'mini_content_settings_init' );
 
-function mini_content_settings_fields_callback( $args ) {
+function mini_comment_settings_init() {
+
+    register_setting( 'mini_comment', 'mini_comment_settings');
+
+    add_settings_section(
+        'mini_comment_section',
+        __( 'Mini comment settings', 'mini' ),
+        'mini_comment_section_callback',
+        'mini-comment'
+    );
+
+    add_settings_field(
+        'mini_comment_field',
+        __( 'Comment settings', 'mini' ),
+        'mini_comment_fields_callback',
+        'mini-comment',
+        'mini_comment_section',
+        array(
+            'label_for'         => 'mini',
+            'class'             => 'mini_row',
+            'mini_custom_data'  => 'custom',
+        )
+    );
+
+}
+
+add_action( 'admin_init', 'mini_comment_settings_init' );
+
+function mini_content_fields_callback( $args ) {
     ?>
     <?= mini_plugin_checkbox_option('mini_content_settings','mini_news'); ?>
     <p class="description">
@@ -71,29 +99,57 @@ function mini_content_settings_fields_callback( $args ) {
     <?php
 }
 
-function mini_content_settings_section_callback( $args ) {
+function mini_comment_fields_callback( $args ) {
+    ?>
+    <?= mini_plugin_checkbox_option('mini_comment_settings','mini_disable_comment'); ?>
+    <p class="description">
+        <?php esc_html_e( 'Disable comments', 'mini' ); ?>
+    </p>
+    <?php
+}
+
+function mini_content_section_callback( $args ) {
     ?>
     <p id="<?php echo esc_attr( $args['id'] ); ?>"><?php esc_html_e( 'This is the Content type section', 'mini' ); ?></p>
     <?php
 }
 
-add_action( 'admin_menu', 'mini_content_settings_page' );
-function mini_content_settings_page() {
-    add_menu_page(
-        'mini options',
-        'mini',
-        'manage_options',
-        'mini',
-        'mini_plugin_main_page_html',
-        'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/img/brand/mini_emblem_space_around.svg'
-    );
+function mini_comment_section_callback( $args ) {
+    ?>
+    <p id="<?php echo esc_attr( $args['id'] ); ?>"><?php esc_html_e( 'This is the Comment section', 'mini' ); ?></p>
+    <?php
+}
+
+add_action( 'admin_menu', 'mini_plugin_settings_pages' );
+
+
+function mini_plugin_settings_pages() {
+    if ( empty ( $GLOBALS['admin_page_hooks']['mini'] ) ) {
+        add_menu_page(
+            'mini options',
+            'mini',
+            'manage_options',
+            'mini',
+            'mini_plugin_main_page_html',
+            'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/img/brand/mini_emblem_space_around.svg'
+        );
+    }
     add_submenu_page(
         'mini',
         'Content types',
         'Content types',
         'manage_options',
-        'mini-content-settings',
-        'mini_content_settings_page_html',
+        'mini-content',
+        'mini_content_page_html',
+        9
+    );
+    add_submenu_page(
+        'mini',
+        'Comments',
+        'Comments',
+        'manage_options',
+        'mini-comment',
+        'mini_comment_page_html',
         9
     );
 }
@@ -111,7 +167,7 @@ function mini_plugin_main_page_html() {
     <?php
 }
 
-function mini_content_settings_page_html() {
+function mini_content_page_html() {
     if ( ! current_user_can( 'manage_options' ) ) {
         return;
     }
@@ -125,8 +181,31 @@ function mini_content_settings_page_html() {
         <br/>
         <form action="options.php" method="post">
             <?php
-            settings_fields( 'mini-settings' );
-            do_settings_sections( 'mini-content-settings' );
+            settings_fields( 'mini_content' );
+            do_settings_sections( 'mini-content' );
+            submit_button( 'Save Settings' );
+            ?>
+        </form>
+    </div>
+    <?php
+}
+
+function mini_comment_page_html() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+    if ( isset( $_GET['settings-updated'] ) ) {
+        add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
+    }
+    settings_errors( 'mini_messages' );
+    ?>
+    <div class="wrap">
+        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+        <br/>
+        <form action="options.php" method="post">
+            <?php
+            settings_fields( 'mini_comment' );
+            do_settings_sections( 'mini-comment' );
             submit_button( 'Save Settings' );
             ?>
         </form>
@@ -301,3 +380,47 @@ function date_time_save_postdata( $post_id ) {
 }
 
 /* END - Custom post type - EVENT */
+
+/* START - DISABLE COMMENTS */
+$options = get_option( 'mini_comment_settings' );
+if (is_array($options) && array_key_exists('mini_disable_comment', $options)) {
+    if ($options['mini_disable_comment'] == true) {
+        add_action('admin_init', 'disable_comments_post_types_support');
+        add_filter('comments_open', 'disable_comments_status', 20, 2);
+        add_filter('pings_open', 'disable_comments_status', 20, 2);
+        add_action('admin_menu', 'disable_comments_admin_menu');
+        add_action('admin_init', 'disable_comments_admin_menu_redirect');
+        add_action('admin_init', 'disable_comments_dashboard');
+    }
+}
+function disable_comments_post_types_support() {
+    $post_types = get_post_types();
+ 
+    foreach ($post_types as $post_type) {
+        if(post_type_supports($post_type, 'comments')) {
+            remove_post_type_support($post_type, 'comments');
+            remove_post_type_support($post_type, 'trackbacks');
+        }
+    }
+}
+function disable_comments_status() {
+    return false;
+}
+function disable_comments_hide_existing_comments($comments) {
+    $comments = array();
+    return $comments;
+}
+add_filter('comments_array', 'disable_comments_hide_existing_comments', 10, 2);
+function disable_comments_admin_menu() {
+    remove_menu_page('edit-comments.php');
+}
+function disable_comments_admin_menu_redirect() {
+    global $pagenow;
+    if ($pagenow === 'edit-comments.php') {
+        wp_redirect(admin_url()); exit;
+    }
+}
+function disable_comments_dashboard() {
+    remove_meta_box('dashboard_recent_comments', 'dashboard', 'normal');
+}
+/* END - DISABLE COMMENTS */
