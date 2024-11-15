@@ -108,66 +108,6 @@ function mini_content_page_html() {
 }
 /* END - content settings */
 
-/* START - comment settings */
-function mini_comment_settings_init() {
-    register_setting( 'mini_comment', 'mini_comment_settings');
-    add_settings_section(
-        'mini_comment_section',
-        __( 'Mini comment settings', 'mini' ),
-        'mini_comment_section_callback',
-        'mini-comment'
-    );
-    add_settings_field(
-        'mini_comment_field',
-        __( 'Comment settings', 'mini' ),
-        'mini_comment_fields_callback',
-        'mini-comment',
-        'mini_comment_section',
-        array(
-            'label_for'         => 'mini',
-            'class'             => 'mini_row',
-            'mini_custom_data'  => 'custom',
-        )
-    );
-}
-add_action( 'admin_init', 'mini_comment_settings_init' );
-function mini_comment_fields_callback( $args ) {
-    ?>
-    <?= mini_plugin_checkbox_option('mini_comment_settings','mini_disable_comment'); ?>
-    <p class="description">
-        <?php esc_html_e( 'Disable comments', 'mini' ); ?>
-    </p>
-    <?php
-}
-function mini_comment_section_callback( $args ) {
-    ?>
-    <p id="<?php echo esc_attr( $args['id'] ); ?>"><?php esc_html_e( 'This is the Comment section', 'mini' ); ?></p>
-    <?php
-}
-function mini_comment_page_html() {
-    if ( ! current_user_can( 'manage_options' ) ) {
-        return;
-    }
-    if ( isset( $_GET['settings-updated'] ) ) {
-        add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
-    }
-    settings_errors( 'mini_messages' );
-    ?>
-    <div class="wrap">
-        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-        <br/>
-        <form action="options.php" method="post">
-            <?php
-            settings_fields( 'mini_comment' );
-            do_settings_sections( 'mini-comment' );
-            submit_button( 'Save Settings' );
-            ?>
-        </form>
-    </div>
-    <?php
-}
-/* END - comment settings */
-
 /* START - mini menu */
 function mini_plugin_settings_pages() {
     if ( empty ( $GLOBALS['admin_page_hooks']['mini'] ) ) {
@@ -196,6 +136,15 @@ function mini_plugin_settings_pages() {
         'manage_options',
         'mini-comment',
         'mini_comment_page_html',
+        9
+    );
+    add_submenu_page(
+        'mini',
+        'Blogging',
+        'Blogging',
+        'manage_options',
+        'mini-blogging',
+        'mini_blogging_page_html',
         9
     );
 }
@@ -720,7 +669,66 @@ add_shortcode('next_3_events', 'get_next_3_events_callback');
 add_shortcode('next_4_events', 'get_next_4_events_callback');
 /* END - Custom post type - EVENT */
 
+
 /* START - DISABLE comments */
+function mini_comment_settings_init() {
+    register_setting( 'mini_comment', 'mini_comment_settings');
+    add_settings_section(
+        'mini_comment_section',
+        __( 'Mini comment settings', 'mini' ),
+        'mini_comment_section_callback',
+        'mini-comment'
+    );
+    add_settings_field(
+        'mini_comment_field',
+        __( 'Comment settings', 'mini' ),
+        'mini_comment_fields_callback',
+        'mini-comment',
+        'mini_comment_section',
+        array(
+            'label_for'         => 'mini',
+            'class'             => 'mini_row',
+            'mini_custom_data'  => 'custom',
+        )
+    );
+}
+add_action( 'admin_init', 'mini_comment_settings_init' );
+function mini_comment_fields_callback( $args ) {
+    ?>
+    <?= mini_plugin_checkbox_option('mini_comment_settings','mini_disable_comment'); ?>
+    <p class="description">
+        <?php esc_html_e( 'Disable comments', 'mini' ); ?>
+    </p>
+    <?php
+}
+function mini_comment_section_callback( $args ) {
+    ?>
+    <p id="<?php echo esc_attr( $args['id'] ); ?>"><?php esc_html_e( 'This is the Comment section', 'mini' ); ?></p>
+    <?php
+}
+function mini_comment_page_html() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+    if ( isset( $_GET['settings-updated'] ) ) {
+        add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
+    }
+    settings_errors( 'mini_messages' );
+    ?>
+    <div class="wrap">
+        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+        <br/>
+        <form action="options.php" method="post">
+            <?php
+            settings_fields( 'mini_comment' );
+            do_settings_sections( 'mini-comment' );
+            submit_button( 'Save Settings' );
+            ?>
+        </form>
+    </div>
+    <?php
+}
+
 $options = get_option( 'mini_comment_settings' );
 if (is_array($options) && array_key_exists('mini_disable_comment', $options)) {
     if ($options['mini_disable_comment'] == true) {
@@ -763,3 +771,86 @@ function disable_comments_dashboard() {
     remove_meta_box('dashboard_recent_comments', 'dashboard', 'normal');
 }
 /* END - DISABLE comments */
+
+/* START - DISABLE blogging */
+function mini_blogging_settings_init() {
+    register_setting( 'mini_blogging', 'mini_blogging_settings');
+    add_settings_section(
+        'mini_blogging_section',
+        __( 'Mini blogging settings', 'mini' ),
+        'mini_blogging_section_callback',
+        'mini-blogging'
+    );
+    add_settings_field(
+        'mini_blogging_field',
+        __( 'Blogging settings', 'mini' ),
+        'mini_blogging_fields_callback',
+        'mini-blogging',
+        'mini_blogging_section',
+        array(
+            'label_for'         => 'mini',
+            'class'             => 'mini_row',
+            'mini_custom_data'  => 'custom',
+        )
+    );
+}
+add_action( 'admin_init', 'mini_blogging_settings_init' );
+function mini_blogging_fields_callback( $args ) {
+    ?>
+    <?= mini_plugin_checkbox_option('mini_blogging_settings','mini_disable_blogging'); ?>
+    <p class="description">
+        <?php esc_html_e( 'Disable blogging', 'mini' ); ?>
+    </p>
+    <?php
+}
+function mini_blogging_section_callback( $args ) {
+    ?>
+    <p id="<?php echo esc_attr( $args['id'] ); ?>"><?php esc_html_e( 'This is the Blogging section', 'mini' ); ?></p>
+    <?php
+}
+function mini_blogging_page_html() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+    if ( isset( $_GET['settings-updated'] ) ) {
+        add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
+    }
+    settings_errors( 'mini_messages' );
+    ?>
+    <div class="wrap">
+        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+        <br/>
+        <form action="options.php" method="post">
+            <?php
+            settings_fields( 'mini_blogging' );
+            do_settings_sections( 'mini-blogging' );
+            submit_button( 'Save Settings' );
+            ?>
+        </form>
+    </div>
+    <?php
+}
+
+$options = get_option( 'mini_blogging_settings' );
+if (is_array($options) && array_key_exists('mini_disable_blogging', $options)) {
+    if ($options['mini_disable_blogging'] == true) {
+        add_action( 'admin_menu', 'remove_post_admin_menus' );
+        add_action( 'wp_before_admin_bar_render', 'remove_post_toolbar_menus' );
+        add_action( 'wp_dashboard_setup', 'remove_post_dashboard_widgets' );
+    }
+}
+function remove_post_admin_menus() {
+    remove_menu_page( 'edit.php' );
+}
+
+function remove_post_toolbar_menus() {
+    global $wp_admin_bar;
+    $wp_admin_bar->remove_menu( 'new-post' );
+}
+
+function remove_post_dashboard_widgets() {
+    global $wp_meta_boxes;
+    unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_quick_press']);
+    unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_recent_comments']);
+}
+/* END - DISABLE blogging */
