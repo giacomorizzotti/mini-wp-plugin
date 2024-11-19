@@ -873,7 +873,7 @@ add_action( 'admin_init', 'remove_cf7_settings_menu_page' );
 /* START - DISABLE TOOLS settings for non-admins */
 function remove_tools_settings_menu_page() {
     if ( !current_user_can('administrator') ) {
-       remove_menu_page('tools'); // Contact Form 7 Menu
+       remove_menu_page('tools.php'); // Contact Form 7 Menu
     }
 }
 add_action( 'admin_init', 'remove_tools_settings_menu_page' );
