@@ -860,3 +860,12 @@ function remove_post_dashboard_widgets() {
     unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_recent_comments']);
 }
 /* END - DISABLE blogging */
+
+/* START - DISABLE CF7 settings for non-admins */
+function remove_cf7_settings_menu_page() {
+    if ( !current_user_can('administrator') ) {
+       remove_menu_page('wpcf7'); // Contact Form 7 Menu
+    }
+}
+add_action( 'admin_init', 'remove_cf7_settings_menu_page' );
+/* END - DISABLE CF7 settings for non-admins */
