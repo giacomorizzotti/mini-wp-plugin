@@ -742,6 +742,7 @@ if (is_array($options) && array_key_exists('mini_disable_comment', $options)) {
         add_filter('comments_open', 'disable_comments_status', 20, 2);
         add_filter('pings_open', 'disable_comments_status', 20, 2);
         add_action('admin_menu', 'disable_comments_admin_menu');
+        add_action( 'wp_before_admin_bar_render', 'disable_comments_admin_bar' );
         add_action('admin_init', 'disable_comments_admin_menu_redirect');
         add_action('admin_init', 'disable_comments_dashboard');
     }
@@ -766,6 +767,10 @@ function disable_comments_hide_existing_comments($comments) {
 add_filter('comments_array', 'disable_comments_hide_existing_comments', 10, 2);
 function disable_comments_admin_menu() {
     remove_menu_page('edit-comments.php');
+}
+function disable_comments_admin_bar() {
+    global $wp_admin_bar;
+    $wp_admin_bar->remove_menu('comments');
 }
 function disable_comments_admin_menu_redirect() {
     global $pagenow;
