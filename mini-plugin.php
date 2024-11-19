@@ -216,11 +216,11 @@ function get_latest_news_callback() {
         while ($query->have_posts()) : $query->the_post();
         if ($n==1) {
             $news_list .= '
-            <div class="box-100 my-0 p-0">
+            <div class="box-100 my-0 p-0" data-aos="fade-up">
             ';
         } else {
             $news_list .= '
-            <div class="box-50 my-0 p-0">
+            <div class="box-50 my-0 p-0" data-aos="fade-up" data-aos-delay="'.(150*($n-1)).'">
             ';
         }
         $news_list .= '
@@ -429,9 +429,13 @@ function location_save_postdata( $post_id ) {
 
 /* shortcodes */
 function get_next_event_callback($num = 1, $invert = false, $box = 100) {
-    $text_color = 'bk-text';
+    $text_color = 'fb-text';
+    $location_name_box_color = 'bk-box';
+    $location_address_box_color = 'dark-grey-box';
     if ($invert == true) {
         $text_color = 'wh-text';
+        $location_name_box_color = 'wh-box';
+        $location_address_box_color = 'light-grey-box';
     }
     $args = array(
         'post_per_page' => $num, /* how many post you need to display */
@@ -448,7 +452,7 @@ function get_next_event_callback($num = 1, $invert = false, $box = 100) {
         while ($query->have_posts()) : $query->the_post();
             if ($n <= $num) {
                 $event_list .= '
-                    <div class="box-'.$box.' my-0 p-0">
+                    <div class="box-'.$box.' my-0 p-0" data-aos="fade-up" data-aos-delay="'.(150*($n-1)).'">
                         <div class="boxes">
                 ';
                 $event_list .= '
@@ -456,14 +460,14 @@ function get_next_event_callback($num = 1, $invert = false, $box = 100) {
                 ';
                 if ($box < 100 ) {
                     $event_list .= '
-                                    <h3 class="m-0">
-                                    <a href="'.get_the_permalink().'" class="'.$text_color.'">'.get_the_title().'</a>
+                                    <h3 class="m-0 XXL">
+                                        <a href="'.get_the_permalink().'" class="'.$text_color.' under-bg inline">'.get_the_title().'</a>
                                     </h3>
                     ';
                 } else {
                     $event_list .= '
                                     <h3 class="big m-0">
-                                    <a href="'.get_the_permalink().'" class="'.$text_color.'">'.get_the_title().'</a>
+                                        <a href="'.get_the_permalink().'" class="'.$text_color.' under-bg inline">'.get_the_title().'</a>
                                     </h3>
                     ';
                 }
@@ -480,13 +484,13 @@ function get_next_event_callback($num = 1, $invert = false, $box = 100) {
                     if ( get_post_meta(get_the_ID(), 'location_name') != null ) {
                         if ($box < 100 ) {
                             $event_list .= '
-                                    <h4 class="m-0 bold '.$text_color.'">
+                                    <h4 class="m-0 bold '.$location_name_box_color.'">
                                         '.get_post_meta(get_the_ID(), 'location_name')[0].'
                                     </h4>
                             ';
                         } else {
                             $event_list .= '
-                                    <h4 class="m-0 bold XL '.$text_color.'">
+                                    <h4 class="m-0 bold XL '.$location_name_box_color.'">
                                         '.get_post_meta(get_the_ID(), 'location_name')[0].'
                                     </h4>
                             ';
@@ -495,13 +499,15 @@ function get_next_event_callback($num = 1, $invert = false, $box = 100) {
                     if ( get_post_meta(get_the_ID(), 'location_address') != null ) {
                         if ($box < 100 ) {
                             $event_list .= '
-                                    <p class="m-0 '.$text_color.'">
+                                    <div class="sep"></div>
+                                    <p class="m-0 '.$location_address_box_color.'">
                                         '.get_post_meta(get_the_ID(), 'location_address')[0].'
                                     </p>
                             ';
                         } else {
                             $event_list .= '
-                                    <p class="m-0 L '.$text_color.'">
+                                    <div class="sep"></div>
+                                    <p class="m-0 L '.$location_address_box_color.'">
                                         '.get_post_meta(get_the_ID(), 'location_address')[0].'
                                     </p>
                             ';
