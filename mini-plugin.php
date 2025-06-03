@@ -68,6 +68,11 @@ function mini_content_settings_init() {
 add_action( 'admin_init', 'mini_content_settings_init' );
 function mini_content_fields_callback( $args ) {
     ?>
+    <?= mini_plugin_checkbox_option('mini_content_settings','mini_slide'); ?>
+    <p class="description">
+        <?php esc_html_e( 'Slide content type', 'mini' ); ?>
+    </p>
+    <br/><br/>
     <?= mini_plugin_checkbox_option('mini_content_settings','mini_news'); ?>
     <p class="description">
         <?php esc_html_e( 'News content type', 'mini' ); ?>
@@ -76,6 +81,11 @@ function mini_content_fields_callback( $args ) {
     <?= mini_plugin_checkbox_option('mini_content_settings','mini_event'); ?>
     <p class="description">
         <?php esc_html_e( 'Event content type', 'mini' ); ?>
+    </p>
+    <br/><br/>
+    <?= mini_plugin_checkbox_option('mini_content_settings','mini_match'); ?>
+    <p class="description">
+        <?php esc_html_e( 'Match content type', 'mini' ); ?>
     </p>
     <?php
 }
@@ -177,8 +187,8 @@ function news_custom_post_type() {
 	register_post_type('news',
 		array(
 			'labels'      => array(
-				'name'          => __('News', 'textdomain'),
-				'singular_name' => __('News', 'textdomain'),
+				'name'          => __('News', 'mini'),
+				'singular_name' => __('News', 'mini'),
                 'add_new' => __( 'Add News' ),
                 'add_new_item' => __( 'Add New News' ),
                 'edit' => __( 'Edit' ),
@@ -187,7 +197,8 @@ function news_custom_post_type() {
                 'view' => __( 'View News' ),
                 'view_item' => __( 'View News' ),
                 'search_items' => __( 'Search News' ),
-                'not_found' => __( 'No News found' )
+                'not_found' => __( 'No News found' ),
+				'archives' => __('News', 'mini'),
 			),
             'public'      => true,
             'has_archive' => true,
@@ -212,6 +223,9 @@ function get_latest_news_callback() {
     $query = new WP_Query($args);
     if ($query->have_posts()) :
         $news_list = '';
+        $news_list .= '
+        <div class="boxes">
+        ';
         $n = 1;
         while ($query->have_posts()) : $query->the_post();
         if ($n==1) {
@@ -229,7 +243,7 @@ function get_latest_news_callback() {
         if (get_the_post_thumbnail(get_the_ID())!=false) {
             $news_list .= '
                     <div class="box-50">
-                    <a href="'.get_the_permalink().'">'.get_the_post_thumbnail(get_the_ID()).'</a>
+                    <a href="'.get_the_permalink().'">'.get_the_post_thumbnail(get_the_ID(), 'large', ['class' => 'img']).'</a>
                     </div>
                     <div class="box-50">
             ';
@@ -238,9 +252,9 @@ function get_latest_news_callback() {
                     <div class="box-100">
             ';
         }
-            $news_list .= '
+        $news_list .= '
                         <h3>
-                        <a href="'.get_the_permalink().'">'.get_the_title().'</a>
+                            <a href="'.get_the_permalink().'">'.get_the_title().'</a>
                         </h3>
                         <p class="">'.get_the_excerpt(get_the_ID()).'</p>
                         <p class="">
@@ -248,14 +262,108 @@ function get_latest_news_callback() {
                         </p>
                     </div>
                 </div>
-            </div>';
-            $n++;
+        ';
+        $news_list .= '
+        </div>
+        ';
+        $n++;
         endwhile;
         return $news_list;
     endif;
 }
 add_shortcode('latest_news', 'get_latest_news_callback');
 /* END - Custom post type - NEWS */
+
+/* START - Custom post type - SLIDE */
+$options = get_option( 'mini_content_settings' );
+if (is_array($options) && array_key_exists('mini_slide', $options)) {
+    if ($options['mini_slide'] == true) {
+        add_action('init', 'slide_custom_post_type');
+    }
+}
+function slide_custom_post_type() {
+	register_post_type('slide',
+		array(
+			'labels'      => array(
+				'name'          => __('Slides', 'mini'),
+				'singular_name' => __('Slide', 'mini'),
+                'add_new' => __( 'Add Slide' ),
+                'add_new_item' => __( 'Add New Slide' ),
+                'edit' => __( 'Edit' ),
+                'edit_item' => __( 'Edit Slide' ),
+                'new_item' => __( 'New Slide' ),
+                'view' => __( 'View Slide' ),
+                'view_item' => __( 'View Slide' ),
+                'search_items' => __( 'Search Slide' ),
+                'not_found' => __( 'No Slides found' ),
+				'archives' => __('Slide', 'mini'),
+			),
+            'public'      => true,
+            'has_archive' => false,
+            'menu_icon' => 'dashicons-slides',
+            'rewrite' => array('slug' => 'slide'),
+            'show_in_rest' => true,
+            'supports' => array( 'title', 'editor', 'thumbnail', 'excerpt', 'panels' )
+
+		)
+	);
+}
+/* SLIDE - shortcodes */
+function get_slides_callback($number=3) {
+
+    $args = array(
+        'post_per_page' => $number, /* how many post you need to display */
+        'offset' => 0,
+        'orderby' => 'post_date',
+        'order' => 'DESC',
+        'post_type' => 'slide', /* your post type name */
+        'post_status' => 'publish'
+    );
+    $query = new WP_Query($args);
+    if ($query->have_posts()) :
+        $slider = '';
+        $slider .= '
+<div class="container fw grad-fw-down-w">
+    <div class="container fw">
+        <div class="slider-wrapper">
+            <i id="left" class="iconoir-arrow-left-circle slider-controls"></i>
+            <ul class="slider fh">
+        ';
+        $n=1;
+        while ($query->have_posts()) : $query->the_post();
+            $slider .= '
+                <li class="slide">
+            ';
+            if (get_the_post_thumbnail(get_the_ID())!=false) {
+            $slider .= '
+                    <div class="img">
+                        <img src="'.get_the_post_thumbnail_url(get_the_ID()).'" alt="" draggable="false" />
+                    </div>
+            ';
+            }
+            $container_width = get_post_meta(get_the_ID(), 'page_container', true);
+            $slider .= '                    
+                    <div class="caption">
+                        <div class="container '.$container_width.'">
+                        '.get_the_content(get_the_ID()).'
+                        </div>
+                    </div>
+                </li>
+            ';
+        $n++;
+        endwhile;
+        $slider .= '
+            </ul>
+            <i id="right" class="iconoir-arrow-right-circle slider-controls"></i>
+        </div>
+    </div>
+</div>
+        ';
+        return $slider;
+    endif;
+}
+add_shortcode('slider', 'get_slides_callback');
+/* END - Custom post type - SLIDE */
 
 /* START - Custom post type - EVENT */
 $options = get_option( 'mini_content_settings' );
@@ -268,8 +376,8 @@ function event_custom_post_type() {
 	register_post_type('event',
 		array(
 			'labels'      => array(
-				'name'          => __('Events', 'textdomain'),
-				'singular_name' => __('Event', 'textdomain'),
+				'name'          => __('Events', 'mini'),
+				'singular_name' => __('Event', 'mini'),
                 'add_new' => __( 'Add Event' ),
                 'add_new_item' => __( 'Add New Event' ),
                 'edit' => __( 'Edit' ),
@@ -278,7 +386,8 @@ function event_custom_post_type() {
                 'view' => __( 'View Event' ),
                 'view_item' => __( 'View Event' ),
                 'search_items' => __( 'Search Event' ),
-                'not_found' => __( 'No Events found' )
+                'not_found' => __( 'No Events found' ),
+				'archives' => __('Events', 'mini'),
 			),
             'public'      => true,
             'has_archive' => true,
@@ -291,56 +400,524 @@ function event_custom_post_type() {
 	);
 }
 
+/* EVENT shortcodes */
+function get_next_event_callback($num = 1) {
+    $args = array(
+        'post_per_page' => $num, /* how many post you need to display */
+        'offset' => 0,
+        'meta_key'	=> 'event_date',
+        'orderby'	=> 'meta_value',
+        'order' => 'DESC',
+        'post_type' => 'event', /* your post type name */
+        'post_status' => 'publish'
+    );
+    $query = new WP_Query($args);
+    if ($query->have_posts()) :
+        $n=1;
+        $event_list = '';
+        while ($query->have_posts()) : $query->the_post();
+            $to_come=false;
+            if ( get_post_meta(get_the_ID(), 'event_date') != null && get_post_meta(get_the_ID(), 'event_date')[0] >= date("Y-m-d H:i:s") ) { $to_come = True; }
+            if ( $n <= $num && $to_come == true ) {
+                $event_list .= '
+<div class="boxes g-0">
+    <div class="box-100 my-0">
+        <h4 class="XL m-0">
+            <a href="'.get_the_permalink().'" class="wh-box m-0">'.get_the_title().'</a>
+        </h4>
+    </div>
+                ';
+                if (
+                    get_post_meta(get_the_ID(), 'event_date')[0] != null ||
+                    get_post_meta(get_the_ID(), 'event_time')[0] != null) {
+                    if (get_post_meta(get_the_ID(), 'event_date')[0] != null) {
+                        $it_date_month = new IntlDateFormatter(
+                            'it_IT',
+                            IntlDateFormatter::FULL,
+                            IntlDateFormatter::FULL,
+                            'Europe/Rome',
+                            IntlDateFormatter::GREGORIAN,
+                            'MMMM'
+                        );
+                        $it_date_day_name = new IntlDateFormatter(
+                            'it_IT',
+                            IntlDateFormatter::FULL,
+                            IntlDateFormatter::FULL,
+                            'Europe/Rome',
+                            IntlDateFormatter::GREGORIAN,
+                            'EEEE'
+                        );
+                        $it_date_day_number = new IntlDateFormatter(
+                            'it_IT',
+                            IntlDateFormatter::FULL,
+                            IntlDateFormatter::FULL,
+                            'Europe/Rome',
+                            IntlDateFormatter::GREGORIAN,
+                            'e'
+                        );
+                        $it_date_year = new IntlDateFormatter(
+                            'it_IT',
+                            IntlDateFormatter::FULL,
+                            IntlDateFormatter::FULL,
+                            'Europe/Rome',
+                            IntlDateFormatter::GREGORIAN,
+                            'yyyy'
+                        );
+                        $event_date = strtotime(get_post_meta(get_the_ID(), 'event_date')[0]);
+                        $event_date_day_name = $it_date_day_name->format($event_date);
+                        $event_date_day = $it_date_day_number->format($event_date);
+                        $event_date_month = $it_date_month->format($event_date);
+                        $event_date_year = $it_date_year->format($event_date);
+                        $event_list .= '
+    <div class="box-50 my-0">
+        <div class="date-time-box flex flex-wrap">
+            <div class="block flex w-100 flex-direction-row flex-wrap">
+                <div class="flex">
+                    <p class="m-0" style="line-height: 1!important;">
+                        <span class="square flex align-items-center justify-content-center second-color-box huge black py-1 px-2 m-0" style="min-width: 140px;">'.$event_date_day.'</span>
+                    </p>
+                    <div class="flex flex-direction-column">
+                        <div class="flex">
+                            <p class="m-0 up-case L">
+                                <span class="second-color-dark-box px-15 m-0">'.$event_date_day_name.'</span>
+                            </p>
+                        </div>
+                        <div class="flex">
+                            <p class="m-0 bold XL"><span class="second-color-box px-15 m-0">'.ucfirst($event_date_month).'</span></p><p class="m-0 XL light"><span class="second-color-dark-box m-0">'.$event_date_year.'</span></p>
+                        </div>
+                        <div class="flex">
+                        ';
+                    }
+                    if (get_post_meta(get_the_ID(), 'event_time')[0] != null) {
+                        $event_time = date('H:i', strtotime(get_post_meta(get_the_ID(), 'event_time')[0]));
+                        $event_list .= '
+                            <div class="time-box">
+                                <p class="m-0 wh-text up-case XL bold" >
+                                    <span class="second-color-dark-box m-0">'.$event_time.'</span>
+                                </p>
+                            </div>
+                        ';
+                    }
+                    $event_list .= '
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+                    ';
+                    if ( 
+                        get_post_meta(get_the_ID(), 'location_name')[0] != null ||
+                        get_post_meta(get_the_ID(), 'location_address')[0] != null
+                    ) {
+                        $event_list .= '
+        <div class="location-box">
+                        ';
+                        if ( get_post_meta(get_the_ID(), 'location_name')[0] != null ) {
+                            $event_list .= '
+            <h4 class="m-0 bold XL">
+                '.get_post_meta(get_the_ID(), 'location_name')[0].'
+            </h4>
+                            ';
+                        }
+                        if ( get_post_meta(get_the_ID(), 'location_address')[0] != null ) {
+                            $event_list .= '
+            <div class="sep"></div>
+            <p class="m-0">
+                '.get_post_meta(get_the_ID(), 'location_address')[0].'
+            </p>
+                        ';
+                        }
+                        $event_list .= '
+        </div>
+                        ';
+                    }
+                    /*
+                    if (get_the_post_thumbnail(get_the_ID())!=false) {
+                        if ($box < 100 ) {
+                            $match_list .= '
+                                <div class="box-100 my-0">
+                                <a href="'.get_the_permalink().'">'.get_the_post_thumbnail(get_the_ID()).'</a>
+                                </div>
+                            ';
+                        } else {
+                            $match_list .= '
+                                <div class="box-33">
+                                <a href="'.get_the_permalink().'">'.get_the_post_thumbnail(get_the_ID()).'</a>
+                                </div>
+                            ';
+                        }
+                    } 
+                    */
+                }
+                $event_list .= '
+    </div>
+</div>
+                ';
+            }
+            if ($to_come == true) { $n++; }
+        endwhile;
+        return $event_list;
+    endif;
+}
+function get_next_event_inv_callback() {
+    return get_next_event_callback(1);
+}
+function get_next_3_events_callback() {
+    return get_next_event_callback(3);
+}
+function get_next_4_events_callback() {
+    return get_next_event_callback(4);
+}
+add_shortcode('next_event', 'get_next_event_callback');
+add_shortcode('next_events', 'get_next_3_events_callback');
+add_shortcode('next_3_events', 'get_next_3_events_callback');
+add_shortcode('next_4_events', 'get_next_4_events_callback');
+/* END - Custom post type - EVENT */
+
+/* START - Custom post type - MATCH */
+$options = get_option( 'mini_content_settings' );
+if (is_array($options) && array_key_exists('mini_match', $options)) {
+    if ($options['mini_match'] == true) {
+        add_action('init', 'match_custom_post_type');
+    }
+}
+function match_custom_post_type() {
+	register_post_type('match',
+		array(
+			'labels'      => array(
+				'name'          => __('Match', 'mini'),
+				'singular_name' => __('Match', 'mini'),
+                'add_new' => __( 'Add Match' ),
+                'add_new_item' => __( 'Add New Match' ),
+                'edit' => __( 'Edit' ),
+                'edit_item' => __( 'Edit Match' ),
+                'new_item' => __( 'New Match' ),
+                'view' => __( 'View Match' ),
+                'view_item' => __( 'View Match' ),
+                'search_items' => __( 'Search Match' ),
+                'not_found' => __( 'No Matches found' ),
+				'archives' => __('Matches', 'mini'),
+			),
+            'public'      => true,
+            'has_archive' => true,
+            'menu_icon' => 'dashicons-superhero',
+            'rewrite' => array('slug' => 'match'),
+            'show_in_rest' => true,
+            'supports' => array( 'title', 'editor', 'thumbnail', 'excerpt', 'panels' )
+
+		)
+	);
+}
+
+/* MATCH shortcodes */
+function get_next_match_callback($num = 1, $invert = false) {
+    $text_color = 'col-text';
+    $location_name_box_color = 'bk-box';
+    $location_address_box_color = 'white-box';
+    if ($invert == true) {
+        $text_color = 'wh-text';
+        $location_name_box_color = 'wh-box';
+        $location_address_box_color = 'light-grey-box';
+    }
+    $args = array(
+        'post_per_page' => $num, /* how many post you need to display */
+        'offset' => 0,
+        'meta_key'	=> 'event_date',
+        'orderby'	=> 'meta_value',
+        'order' => 'DESC',
+        'post_type' => 'match', /* your post type name */
+        'post_status' => 'publish'
+    );
+    $query = new WP_Query($args);
+    if ($query->have_posts()) :
+        $n=1;
+        $match_list = '';
+        while ($query->have_posts()) : $query->the_post();
+            $to_come=false;
+            if ( get_post_meta(get_the_ID(), 'event_date') != null && get_post_meta(get_the_ID(), 'event_date')[0] >= date("Y-m-d") ) { $to_come = True; }
+            if ( $n <= $num && $to_come == true ) {
+                $match_list .= '
+<div class="boxes g-0">
+    <div class="box-100 my-0">
+        <h4 class="XL m-0">
+            <a href="'.get_the_permalink().'" class="'.$text_color.' wh-box m-0">'.get_the_title().'</a>
+        </h4>
+    </div>
+                ';
+				if (
+					get_post_meta(get_the_ID(), 'team_1')[0] != null && 
+					get_post_meta(get_the_ID(), 'team_2')[0] != null
+				) {
+                    $match_list .= '
+    <div class="box-zero-50 box-sm-25">
+        <div class="boxes g-0">
+                    ';
+                    if ( get_post_meta(get_the_ID(), 'team_1_logo')[0] ) {
+                        $team_1_logo = get_post_meta(get_the_ID(), 'team_1_logo')[0];
+                        $match_list .= '
+            <div class="box-100 p-15 mb-1 square wh-bg">
+                <div style="background-image: url(\''.$team_1_logo.'\'); background-position: center; background-size: contain; background-repeat: no-repeat; display: block; width: 100%; height: 100%;"></div>
+            </div>
+                        ';
+                    }
+                /*
+                if ( get_post_meta(get_the_ID(), 'team_1_score')) {
+                    $team_1_score = get_post_meta(get_the_ID(), 'team_1_score')[0];
+                    $match_list .= '
+            <div class="box-zero-50 second-color-bg flex align-items-center justify-content-center">
+                <h3 class="huge center wh-text">'.$team_1_score.'</h3>
+            </div>
+                    ';
+                }
+                */
+                    $team_1 = get_post_meta(get_the_ID(), 'team_1')[0];
+                    $match_list .= '
+            <div class="box-100 second-color-dark-bg">
+                <h2 class="XL wh-text m-0">'.$team_1.'</h2>
+            </div>
+        </div>
+    </div>
+    <div class="box-zero-50 box-sm-25">
+        <div class="boxes g-0">
+                    ';
+                    if ( get_post_meta(get_the_ID(), 'team_2_logo')[0] ) {
+                        $team_2_logo = get_post_meta(get_the_ID(), 'team_2_logo')[0];
+                        $match_list .= '
+                        <div class="box-100 p-15 mb-1 square wh-bg">
+                            <div style="background-image: url(\''.$team_2_logo.'\'); background-position: center; background-size: contain; background-repeat: no-repeat; display: block; width: 100%; height: 100%;"></div>
+                        </div>
+                        ';
+                    }
+                    /*
+                    if ( get_post_meta(get_the_ID(), 'team_2_score')) {
+                        $team_2_score = get_post_meta(get_the_ID(), 'team_2_score')[0];
+                        $match_list .= '
+                        <div class="box-zero-50 second-color-bg flex align-items-center justify-content-center">
+                            <h3 class="huge center wh-text">'.$team_2_score.'</h3>
+                        </div>
+                        ';
+                    }
+                    */
+                    $team_2 = get_post_meta(get_the_ID(), 'team_2')[0];
+                    $match_list .= '
+            <div class="box-100 second-color-dark-bg">
+                <h2 class="XL wh-text m-0">'.$team_2.'</h2>
+            </div>
+                    ';
+                    $match_list .= '
+        </div>
+    </div>
+                    ';
+                }
+                if (
+                    get_post_meta(get_the_ID(), 'event_date')[0] != null ||
+                    get_post_meta(get_the_ID(), 'event_time')[0] != null) {
+                    if (get_post_meta(get_the_ID(), 'event_date') != null) {
+                        $it_date_month = new IntlDateFormatter(
+                            'it_IT',
+                            IntlDateFormatter::FULL,
+                            IntlDateFormatter::FULL,
+                            'Europe/Rome',
+                            IntlDateFormatter::GREGORIAN,
+                            'MMMM'
+                        );
+                        $it_date_day_name = new IntlDateFormatter(
+                            'it_IT',
+                            IntlDateFormatter::FULL,
+                            IntlDateFormatter::FULL,
+                            'Europe/Rome',
+                            IntlDateFormatter::GREGORIAN,
+                            'EEEE'
+                        );
+                        $it_date_day_number = new IntlDateFormatter(
+                            'it_IT',
+                            IntlDateFormatter::FULL,
+                            IntlDateFormatter::FULL,
+                            'Europe/Rome',
+                            IntlDateFormatter::GREGORIAN,
+                            'e'
+                        );
+                        $it_date_year = new IntlDateFormatter(
+                            'it_IT',
+                            IntlDateFormatter::FULL,
+                            IntlDateFormatter::FULL,
+                            'Europe/Rome',
+                            IntlDateFormatter::GREGORIAN,
+                            'yyyy'
+                        );
+                        $match_date = strtotime(get_post_meta(get_the_ID(), 'event_date')[0]);
+                        $match_date_day_name = $it_date_day_name->format($match_date);
+                        $match_date_day = $it_date_day_number->format($match_date);
+                        $match_date_month = $it_date_month->format($match_date);
+                        $match_date_year = $it_date_year->format($match_date);
+                        $match_list .= '
+    <div class="box-50 my-0">
+        <div class="date-time-box flex flex-wrap">
+            <div class="block flex w-100 flex-direction-row flex-wrap">
+                <div class="flex">
+                    <p class="m-0" style="line-height: 1!important;">
+                        <span class="square flex align-items-center justify-content-center color-box huge black py-1 px-2 m-0" style="min-width: 140px;">'.$match_date_day.'</span>
+                    </p>
+                    <div class="flex flex-direction-column">
+                        <div class="flex">
+                            <p class="m-0 up-case L">
+                                <span class="color-dark-box px-15 m-0">'.$match_date_day_name.'</span>
+                            </p>
+                        </div>
+                        <div class="flex">
+                            <p class="m-0 bold XL"><span class="color-box px-15 m-0">'.ucfirst($match_date_month).'</span></p><p class="m-0 XL light"><span class="color-dark-box m-0">'.$match_date_year.'</span></p>
+                        </div>
+                        <div class="flex">
+                        ';
+                    }
+                    if (get_post_meta(get_the_ID(), 'event_time')[0] != null) {
+                        $match_time = date('H:i', strtotime(get_post_meta(get_the_ID(), 'event_time')[0]));
+                        $match_list .= '
+                            <div class="time-box">
+                                <p class="m-0 wh-text up-case XL bold" >
+                                    <span class="color-dark-box m-0">'.$match_time.'</span>
+                                </p>
+                            </div>
+                        ';
+                    }
+                    $match_list .= '
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+                    ';
+                    if ( 
+                        get_post_meta(get_the_ID(), 'location_name')[0] != null ||
+                        get_post_meta(get_the_ID(), 'location_address')[0] != null
+                    ) {
+                        $match_list .= '
+        <div class="location-box">
+                        ';
+                        if ( get_post_meta(get_the_ID(), 'location_name') != null ) {
+                            $match_list .= '
+            <h4 class="m-0 bold XL '.$location_name_box_color.'">
+                '.get_post_meta(get_the_ID(), 'location_name')[0].'
+            </h4>
+                            ';
+                        }
+                        if ( get_post_meta(get_the_ID(), 'location_address') != null ) {
+                            $match_list .= '
+            <div class="sep"></div>
+            <p class="m-0 '.$location_address_box_color.'">
+                '.get_post_meta(get_the_ID(), 'location_address')[0].'
+            </p>
+                        ';
+                        }
+                        $match_list .= '
+        </div>
+                        ';
+                    }
+                    /*
+                    if (get_the_post_thumbnail(get_the_ID())!=false) {
+                        if ($box < 100 ) {
+                            $match_list .= '
+                                <div class="box-100 my-0">
+                                <a href="'.get_the_permalink().'">'.get_the_post_thumbnail(get_the_ID()).'</a>
+                                </div>
+                            ';
+                        } else {
+                            $match_list .= '
+                                <div class="box-33">
+                                <a href="'.get_the_permalink().'">'.get_the_post_thumbnail(get_the_ID()).'</a>
+                                </div>
+                            ';
+                        }
+                    } 
+                        */
+                }
+                $match_list .= '
+    </div>
+</div>
+                ';
+            } else {
+        $match_list = '
+<div class="boxes g-0">
+    <div class="box-100">
+        <h4 class="m-0">
+            <p> <span class="wh-box">'.__('No matches to show', 'mini').'</span></p>
+        </h4>
+    </div>
+</div>
+        ';
+            }
+            if ($to_come == true) { $n++; }
+        endwhile;
+        return $match_list;
+    endif;
+}
+function get_next_match_inv_callback() {
+    return get_next_match_callback(1,true);
+}
+function get_next_3_matches_callback() {
+    return get_next_match_callback(3,false, 33);
+}
+function get_next_4_matches_callback() {
+    return get_next_match_callback(4,false, 25);
+}
+add_shortcode('next_match', 'get_next_match_callback');
+add_shortcode('next_match_inv', 'get_next_match_inv_callback');
+add_shortcode('next_matches', 'get_next_3_matches_callback');
+add_shortcode('next_3_matches', 'get_next_3_matches_callback');
+add_shortcode('next_4_matches', 'get_next_4_matches_callback');
+/* END - Custom post type - MATCH */
+
+
 /* ADD Date and time options */
 add_action( 'add_meta_boxes', 'add_date_time_box' );
 add_action( 'save_post', 'date_time_save_postdata' );
 function add_date_time_box() {
     add_meta_box(
         'date-time',
-        esc_html__( 'Date and time', 'mini' ),
+        esc_html__( 'Date', 'mini' ),
         'date_time_box_html',
-        ['event'],
-        'normal'
+        ['event', 'match'],
+        'side'
     );
 }
 function date_time_box_html( $post, $meta ){
-    $event_date = get_post_meta( $post->ID, 'event_date', true);
-    $event_date_value = null;
-    if ($event_date != null)
-        $event_date_value = $event_date;
-    $event_end_date = get_post_meta( $post->ID, 'event_end_date', true);
-    $event_end_date_value = null;
-    if ($event_end_date != null)
-        $event_end_date_value = $event_end_date;
-    $event_time = get_post_meta( $post->ID, 'event_time', true);
-    $event_time_value = null;
-    if ($event_time != null)
-        $event_time_value = $event_time;
-    $event_end_time = get_post_meta( $post->ID, 'event_end_time', true);
-    $event_end_time_value = null;
-    if ($event_end_time != null)
-        $event_end_time_value = $event_end_time;
+    $date = get_post_meta( $post->ID, 'event_date', true);
+    $date_value = null;
+    if ($date != null)
+        $date_value = $date;
+    $end_date = get_post_meta( $post->ID, 'event_end_date', true);
+    $end_date_value = null;
+    if ($end_date != null)
+        $end_date_value = $end_date;
+    $time = get_post_meta( $post->ID, 'event_time', true);
+    $time_value = null;
+    if ($time != null)
+        $time_value = $time;
+    $end_time = get_post_meta( $post->ID, 'event_end_time', true);
+    $end_time_value = null;
+    if ($end_time != null)
+        $end_time_value = $end_time;
     echo '
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 1rem;">
-        <div style="flex: 1;">
-            <label for="event_date" style="margin-bottom: 0.5rem; display: block;">' . __("Date", 'date_time_textdomain' ) . ':</label>
-            <input type="date" id="event_date" name="event_date" value="'.$event_date_value.'" style="min-width: 220px;" />
+        <div style="flex: 1; margin-bottom: 0.5rem;">
+            <label for="event_date" style="margin-bottom: 0.5rem; display: block;">' . __("Date", 'mini' ) . ':</label>
+            <input type="date" id="event_date" name="event_date" value="'.$date_value.'" style="min-width: 220px; display: block;" />
         </div>
-        <div style="flex: 1;">
-            <label for="event_end_date" style="margin-bottom: 0.5rem; display: block;">' . __("End date (optional)", 'date_time_textdomain' ) . ':</label>
-            <input type="date" id="event_end_date" name="event_end_date" value="'.$event_end_date_value.'" style="min-width: 220px;" />
+        <div style="flex: 1; margin-bottom: 0.5rem;">
+            <label for="event_end_date" style="margin-bottom: 0.5rem; display: block;">' . __("End date (optional)", 'mini' ) . ':</label>
+            <input type="date" id="event_end_date" name="event_end_date" value="'.$end_date_value.'" style="min-width: 220px; display: block;" />
         </div>
     </div>
     ';
     echo '
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 1rem;">
-        <div style="flex: 1;">
-            <label for="event_time" style="margin-bottom: 0.5rem; display: block;">' . __("Time", 'date_time_textdomain' ) . ':</label>
-            <input type="time" id="event_time" name="event_time" value="'.$event_time_value.'" style="min-width: 220px;" />
+        <div style="flex: 1; margin-bottom: 0.5rem;">
+            <label for="event_time" style="margin-bottom: 0.5rem; display: block;">' . __("Time", 'mini' ) . ':</label>
+            <input type="time" id="event_time" name="event_time" value="'.$time_value.'" style="min-width: 220px; display: block;" />
         </div>
-        <div style="flex: 1;">
-            <label for="event_end_time" style="margin-bottom: 0.5rem; display: block;">' . __("End time (optional)", 'date_time_textdomain' ) . ':</label>
-            <input type="time" id="event_end_time" name="event_end_time" value="'.$event_end_time_value.'" style="min-width: 220px;" />
+        <div style="flex: 1; margin-bottom: 0.5rem;">
+            <label for="event_end_time" style="margin-bottom: 0.5rem; display: block;">' . __("End time (optional)", 'mini' ) . ':</label>
+            <input type="time" id="event_end_time" name="event_end_time" value="'.$end_time_value.'" style="min-width: 220px; display: block;" />
         </div>
     </div>
     ';
@@ -351,26 +928,26 @@ function date_time_save_postdata( $post_id ) {
 
     if( ! current_user_can( 'edit_post', $post_id ) ) { return; }
     
-    $event_date = null;
+    $date = null;
     if ( isset($_POST['event_date']) ) {
-        $event_date = $_POST['event_date'];
+        $date = $_POST['event_date'];
     }
-    $event_end_date = null;
+    $end_date = null;
     if ( isset($_POST['event_end_date']) ) {
-        $event_end_date = $_POST['event_end_date'];
+        $end_date = $_POST['event_end_date'];
     } 
-    $event_time = null;
+    $time = null;
     if ( isset($_POST['event_time']) ) {
-        $event_time = $_POST['event_time'];
+        $time = $_POST['event_time'];
     }
-    $event_end_time = null;
+    $end_time = null;
     if ( isset($_POST['event_end_time']) ) {
-        $event_end_time = $_POST['event_end_time'];
+        $end_time = $_POST['event_end_time'];
     } 
-    update_post_meta( $post_id, 'event_date', $event_date );
-    update_post_meta( $post_id, 'event_end_date', $event_end_date );
-    update_post_meta( $post_id, 'event_time', $event_time );
-    update_post_meta( $post_id, 'event_end_time', $event_end_time );
+    update_post_meta( $post_id, 'event_date', $date );
+    update_post_meta( $post_id, 'event_end_date', $end_date );
+    update_post_meta( $post_id, 'event_time', $time );
+    update_post_meta( $post_id, 'event_end_time', $end_time );
 }
 
 /* ADD Location options */
@@ -381,8 +958,8 @@ function add_location_box() {
         'location',
         esc_html__( 'Location', 'mini' ),
         'Location_box_html',
-        ['event'],
-        'normal'
+        ['event', 'match'],
+        'side'
     );
 }
 function Location_box_html( $post, $meta ){
@@ -397,13 +974,13 @@ function Location_box_html( $post, $meta ){
     echo '
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 1rem;">
         <div style="flex: 1;">
-            <label for="location_name" style="margin-bottom: 0.5rem; display: block;">' . __("Location", 'date_time_textdomain' ) . ':</label>
+            <label for="location_name" style="margin-bottom: 0.5rem; display: block;">' . __("Location", 'mini' ) . ':</label>
             <input type="text" id="location_name" name="location_name" value="'.$location_name_value.'" style="min-width: 220px; width: 50%;" />
         </div>
     </div>
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 1rem;">
         <div style="flex: 1;">
-            <label for="location_address" style="margin-bottom: 0.5rem; display: block;">' . __("Location address", 'date_time_textdomain' ) . ':</label>
+            <label for="location_address" style="margin-bottom: 0.5rem; display: block;">' . __("Location address", 'mini' ) . ':</label>
             <input type="text" id="location_address" name="location_address" value="'.$location_address_value.'" style="min-width: 220px; width: 50%;" />
         </div>
     </div>
@@ -427,254 +1004,142 @@ function location_save_postdata( $post_id ) {
     update_post_meta( $post_id, 'location_address', $location_address );
 }
 
-/* shortcodes */
-function get_next_event_callback($num = 1, $invert = false, $box = 100) {
-    $text_color = 'fb-text';
-    $location_name_box_color = 'bk-box';
-    $location_address_box_color = 'dark-grey-box';
-    if ($invert == true) {
-        $text_color = 'wh-text';
-        $location_name_box_color = 'wh-box';
-        $location_address_box_color = 'light-grey-box';
-    }
-    $args = array(
-        'post_per_page' => $num, /* how many post you need to display */
-        'offset' => 0,
-        'orderby' => 'event_date',
-        'order' => 'DESC',
-        'post_type' => 'event', /* your post type name */
-        'post_status' => 'publish'
+/* ADD Teams options */
+add_action( 'add_meta_boxes', 'add_teams_box' );
+add_action( 'save_post', 'teams_save_postdata' );
+function add_teams_box() {
+    add_meta_box(
+        'teams',
+        esc_html__( 'Teams', 'mini' ),
+        'teams_box_html',
+        ['match'],
+        #'side'
+        'normal'
     );
-    $query = new WP_Query($args);
-    if ($query->have_posts()) :
-        $n=1;
-        $event_list = '';
-        while ($query->have_posts()) : $query->the_post();
-            if ($n <= $num) {
-                $event_list .= '
-                    <div class="box-'.$box.' my-0 p-0" data-aos="fade-up" data-aos-delay="'.(150*($n-1)).'">
-                        <div class="boxes">
-                ';
-                $event_list .= '
-                            <div class="box-100 my-0">
-                ';
-                if ($box < 100 ) {
-                    $event_list .= '
-                                    <h3 class="m-0 XXL">
-                                        <a href="'.get_the_permalink().'" class="'.$text_color.' under-bg inline">'.get_the_title().'</a>
-                                    </h3>
-                    ';
-                } else {
-                    $event_list .= '
-                                    <h3 class="big m-0">
-                                        <a href="'.get_the_permalink().'" class="'.$text_color.' under-bg inline">'.get_the_title().'</a>
-                                    </h3>
-                    ';
-                }
-                $event_list .= '
-                            </div>
-                ';
-                if ( 
-                    get_post_meta(get_the_ID(), 'location_name') != null ||
-                    get_post_meta(get_the_ID(), 'location_address') != null
-                ) {
-                    $event_list .= '
-                                <div class="box-100 my-0">
-                    ';
-                    if ( get_post_meta(get_the_ID(), 'location_name') != null ) {
-                        if ($box < 100 ) {
-                            $event_list .= '
-                                    <h4 class="m-0 bold '.$location_name_box_color.'">
-                                        '.get_post_meta(get_the_ID(), 'location_name')[0].'
-                                    </h4>
-                            ';
-                        } else {
-                            $event_list .= '
-                                    <h4 class="m-0 bold XL '.$location_name_box_color.'">
-                                        '.get_post_meta(get_the_ID(), 'location_name')[0].'
-                                    </h4>
-                            ';
-                        }
-                    }
-                    if ( get_post_meta(get_the_ID(), 'location_address') != null ) {
-                        if ($box < 100 ) {
-                            $event_list .= '
-                                    <div class="sep"></div>
-                                    <p class="m-0 '.$location_address_box_color.'">
-                                        '.get_post_meta(get_the_ID(), 'location_address')[0].'
-                                    </p>
-                            ';
-                        } else {
-                            $event_list .= '
-                                    <div class="sep"></div>
-                                    <p class="m-0 L '.$location_address_box_color.'">
-                                        '.get_post_meta(get_the_ID(), 'location_address')[0].'
-                                    </p>
-                            ';
-                        }
-                    }
-                    $event_list .= '
-                                </div>
-                    ';
-                }
-                if (get_the_post_thumbnail(get_the_ID())!=false) {
-                    if ($box < 100 ) {
-                        $event_list .= '
-                            <div class="box-100 my-0">
-                            <a href="'.get_the_permalink().'">'.get_the_post_thumbnail(get_the_ID()).'</a>
-                            </div>
-                        ';
-                    } else {
-                        $event_list .= '
-                            <div class="box-33">
-                            <a href="'.get_the_permalink().'">'.get_the_post_thumbnail(get_the_ID()).'</a>
-                            </div>
-                        ';
-                    }
-                } 
-                if ($box < 100 ) {
-                    $event_list .= '
-                        <div class="box-100 my-0">
-                    ';
-                } else {
-                    $event_list .= '
-                        <div class="box-66">
-                    ';
-                }
-                if (
-                    get_post_meta(get_the_ID(), 'event_date') != null ||
-                    get_post_meta(get_the_ID(), 'event_time') != null) {
-                    $event_list .= ' <div class="mb-2 flex flex-flow-column-wrap justify-content-start align-items-start">';
-                    if (get_post_meta(get_the_ID(), 'event_date') != null) {
-                        $event_date = strtotime(get_post_meta(get_the_ID(), 'event_date')[0]);
-                        $event_date_day_name = date('l', $event_date);
-                        $event_date_day = date('j', $event_date);
-                        $event_date_month = date('F', $event_date);
-                        $event_date_year = date('Y', $event_date);
-                        if ($box < 100 ) {
-                            $event_list .= '
-                                        <div class="date-box p-1 color-bg pe-4">
-                                            <p class="m-0 wh-text up-case light" style="line-height: 1.4!important;">
-                                            '.$event_date_day_name.'
-                                            </p>
-                                            <p class="m-0 wh-text bold XL" style="line-height: 1!important;">
-                                            '.$event_date_day.'
-                                            </p>
-                                            <p class="m-0 wh-text bold L" style="line-height: 1.2!important;">
-                                            '.$event_date_month.'
-                                            </p>
-                                            <p class="m-0 wh-text S">
-                                            '.$event_date_year.'
-                                            </p>
-                                        </div>
-                            ';
-                        } else {
-                            $event_list .= '
-                                        <div class="date-box p-2 color-bg pe-4">
-                                            <p class="m-0 wh-text up-case light L" style="line-height: 1.4!important;">
-                                            '.$event_date_day_name.'
-                                            </p>
-                                            <p class="m-0 wh-text bold big" style="line-height: 1!important;">
-                                            '.$event_date_day.'
-                                            </p>
-                                            <p class="m-0 wh-text bold XXL" style="line-height: 1.2!important;">
-                                            '.$event_date_month.'
-                                            </p>
-                                            <p class="m-0 wh-text ">
-                                            '.$event_date_year.'
-                                            </p>
-                                        </div>
-                            ';
-                        }
-                    }
-                    if (get_post_meta(get_the_ID(), 'event_time') != null) {
-                        $event_time = date('H:i', strtotime(get_post_meta(get_the_ID(), 'event_date')[0]));
-                        if ($box < 100 ) {
-                            $event_list .= '
-                                    <div class="time-box py-05 px-1 color-dark-bg">
-                                        <p class="m-0 wh-text up-case" >
-                                        '.esc_html__( 'Time', 'mini' ).': '.$event_time.'
-                                        </p>
-                                    </div>
-                            ';
-                        } else {
-                            $event_list .= '
-                                    <div class="time-box py-1 px-2 color-dark-bg">
-                                        <p class="L m-0 wh-text up-case" >
-                                        '.esc_html__( 'Time', 'mini' ).': '.$event_time.'
-                                        </p>
-                                    </div>
-                            ';
-                        }
-                    }
-                    if (
-                        get_post_meta(get_the_ID(), 'event_end_date') != null || 
-                        get_post_meta(get_the_ID(), 'event_end_time') != null
-                    ) {
-                        if ($box < 100 ) {
-                        $event_list .= '
-                                    <div class="day-box py-05 px-1 light-grey-bg">
-                                        <p class="m-0 dark-grey-text up-case S">
-                        ';
-                        } else {
-                            $event_list .= '
-                                    <div class="day-box py-1 px-2 light-grey-bg">
-                                        <p class="m-0 dark-grey-text up-case">
-                            ';
-                        }
-                        $event_list .= esc_html__( 'End', 'mini' ).': ';
-                        if ( get_post_meta(get_the_ID(), 'event_end_date') != null ) {
-                            $event_end_date = date('j F Y', strtotime(get_post_meta(get_the_ID(), 'event_end_date')[0]));
-                            $event_list .= $event_end_date;
-                        }
-                        if (
-                            get_post_meta(get_the_ID(), 'event_end_date') != null && 
-                            get_post_meta(get_the_ID(), 'event_end_time') != null
-                        ) {
-                            $event_list .= '&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;';
-                        }
-                        if ( get_post_meta(get_the_ID(), 'event_end_time') != null ) {
-                            $event_end_time = date('H:i', strtotime(get_post_meta(get_the_ID(), 'event_date')[0]));
-                            $event_list .= $event_end_time;
-                        }
-                        $event_list .= '
-                                        </p>
-                                    </div>
-                        ';
-                    }
-                    $event_list .= '</div>';
-        
-                }
-                    $event_list .= '
-                                <p class="'.$text_color.'">'.get_the_excerpt(get_the_ID()).'</p>
-                                <p class="">
-                                    <a href="'.get_the_permalink().'" class="btn btn-bg">'.esc_html__( 'Read more', 'mini' ).'</a>
-                                </p>
-                            </div>
-                        </div>
-                    </div>';
-            }
-            $n++;
-        endwhile;
-        return $event_list;
-    endif;
 }
-function get_next_event_inv_callback() {
-    return get_next_event_callback(1,true);
+function teams_box_html( $post, $meta ){
+    $team_1 = get_post_meta( $post->ID, 'team_1', true);
+    $team_1_value = null;
+    if ($team_1 != null)
+        $team_1_value = $team_1;
+    $team_1_logo = get_post_meta( $post->ID, 'team_1_logo', true);
+    $team_1_logo_value = null;
+    if ($team_1_logo != null)
+        $team_1_logo_value = $team_1_logo;
+    $team_1_score = get_post_meta( $post->ID, 'team_1_score', true);
+    $team_1_score_value = null;
+    if ($team_1_score != null)
+        $team_1_score_value = $team_1_score;
+    $team_2 = get_post_meta( $post->ID, 'team_2', true);
+    $team_2_value = null;
+    if ($team_2 != null)
+        $team_2_value = $team_2;
+    $team_2_logo = get_post_meta( $post->ID, 'team_2_logo', true);
+    $team_2_logo_value = null;
+    if ($team_2_logo != null)
+        $team_2_logo_value = $team_2_logo;
+    $team_2_score = get_post_meta( $post->ID, 'team_2_score', true);
+    $team_2_score_value = null;
+    if ($team_2_score != null)
+        $team_2_score_value = $team_2_score;
+    echo '
+    <div style="display: flex; flex-flow: row wrap;">
+        <div style="flex: 1;">
+            <h3>' . __("Team one", 'mini' ) . '</h3>
+        </div>
+    </div>
+    <div style="display: flex; flex-flow: row wrap; margin-bottom: 0.5rem;">
+        <div style="flex: 1; margin-bottom: 0.5rem;">
+            <label for="team_1" style="margin-bottom: 0.5rem; display: block;">' . __("Team one", 'mini' ) . ':</label>
+            <input type="text" id="team_1" name="team_1" value="'.$team_1_value.'" style="min-width: 220px;" />
+        </div>
+        <div style="flex: 1; margin-bottom: 0.5rem;">
+            <label for="team_1_logo" style="margin-bottom: 0.5rem; display: block;">' . __("Team one logo", 'mini' ) . ':</label>
+            <input id="team_1_logo" type="text" name="team_1_logo" value="'.$team_1_logo_value.'" style="margin-bottom: 0.5rem; display: block; min-width: 220px;"/>
+            <input id="team_1_logo_button" class="components-button editor-post-status__toggle is-compact is-tertiary has-text has-icon" type="button" value="' . __("Upload logo", 'mini' ) . '" />
+        </div>
+        <div style="flex: 1; margin-bottom: 0.5rem;">
+            <label for="team_1_score" style="margin-bottom: 0.5rem; display: block;">' . __("Team one score", 'mini' ) . ':</label>
+            <input type="number" id="team_1_score" name="team_1_score" value="'.$team_1_score_value.'" style="min-width: 220px;" />
+        </div>
+    </div>
+    ';
+    echo '
+    <div style="display: flex; flex-flow: row wrap;">
+        <div style="flex: 1;">
+            <h3>' . __("Team two", 'mini' ) . '</h3>
+        </div>
+    </div>
+    <div style="display: flex; flex-flow: row wrap; margin-bottom: 0.5rem;">
+        <div style="flex: 1; margin-bottom: 0.5rem;">
+            <label for="team_2" style="margin-bottom: 0.5rem; display: block;">' . __("Team two", 'mini' ) . ':</label>
+            <input type="text" id="team_2" name="team_2" value="'.$team_2_value.'" style="min-width: 220px;" />
+        </div>
+        <div style="flex: 1; margin-bottom: 0.5rem;">
+            <label for="team_2_logo" style="margin-bottom: 0.5rem; display: block;">' . __("Team two logo", 'mini' ) . ':</label>
+            <input id="team_2_logo" type="text" name="team_2_logo" value="'.$team_2_logo_value.'" style="margin-bottom: 0.5rem; display: block; min-width: 220px;"/>
+            <input id="team_2_logo_button" class="components-button editor-post-status__toggle is-compact is-tertiary has-text has-icon" type="button" value="' . __("Upload logo", 'mini' ) . '" />
+        </div>
+        <div style="flex: 1; margin-bottom: 0.5rem;">
+            <label for="team_2_score" style="margin-bottom: 0.5rem; display: block;">' . __("Team two score", 'mini' ) . ':</label>
+            <input type="number" id="team_2_score" name="team_2_score" value="'.$team_2_score_value.'" style="min-width: 220px;" />
+        </div>
+    </div>
+    ';
 }
-function get_next_3_events_callback() {
-    return get_next_event_callback(3,false, 33);
-}
-function get_next_4_events_callback() {
-    return get_next_event_callback(4,false, 25);
-}
-add_shortcode('next_event', 'get_next_event_callback');
-add_shortcode('next_event_inv', 'get_next_event_inv_callback');
-add_shortcode('next_events', 'get_next_3_events_callback');
-add_shortcode('next_3_events', 'get_next_3_events_callback');
-add_shortcode('next_4_events', 'get_next_4_events_callback');
-/* END - Custom post type - EVENT */
 
+function media_upload_scripts() {    
+    wp_enqueue_script('media-upload');
+    wp_enqueue_script('thickbox');
+    wp_register_script('media-upload-script', WP_PLUGIN_URL.'/mini/media-upload/media-upload.js', array('jquery','media-upload','thickbox'));
+    wp_enqueue_script('media-upload-script');
+}
+add_action('admin_enqueue_scripts', 'media_upload_scripts');
+
+function media_upload_styles() {
+    wp_enqueue_style('thickbox');
+    wp_register_style('media-upload-style', plugins_url( 'mini/media-upload/media-upload.css' ));
+    wp_enqueue_style('media-upload-style');
+}
+add_action('admin_enqueue_scripts', 'media_upload_styles');
+
+function teams_save_postdata( $post_id ) {
+ 
+    if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) { return; }
+
+    if( ! current_user_can( 'edit_post', $post_id ) ) { return; }
+    
+    $team_1 = null;
+    if ( isset($_POST['team_1']) ) {
+        $team_1 = $_POST['team_1'];
+    }
+    $team_1_logo = null;
+    if ( isset($_POST['team_1_logo']) ) {
+        $team_1_logo = $_POST['team_1_logo'];
+    }
+    $team_1_score = null;
+    if ( isset($_POST['team_1_score']) ) {
+        $team_1_score = $_POST['team_1_score'];
+    }
+    $team_2 = null;
+    if ( isset($_POST['team_2']) ) {
+        $team_2 = $_POST['team_2'];
+    } 
+    $team_2_logo = null;
+    if ( isset($_POST['team_2_logo']) ) {
+        $team_2_logo = $_POST['team_2_logo'];
+    }
+    $team_2_score = null;
+    if ( isset($_POST['team_2_score']) ) {
+        $team_2_score = $_POST['team_2_score'];
+    }
+    update_post_meta( $post_id, 'team_1', $team_1 );
+    update_post_meta( $post_id, 'team_1_logo', $team_1_logo );
+    update_post_meta( $post_id, 'team_1_score', $team_1_score );
+    update_post_meta( $post_id, 'team_2', $team_2 );
+    update_post_meta( $post_id, 'team_2_logo', $team_2_logo );
+    update_post_meta( $post_id, 'team_2_score', $team_2_score );
+}
 
 /* START - DISABLE comments */
 function mini_comment_settings_init() {
