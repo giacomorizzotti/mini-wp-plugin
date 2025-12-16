@@ -141,15 +141,6 @@ function mini_plugin_settings_pages() {
     );
     add_submenu_page(
         'mini',
-        'Comments',
-        'Comments',
-        'manage_options',
-        'mini-comment',
-        'mini_comment_page_html',
-        9
-    );
-    add_submenu_page(
-        'mini',
         'Blogging',
         'Blogging',
         'manage_options',
@@ -1178,26 +1169,7 @@ function mini_comment_section_callback( $args ) {
     <?php
 }
 function mini_comment_page_html() {
-    if ( ! current_user_can( 'manage_options' ) ) {
-        return;
-    }
-    if ( isset( $_GET['settings-updated'] ) ) {
-        add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
-    }
-    settings_errors( 'mini_messages' );
-    ?>
-    <div class="wrap">
-        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-        <br/>
-        <form action="options.php" method="post">
-            <?php
-            settings_fields( 'mini_comment' );
-            do_settings_sections( 'mini-comment' );
-            submit_button( 'Save Settings' );
-            ?>
-        </form>
-    </div>
-    <?php
+    // This function is no longer used as Comments is now a tab
 }
 
 $options = get_option( 'mini_comment_settings' );
@@ -1288,6 +1260,10 @@ function mini_blogging_page_html() {
     if ( ! current_user_can( 'manage_options' ) ) {
         return;
     }
+    
+    // Get active tab
+    $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'blogging';
+    
     if ( isset( $_GET['settings-updated'] ) ) {
         add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
     }
@@ -1295,14 +1271,31 @@ function mini_blogging_page_html() {
     ?>
     <div class="wrap">
         <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+        
+        <h2 class="nav-tab-wrapper">
+            <a href="?page=mini-blogging&tab=blogging" class="nav-tab <?php echo $active_tab == 'blogging' ? 'nav-tab-active' : ''; ?>"><?php _e('Blogging', 'mini'); ?></a>
+            <a href="?page=mini-blogging&tab=comments" class="nav-tab <?php echo $active_tab == 'comments' ? 'nav-tab-active' : ''; ?>"><?php _e('Comments', 'mini'); ?></a>
+        </h2>
+        
         <br/>
-        <form action="options.php" method="post">
-            <?php
-            settings_fields( 'mini_blogging' );
-            do_settings_sections( 'mini-blogging' );
-            submit_button( 'Save Settings' );
-            ?>
-        </form>
+        
+        <?php if ($active_tab == 'blogging') : ?>
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_blogging' );
+                do_settings_sections( 'mini-blogging' );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+        <?php elseif ($active_tab == 'comments') : ?>
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_comment' );
+                do_settings_sections( 'mini-comment' );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+        <?php endif; ?>
     </div>
     <?php
 }
