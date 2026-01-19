@@ -9,16 +9,18 @@
 **/
 
 /* START - Useful functions */
+function is_mini_option_enabled($option_group, $option) {
+    $options = get_option($option_group);
+    return is_array($options) && !empty($options[$option]);
+}
+
 function mini_plugin_checkbox_option(
     string $option_group, 
     string $option, 
     string $status = '',
 ) {
-    $options = get_option( $option_group );
-    if (is_array($options) && array_key_exists($option, $options)) {
-        if ($options[$option] == true) {
-            $status = 'checked';
-        }
+    if (is_mini_option_enabled($option_group, $option)) {
+        $status = 'checked';
     }
     return '
     <input
@@ -29,19 +31,74 @@ function mini_plugin_checkbox_option(
     >
     ';
 }
+
 if (!function_exists('get_variable')) {
     function get_variable($option_group, $option) {
         $options = get_option( $option_group );
-        $variable = false;
-        if ( 
-            is_array($options) && array_key_exists($option, $options ) && $options[$option] != null 
-        ) {
-            $variable = $options[$option];
-        }
-        return $variable;
+        return (is_array($options) && !empty($options[$option])) ? $options[$option] : false;
     }
 }
-/* START - Useful functions */
+
+function get_italian_date_formatters() {
+    static $formatters = null;
+    if ($formatters === null) {
+        $formatters = [
+            'month' => new IntlDateFormatter('it_IT', IntlDateFormatter::FULL, IntlDateFormatter::FULL, 'Europe/Rome', IntlDateFormatter::GREGORIAN, 'MMMM'),
+            'day_name' => new IntlDateFormatter('it_IT', IntlDateFormatter::FULL, IntlDateFormatter::FULL, 'Europe/Rome', IntlDateFormatter::GREGORIAN, 'EEEE'),
+            'day_number' => new IntlDateFormatter('it_IT', IntlDateFormatter::FULL, IntlDateFormatter::FULL, 'Europe/Rome', IntlDateFormatter::GREGORIAN, 'e'),
+            'year' => new IntlDateFormatter('it_IT', IntlDateFormatter::FULL, IntlDateFormatter::FULL, 'Europe/Rome', IntlDateFormatter::GREGORIAN, 'yyyy'),
+        ];
+    }
+    return $formatters;
+}
+/* END - Useful functions */
+
+/* START - Default menus */
+function mini_create_default_menus() {
+    // Register menu locations
+    register_nav_menus(array(
+        'main-menu' => __('Main Menu', 'mini'),
+        'footer-menu' => __('Footer Menu', 'mini'),
+        'user-menu' => __('User Menu', 'mini'),
+    ));
+}
+add_action('after_setup_theme', 'mini_create_default_menus');
+
+function mini_setup_default_menus() {
+    // Check if menus already exist to avoid duplicates
+    $main_menu = wp_get_nav_menu_object('Main Menu');
+    $footer_menu = wp_get_nav_menu_object('Footer Menu');
+    $user_menu = wp_get_nav_menu_object('User Menu');
+
+    // Create Main Menu if it doesn't exist
+    if (!$main_menu) {
+        $main_menu_id = wp_create_nav_menu('Main Menu');
+        // Assign to location
+        $locations = get_theme_mod('nav_menu_locations');
+        $locations['main-menu'] = $main_menu_id;
+        set_theme_mod('nav_menu_locations', $locations);
+    }
+
+    // Create Footer Menu if it doesn't exist
+    if (!$footer_menu) {
+        $footer_menu_id = wp_create_nav_menu('Footer Menu');
+        // Assign to location
+        $locations = get_theme_mod('nav_menu_locations');
+        $locations['footer-menu'] = $footer_menu_id;
+        set_theme_mod('nav_menu_locations', $locations);
+    }
+
+    // Create User Menu if it doesn't exist
+    if (!$user_menu) {
+        $user_menu_id = wp_create_nav_menu('User Menu');
+        // Assign to location
+        $locations = get_theme_mod('nav_menu_locations');
+        $locations['user-menu'] = $user_menu_id;
+        set_theme_mod('nav_menu_locations', $locations);
+    }
+}
+register_activation_hook(__FILE__, 'mini_setup_default_menus');
+/* END - Default menus */
 
 /* START - content settings */
 function mini_content_settings_init() {
@@ -68,25 +125,24 @@ function mini_content_settings_init() {
 add_action( 'admin_init', 'mini_content_settings_init' );
 function mini_content_fields_callback( $args ) {
     ?>
-    <?= mini_plugin_checkbox_option('mini_content_settings','mini_slide'); ?>
-    <p class="description">
-        <?php esc_html_e( 'Slide content type', 'mini' ); ?>
-    </p>
-    <br/><br/>
-    <?= mini_plugin_checkbox_option('mini_content_settings','mini_news'); ?>
-    <p class="description">
-        <?php esc_html_e( 'News content type', 'mini' ); ?>
-    </p>
-    <br/><br/>
-    <?= mini_plugin_checkbox_option('mini_content_settings','mini_event'); ?>
-    <p class="description">
-        <?php esc_html_e( 'Event content type', 'mini' ); ?>
-    </p>
-    <br/><br/>
-    <?= mini_plugin_checkbox_option('mini_content_settings','mini_match'); ?>
-    <p class="description">
-        <?php esc_html_e( 'Match content type', 'mini' ); ?>
-    </p>
+    <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+        <div>
+            <?= mini_plugin_checkbox_option('mini_content_settings','mini_slide'); ?>
+            <label for="mini_slide"><?php esc_html_e( 'Slide content type', 'mini' ); ?></label>
+        </div>
+        <div>
+            <?= mini_plugin_checkbox_option('mini_content_settings','mini_news'); ?>
+            <label for="mini_news"><?php esc_html_e( 'News content type', 'mini' ); ?></label>
+        </div>
+        <div>
+            <?= mini_plugin_checkbox_option('mini_content_settings','mini_event'); ?>
+            <label for="mini_event"><?php esc_html_e( 'Event content type', 'mini' ); ?></label>
+        </div>
+        <div>
+            <?= mini_plugin_checkbox_option('mini_content_settings','mini_match'); ?>
+            <label for="mini_match"><?php esc_html_e( 'Match content type', 'mini' ); ?></label>
+        </div>
+    </div>
     <?php
 }
 function mini_content_section_callback( $args ) {
@@ -154,7 +210,6 @@ add_action( 'admin_menu', 'mini_plugin_settings_pages' );
 
 /* START - mini settings */
 function mini_plugin_main_page_html() {
-    // check user capabilities
     if ( ! current_user_can( 'manage_options' ) ) {
         return;
     }
@@ -165,42 +220,40 @@ function mini_plugin_main_page_html() {
     </div>
     <?php
 }
-/* START - mini settings*/
+/* END - mini settings*/
 
-/* START - Custom post type - NEWS */
-$options = get_option( 'mini_content_settings' );
-if (is_array($options) && array_key_exists('mini_news', $options)) {
-    if ($options['mini_news'] == true) {
-        add_action('init', 'news_custom_post_type');
-    }
+/* START - Custom post types - Consolidated */
+function register_mini_post_type($type, $singular, $plural, $icon, $has_archive = true) {
+    register_post_type($type, [
+        'labels' => [
+            'name' => __($plural, 'mini'),
+            'singular_name' => __($singular, 'mini'),
+            'add_new' => __('Add ' . $singular, 'mini'),
+            'add_new_item' => __('Add New ' . $singular, 'mini'),
+            'edit' => __('Edit', 'mini'),
+            'edit_item' => __('Edit ' . $singular, 'mini'),
+            'new_item' => __('New ' . $singular, 'mini'),
+            'view' => __('View ' . $singular, 'mini'),
+            'view_item' => __('View ' . $singular, 'mini'),
+            'search_items' => __('Search ' . $plural, 'mini'),
+            'not_found' => __('No ' . $plural . ' found', 'mini'),
+            'archives' => __($plural, 'mini'),
+        ],
+        'public' => true,
+        'has_archive' => $has_archive,
+        'menu_icon' => $icon,
+        'rewrite' => ['slug' => $type],
+        'show_in_rest' => true,
+        'supports' => ['title', 'editor', 'thumbnail', 'excerpt', 'panels']
+    ]);
 }
-function news_custom_post_type() {
-	register_post_type('news',
-		array(
-			'labels'      => array(
-				'name'          => __('News', 'mini'),
-				'singular_name' => __('News', 'mini'),
-                'add_new' => __( 'Add News' ),
-                'add_new_item' => __( 'Add New News' ),
-                'edit' => __( 'Edit' ),
-                'edit_item' => __( 'Edit News' ),
-                'new_item' => __( 'New News' ),
-                'view' => __( 'View News' ),
-                'view_item' => __( 'View News' ),
-                'search_items' => __( 'Search News' ),
-                'not_found' => __( 'No News found' ),
-				'archives' => __('News', 'mini'),
-			),
-            'public'      => true,
-            'has_archive' => true,
-            'menu_icon' => 'dashicons-text-page',
-            'rewrite' => array('slug' => 'news'),
-            'show_in_rest' => true,
-            'supports' => array( 'title', 'editor', 'thumbnail', 'excerpt', 'panels' )
 
-		)
-	);
+if (is_mini_option_enabled('mini_content_settings', 'mini_news')) {
+    add_action('init', function() {
+        register_mini_post_type('news', 'News', 'News', 'dashicons-text-page');
+    });
 }
+
 /* NEWS - shortcodes */
 function get_latest_news_callback() {
     $args = array(
@@ -266,39 +319,12 @@ add_shortcode('latest_news', 'get_latest_news_callback');
 /* END - Custom post type - NEWS */
 
 /* START - Custom post type - SLIDE */
-$options = get_option( 'mini_content_settings' );
-if (is_array($options) && array_key_exists('mini_slide', $options)) {
-    if ($options['mini_slide'] == true) {
-        add_action('init', 'slide_custom_post_type');
-    }
+if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
+    add_action('init', function() {
+        register_mini_post_type('slide', 'Slide', 'Slides', 'dashicons-slides', false);
+    });
 }
-function slide_custom_post_type() {
-	register_post_type('slide',
-		array(
-			'labels'      => array(
-				'name'          => __('Slides', 'mini'),
-				'singular_name' => __('Slide', 'mini'),
-                'add_new' => __( 'Add Slide' ),
-                'add_new_item' => __( 'Add New Slide' ),
-                'edit' => __( 'Edit' ),
-                'edit_item' => __( 'Edit Slide' ),
-                'new_item' => __( 'New Slide' ),
-                'view' => __( 'View Slide' ),
-                'view_item' => __( 'View Slide' ),
-                'search_items' => __( 'Search Slide' ),
-                'not_found' => __( 'No Slides found' ),
-				'archives' => __('Slide', 'mini'),
-			),
-            'public'      => true,
-            'has_archive' => false,
-            'menu_icon' => 'dashicons-slides',
-            'rewrite' => array('slug' => 'slide'),
-            'show_in_rest' => true,
-            'supports' => array( 'title', 'editor', 'thumbnail', 'excerpt', 'panels' )
 
-		)
-	);
-}
 /* SLIDE - shortcodes */
 function get_slides_callback($number=3) {
 
@@ -357,38 +383,10 @@ add_shortcode('slider', 'get_slides_callback');
 /* END - Custom post type - SLIDE */
 
 /* START - Custom post type - EVENT */
-$options = get_option( 'mini_content_settings' );
-if (is_array($options) && array_key_exists('mini_event', $options)) {
-    if ($options['mini_event'] == true) {
-        add_action('init', 'event_custom_post_type');
-    }
-}
-function event_custom_post_type() {
-	register_post_type('event',
-		array(
-			'labels'      => array(
-				'name'          => __('Events', 'mini'),
-				'singular_name' => __('Event', 'mini'),
-                'add_new' => __( 'Add Event' ),
-                'add_new_item' => __( 'Add New Event' ),
-                'edit' => __( 'Edit' ),
-                'edit_item' => __( 'Edit Event' ),
-                'new_item' => __( 'New Event' ),
-                'view' => __( 'View Event' ),
-                'view_item' => __( 'View Event' ),
-                'search_items' => __( 'Search Event' ),
-                'not_found' => __( 'No Events found' ),
-				'archives' => __('Events', 'mini'),
-			),
-            'public'      => true,
-            'has_archive' => true,
-            'menu_icon' => 'dashicons-calendar',
-            'rewrite' => array('slug' => 'event'),
-            'show_in_rest' => true,
-            'supports' => array( 'title', 'editor', 'thumbnail', 'excerpt', 'panels' )
-
-		)
-	);
+if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
+    add_action('init', function() {
+        register_mini_post_type('event', 'Event', 'Events', 'dashicons-calendar');
+    });
 }
 
 /* EVENT shortcodes */
@@ -422,43 +420,12 @@ function get_next_event_callback($num = 1) {
                     get_post_meta(get_the_ID(), 'event_date')[0] != null ||
                     get_post_meta(get_the_ID(), 'event_time')[0] != null) {
                     if (get_post_meta(get_the_ID(), 'event_date')[0] != null) {
-                        $it_date_month = new IntlDateFormatter(
-                            'it_IT',
-                            IntlDateFormatter::FULL,
-                            IntlDateFormatter::FULL,
-                            'Europe/Rome',
-                            IntlDateFormatter::GREGORIAN,
-                            'MMMM'
-                        );
-                        $it_date_day_name = new IntlDateFormatter(
-                            'it_IT',
-                            IntlDateFormatter::FULL,
-                            IntlDateFormatter::FULL,
-                            'Europe/Rome',
-                            IntlDateFormatter::GREGORIAN,
-                            'EEEE'
-                        );
-                        $it_date_day_number = new IntlDateFormatter(
-                            'it_IT',
-                            IntlDateFormatter::FULL,
-                            IntlDateFormatter::FULL,
-                            'Europe/Rome',
-                            IntlDateFormatter::GREGORIAN,
-                            'e'
-                        );
-                        $it_date_year = new IntlDateFormatter(
-                            'it_IT',
-                            IntlDateFormatter::FULL,
-                            IntlDateFormatter::FULL,
-                            'Europe/Rome',
-                            IntlDateFormatter::GREGORIAN,
-                            'yyyy'
-                        );
+                        $formatters = get_italian_date_formatters();
                         $event_date = strtotime(get_post_meta(get_the_ID(), 'event_date')[0]);
-                        $event_date_day_name = $it_date_day_name->format($event_date);
-                        $event_date_day = $it_date_day_number->format($event_date);
-                        $event_date_month = $it_date_month->format($event_date);
-                        $event_date_year = $it_date_year->format($event_date);
+                        $event_date_day_name = $formatters['day_name']->format($event_date);
+                        $event_date_day = $formatters['day_number']->format($event_date);
+                        $event_date_month = $formatters['month']->format($event_date);
+                        $event_date_year = $formatters['year']->format($event_date);
                         $event_list .= '
     <div class="box-50 my-0">
         <div class="date-time-box flex flex-wrap">
@@ -550,54 +517,17 @@ function get_next_event_callback($num = 1) {
         return $event_list;
     endif;
 }
-function get_next_event_inv_callback() {
-    return get_next_event_callback(1);
-}
-function get_next_3_events_callback() {
-    return get_next_event_callback(3);
-}
-function get_next_4_events_callback() {
-    return get_next_event_callback(4);
-}
 add_shortcode('next_event', 'get_next_event_callback');
-add_shortcode('next_events', 'get_next_3_events_callback');
-add_shortcode('next_3_events', 'get_next_3_events_callback');
-add_shortcode('next_4_events', 'get_next_4_events_callback');
+add_shortcode('next_events', function() { return get_next_event_callback(3); });
+add_shortcode('next_3_events', function() { return get_next_event_callback(3); });
+add_shortcode('next_4_events', function() { return get_next_event_callback(4); });
 /* END - Custom post type - EVENT */
 
 /* START - Custom post type - MATCH */
-$options = get_option( 'mini_content_settings' );
-if (is_array($options) && array_key_exists('mini_match', $options)) {
-    if ($options['mini_match'] == true) {
-        add_action('init', 'match_custom_post_type');
-    }
-}
-function match_custom_post_type() {
-	register_post_type('match',
-		array(
-			'labels'      => array(
-				'name'          => __('Match', 'mini'),
-				'singular_name' => __('Match', 'mini'),
-                'add_new' => __( 'Add Match' ),
-                'add_new_item' => __( 'Add New Match' ),
-                'edit' => __( 'Edit' ),
-                'edit_item' => __( 'Edit Match' ),
-                'new_item' => __( 'New Match' ),
-                'view' => __( 'View Match' ),
-                'view_item' => __( 'View Match' ),
-                'search_items' => __( 'Search Match' ),
-                'not_found' => __( 'No Matches found' ),
-				'archives' => __('Matches', 'mini'),
-			),
-            'public'      => true,
-            'has_archive' => true,
-            'menu_icon' => 'dashicons-superhero',
-            'rewrite' => array('slug' => 'match'),
-            'show_in_rest' => true,
-            'supports' => array( 'title', 'editor', 'thumbnail', 'excerpt', 'panels' )
-
-		)
-	);
+if (is_mini_option_enabled('mini_content_settings', 'mini_match')) {
+    add_action('init', function() {
+        register_mini_post_type('match', 'Match', 'Matches', 'dashicons-superhero');
+    });
 }
 
 /* MATCH shortcodes */
@@ -704,43 +634,12 @@ function get_next_match_callback($num = 1, $invert = false) {
                     get_post_meta(get_the_ID(), 'event_date')[0] != null ||
                     get_post_meta(get_the_ID(), 'event_time')[0] != null) {
                     if (get_post_meta(get_the_ID(), 'event_date') != null) {
-                        $it_date_month = new IntlDateFormatter(
-                            'it_IT',
-                            IntlDateFormatter::FULL,
-                            IntlDateFormatter::FULL,
-                            'Europe/Rome',
-                            IntlDateFormatter::GREGORIAN,
-                            'MMMM'
-                        );
-                        $it_date_day_name = new IntlDateFormatter(
-                            'it_IT',
-                            IntlDateFormatter::FULL,
-                            IntlDateFormatter::FULL,
-                            'Europe/Rome',
-                            IntlDateFormatter::GREGORIAN,
-                            'EEEE'
-                        );
-                        $it_date_day_number = new IntlDateFormatter(
-                            'it_IT',
-                            IntlDateFormatter::FULL,
-                            IntlDateFormatter::FULL,
-                            'Europe/Rome',
-                            IntlDateFormatter::GREGORIAN,
-                            'e'
-                        );
-                        $it_date_year = new IntlDateFormatter(
-                            'it_IT',
-                            IntlDateFormatter::FULL,
-                            IntlDateFormatter::FULL,
-                            'Europe/Rome',
-                            IntlDateFormatter::GREGORIAN,
-                            'yyyy'
-                        );
+                        $formatters = get_italian_date_formatters();
                         $match_date = strtotime(get_post_meta(get_the_ID(), 'event_date')[0]);
-                        $match_date_day_name = $it_date_day_name->format($match_date);
-                        $match_date_day = $it_date_day_number->format($match_date);
-                        $match_date_month = $it_date_month->format($match_date);
-                        $match_date_year = $it_date_year->format($match_date);
+                        $match_date_day_name = $formatters['day_name']->format($match_date);
+                        $match_date_day = $formatters['day_number']->format($match_date);
+                        $match_date_month = $formatters['month']->format($match_date);
+                        $match_date_year = $formatters['year']->format($match_date);
                         $match_list .= '
     <div class="box-50 my-0">
         <div class="date-time-box flex flex-wrap">
@@ -842,20 +741,11 @@ function get_next_match_callback($num = 1, $invert = false) {
         return $match_list;
     endif;
 }
-function get_next_match_inv_callback() {
-    return get_next_match_callback(1,true);
-}
-function get_next_3_matches_callback() {
-    return get_next_match_callback(3,false, 33);
-}
-function get_next_4_matches_callback() {
-    return get_next_match_callback(4,false, 25);
-}
 add_shortcode('next_match', 'get_next_match_callback');
-add_shortcode('next_match_inv', 'get_next_match_inv_callback');
-add_shortcode('next_matches', 'get_next_3_matches_callback');
-add_shortcode('next_3_matches', 'get_next_3_matches_callback');
-add_shortcode('next_4_matches', 'get_next_4_matches_callback');
+add_shortcode('next_match_inv', function() { return get_next_match_callback(1, true); });
+add_shortcode('next_matches', function() { return get_next_match_callback(3, false); });
+add_shortcode('next_3_matches', function() { return get_next_match_callback(3, false); });
+add_shortcode('next_4_matches', function() { return get_next_match_callback(4, false); });
 /* END - Custom post type - MATCH */
 
 
@@ -872,22 +762,11 @@ function add_date_time_box() {
     );
 }
 function date_time_box_html( $post, $meta ){
-    $date = get_post_meta( $post->ID, 'event_date', true);
-    $date_value = null;
-    if ($date != null)
-        $date_value = $date;
-    $end_date = get_post_meta( $post->ID, 'event_end_date', true);
-    $end_date_value = null;
-    if ($end_date != null)
-        $end_date_value = $end_date;
-    $time = get_post_meta( $post->ID, 'event_time', true);
-    $time_value = null;
-    if ($time != null)
-        $time_value = $time;
-    $end_time = get_post_meta( $post->ID, 'event_end_time', true);
-    $end_time_value = null;
-    if ($end_time != null)
-        $end_time_value = $end_time;
+    $date_value = get_post_meta( $post->ID, 'event_date', true) ?: '';
+    $end_date_value = get_post_meta( $post->ID, 'event_end_date', true) ?: '';
+    $time_value = get_post_meta( $post->ID, 'event_time', true) ?: '';
+    $end_time_value = get_post_meta( $post->ID, 'event_end_time', true) ?: '';
+    
     echo '
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 1rem;">
         <div style="flex: 1; margin-bottom: 0.5rem;">
@@ -914,31 +793,13 @@ function date_time_box_html( $post, $meta ){
     ';
 }
 function date_time_save_postdata( $post_id ) {
- 
     if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) { return; }
-
     if( ! current_user_can( 'edit_post', $post_id ) ) { return; }
     
-    $date = null;
-    if ( isset($_POST['event_date']) ) {
-        $date = $_POST['event_date'];
-    }
-    $end_date = null;
-    if ( isset($_POST['event_end_date']) ) {
-        $end_date = $_POST['event_end_date'];
-    } 
-    $time = null;
-    if ( isset($_POST['event_time']) ) {
-        $time = $_POST['event_time'];
-    }
-    $end_time = null;
-    if ( isset($_POST['event_end_time']) ) {
-        $end_time = $_POST['event_end_time'];
-    } 
-    update_post_meta( $post_id, 'event_date', $date );
-    update_post_meta( $post_id, 'event_end_date', $end_date );
-    update_post_meta( $post_id, 'event_time', $time );
-    update_post_meta( $post_id, 'event_end_time', $end_time );
+    update_post_meta( $post_id, 'event_date', $_POST['event_date'] ?? null );
+    update_post_meta( $post_id, 'event_end_date', $_POST['event_end_date'] ?? null );
+    update_post_meta( $post_id, 'event_time', $_POST['event_time'] ?? null );
+    update_post_meta( $post_id, 'event_end_time', $_POST['event_end_time'] ?? null );
 }
 
 /* ADD Location options */
@@ -954,14 +815,9 @@ function add_location_box() {
     );
 }
 function Location_box_html( $post, $meta ){
-    $location_name = get_post_meta( $post->ID, 'location_name', true);
-    $location_name_value = null;
-    if ($location_name != null)
-        $location_name_value = $location_name;
-    $location_address = get_post_meta( $post->ID, 'location_address', true);
-    $location_address_value = null;
-    if ($location_address != null)
-        $location_address_value = $location_address;
+    $location_name_value = get_post_meta( $post->ID, 'location_name', true) ?: '';
+    $location_address_value = get_post_meta( $post->ID, 'location_address', true) ?: '';
+    
     echo '
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 1rem;">
         <div style="flex: 1;">
@@ -978,21 +834,11 @@ function Location_box_html( $post, $meta ){
     ';
 }
 function location_save_postdata( $post_id ) {
- 
     if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) { return; }
-
     if( ! current_user_can( 'edit_post', $post_id ) ) { return; }
     
-    $location_name = null;
-    if ( isset($_POST['location_name']) ) {
-        $location_name = $_POST['location_name'];
-    }
-    $location_address = null;
-    if ( isset($_POST['location_address']) ) {
-        $location_address = $_POST['location_address'];
-    }
-    update_post_meta( $post_id, 'location_name', $location_name );
-    update_post_meta( $post_id, 'location_address', $location_address );
+    update_post_meta( $post_id, 'location_name', $_POST['location_name'] ?? null );
+    update_post_meta( $post_id, 'location_address', $_POST['location_address'] ?? null );
 }
 
 /* ADD Teams options */
@@ -1009,30 +855,13 @@ function add_teams_box() {
     );
 }
 function teams_box_html( $post, $meta ){
-    $team_1 = get_post_meta( $post->ID, 'team_1', true);
-    $team_1_value = null;
-    if ($team_1 != null)
-        $team_1_value = $team_1;
-    $team_1_logo = get_post_meta( $post->ID, 'team_1_logo', true);
-    $team_1_logo_value = null;
-    if ($team_1_logo != null)
-        $team_1_logo_value = $team_1_logo;
-    $team_1_score = get_post_meta( $post->ID, 'team_1_score', true);
-    $team_1_score_value = null;
-    if ($team_1_score != null)
-        $team_1_score_value = $team_1_score;
-    $team_2 = get_post_meta( $post->ID, 'team_2', true);
-    $team_2_value = null;
-    if ($team_2 != null)
-        $team_2_value = $team_2;
-    $team_2_logo = get_post_meta( $post->ID, 'team_2_logo', true);
-    $team_2_logo_value = null;
-    if ($team_2_logo != null)
-        $team_2_logo_value = $team_2_logo;
-    $team_2_score = get_post_meta( $post->ID, 'team_2_score', true);
-    $team_2_score_value = null;
-    if ($team_2_score != null)
-        $team_2_score_value = $team_2_score;
+    $team_1_value = get_post_meta( $post->ID, 'team_1', true) ?: '';
+    $team_1_logo_value = get_post_meta( $post->ID, 'team_1_logo', true) ?: '';
+    $team_1_score_value = get_post_meta( $post->ID, 'team_1_score', true) ?: '';
+    $team_2_value = get_post_meta( $post->ID, 'team_2', true) ?: '';
+    $team_2_logo_value = get_post_meta( $post->ID, 'team_2_logo', true) ?: '';
+    $team_2_score_value = get_post_meta( $post->ID, 'team_2_score', true) ?: '';
+    
     echo '
     <div style="display: flex; flex-flow: row wrap;">
         <div style="flex: 1;">
@@ -1095,41 +924,15 @@ function media_upload_styles() {
 add_action('admin_enqueue_scripts', 'media_upload_styles');
 
 function teams_save_postdata( $post_id ) {
- 
     if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) { return; }
-
     if( ! current_user_can( 'edit_post', $post_id ) ) { return; }
     
-    $team_1 = null;
-    if ( isset($_POST['team_1']) ) {
-        $team_1 = $_POST['team_1'];
-    }
-    $team_1_logo = null;
-    if ( isset($_POST['team_1_logo']) ) {
-        $team_1_logo = $_POST['team_1_logo'];
-    }
-    $team_1_score = null;
-    if ( isset($_POST['team_1_score']) ) {
-        $team_1_score = $_POST['team_1_score'];
-    }
-    $team_2 = null;
-    if ( isset($_POST['team_2']) ) {
-        $team_2 = $_POST['team_2'];
-    } 
-    $team_2_logo = null;
-    if ( isset($_POST['team_2_logo']) ) {
-        $team_2_logo = $_POST['team_2_logo'];
-    }
-    $team_2_score = null;
-    if ( isset($_POST['team_2_score']) ) {
-        $team_2_score = $_POST['team_2_score'];
-    }
-    update_post_meta( $post_id, 'team_1', $team_1 );
-    update_post_meta( $post_id, 'team_1_logo', $team_1_logo );
-    update_post_meta( $post_id, 'team_1_score', $team_1_score );
-    update_post_meta( $post_id, 'team_2', $team_2 );
-    update_post_meta( $post_id, 'team_2_logo', $team_2_logo );
-    update_post_meta( $post_id, 'team_2_score', $team_2_score );
+    update_post_meta( $post_id, 'team_1', $_POST['team_1'] ?? null );
+    update_post_meta( $post_id, 'team_1_logo', $_POST['team_1_logo'] ?? null );
+    update_post_meta( $post_id, 'team_1_score', $_POST['team_1_score'] ?? null );
+    update_post_meta( $post_id, 'team_2', $_POST['team_2'] ?? null );
+    update_post_meta( $post_id, 'team_2_logo', $_POST['team_2_logo'] ?? null );
+    update_post_meta( $post_id, 'team_2_score', $_POST['team_2_score'] ?? null );
 }
 
 /* START - DISABLE comments */
@@ -1168,21 +971,15 @@ function mini_comment_section_callback( $args ) {
     <p id="<?php echo esc_attr( $args['id'] ); ?>"><?php esc_html_e( 'This is the Comment section', 'mini' ); ?></p>
     <?php
 }
-function mini_comment_page_html() {
-    // This function is no longer used as Comments is now a tab
-}
 
-$options = get_option( 'mini_comment_settings' );
-if (is_array($options) && array_key_exists('mini_disable_comment', $options)) {
-    if ($options['mini_disable_comment'] == true) {
-        add_action('admin_init', 'disable_comments_post_types_support');
-        add_filter('comments_open', 'disable_comments_status', 20, 2);
-        add_filter('pings_open', 'disable_comments_status', 20, 2);
-        add_action('admin_menu', 'disable_comments_admin_menu');
-        add_action( 'wp_before_admin_bar_render', 'disable_comments_admin_bar' );
-        add_action('admin_init', 'disable_comments_admin_menu_redirect');
-        add_action('admin_init', 'disable_comments_dashboard');
-    }
+if (is_mini_option_enabled('mini_comment_settings', 'mini_disable_comment')) {
+    add_action('admin_init', 'disable_comments_post_types_support');
+    add_filter('comments_open', 'disable_comments_status', 20, 2);
+    add_filter('pings_open', 'disable_comments_status', 20, 2);
+    add_action('admin_menu', 'disable_comments_admin_menu');
+    add_action( 'wp_before_admin_bar_render', 'disable_comments_admin_bar' );
+    add_action('admin_init', 'disable_comments_admin_menu_redirect');
+    add_action('admin_init', 'disable_comments_dashboard');
 }
 function disable_comments_post_types_support() {
     $post_types = get_post_types();
@@ -1261,8 +1058,7 @@ function mini_blogging_page_html() {
         return;
     }
     
-    // Get active tab
-    $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'blogging';
+    $active_tab = $_GET['tab'] ?? 'blogging';
     
     if ( isset( $_GET['settings-updated'] ) ) {
         add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
@@ -1300,13 +1096,10 @@ function mini_blogging_page_html() {
     <?php
 }
 
-$options = get_option( 'mini_blogging_settings' );
-if (is_array($options) && array_key_exists('mini_disable_blogging', $options)) {
-    if ($options['mini_disable_blogging'] == true) {
-        add_action( 'admin_menu', 'remove_post_admin_menus' );
-        add_action( 'wp_before_admin_bar_render', 'remove_post_toolbar_menus' );
-        add_action( 'wp_dashboard_setup', 'remove_post_dashboard_widgets' );
-    }
+if (is_mini_option_enabled('mini_blogging_settings', 'mini_disable_blogging')) {
+    add_action( 'admin_menu', 'remove_post_admin_menus' );
+    add_action( 'wp_before_admin_bar_render', 'remove_post_toolbar_menus' );
+    add_action( 'wp_dashboard_setup', 'remove_post_dashboard_widgets' );
 }
 function remove_post_admin_menus() {
     remove_menu_page( 'edit.php' );
