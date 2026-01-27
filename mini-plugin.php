@@ -100,54 +100,53 @@ function mini_setup_default_menus() {
 register_activation_hook(__FILE__, 'mini_setup_default_menus');
 /* END - Default menus */
 
+/* START - main mini settings */
+// No additional settings needed for now
+/* END - main mini settings */
+
 /* START - content settings */
 function mini_content_settings_init() {
     register_setting( 'mini_content', 'mini_content_settings');
     add_settings_section(
         'mini_content_section',
-        __( 'Mini content settings', 'mini' ),
+        __( '<i>mini</i> content type settings', 'mini' ),
         'mini_content_section_callback',
         'mini-content'
     );
-    add_settings_field(
-        'mini_content_field',
-        __( 'Content settings', 'mini' ),
-        'mini_content_fields_callback',
-        'mini-content',
-        'mini_content_section',
-        array(
-            'label_for'         => 'mini',
-            'class'             => 'mini_row',
-            'mini_custom_data'  => 'custom',
-        )
-    );
 }
 add_action( 'admin_init', 'mini_content_settings_init' );
-function mini_content_fields_callback( $args ) {
-    ?>
-    <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
-        <div>
-            <?= mini_plugin_checkbox_option('mini_content_settings','mini_slide'); ?>
-            <label for="mini_slide"><?php esc_html_e( 'Slide content type', 'mini' ); ?></label>
-        </div>
-        <div>
-            <?= mini_plugin_checkbox_option('mini_content_settings','mini_news'); ?>
-            <label for="mini_news"><?php esc_html_e( 'News content type', 'mini' ); ?></label>
-        </div>
-        <div>
-            <?= mini_plugin_checkbox_option('mini_content_settings','mini_event'); ?>
-            <label for="mini_event"><?php esc_html_e( 'Event content type', 'mini' ); ?></label>
-        </div>
-        <div>
-            <?= mini_plugin_checkbox_option('mini_content_settings','mini_match'); ?>
-            <label for="mini_match"><?php esc_html_e( 'Match content type', 'mini' ); ?></label>
-        </div>
-    </div>
-    <?php
-}
 function mini_content_section_callback( $args ) {
     ?>
-    <p id="<?php echo esc_attr( $args['id'] ); ?>"><?php esc_html_e( 'This is the Content type section', 'mini' ); ?></p>
+    <p id="<?php echo esc_attr( $args['id'] ); ?>">
+        <i>mini</i> allows you to manage many custom content types to extend WordPress features.
+    </p>
+    <div class="boxes">
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+            <h4 class="" for="mini_match"><?php esc_html_e( 'Slides', 'mini' ); ?></h4>
+            <?= mini_plugin_checkbox_option('mini_content_settings','mini_slide'); ?>
+            <p class="" for="mini_slide">Enable the "Slide" content type to manage slideshows.</p>
+            <p class="S grey-text" for="mini_slide">It enables slides management (like posts or pages) and related admin menus.</p>
+            <p class="S grey-text" for="mini_slide">This option loads <i>mini</i> <b>slider.js</b> library.</p>
+        </div>
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+            <h4 class="" for="mini_match"><?php esc_html_e( 'News', 'mini' ); ?></h4>
+            <?= mini_plugin_checkbox_option('mini_content_settings','mini_news'); ?>
+            <p class="" for="mini_news">Enable the "News" content type to manage news articles.</p>
+            <p class="S grey-text" for="mini_news">It enables news management (like posts or pages) and related admin menus.</p>
+        </div>
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+            <h4 class="" for="mini_match"><?php esc_html_e( 'Events', 'mini' ); ?></h4>
+            <?= mini_plugin_checkbox_option('mini_content_settings','mini_event'); ?>
+            <p class="" for="mini_event">Enable the "Event" content type to manage events.</p>
+            <p class="S grey-text" for="mini_event">It enables events management (like posts or pages) and related admin menus.</p>
+        </div>
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+            <h4 class="" for="mini_match"><?php esc_html_e( 'Matches', 'mini' ); ?></h4>
+            <?= mini_plugin_checkbox_option('mini_content_settings','mini_match'); ?>
+            <p class="" for="mini_match">Enable "Match" content type to manage sport events.</p>
+            <p class="S grey-text" for="mini_match">It enables matches management (like posts or pages) and related admin menus.</p>
+        </div>
+    </div>
     <?php
 }
 function mini_content_page_html() {
@@ -183,7 +182,7 @@ function mini_plugin_settings_pages() {
             'manage_options',
             'mini',
             'mini_plugin_main_page_html',
-            'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/img/brand/mini_emblem_space_around.svg'
+            'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/img/brand/mini_emblem_wh.svg'
         );
     }
     add_submenu_page(
@@ -208,15 +207,37 @@ function mini_plugin_settings_pages() {
 add_action( 'admin_menu', 'mini_plugin_settings_pages' );
 /* END - mini menu */
 
+function mini_plugin_admin_styles() {
+    echo '<style>
+        #adminmenu .wp-menu-image img {
+            /* your styles here */
+            width: 20px;
+            height: 20px;
+            padding: 0;
+        }
+        input[type=checkbox]:checked::before {
+            margin :0;
+        }
+    </style>';
+}
+add_action('admin_head', 'mini_plugin_admin_styles');
+
 /* START - mini settings */
 function mini_plugin_main_page_html() {
     if ( ! current_user_can( 'manage_options' ) ) {
         return;
     }
     ?>
-    <div class="wrap">
-        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-        <p class=""><span class="bold">mini</span> is a frontend framework.</p>
+    <div class="boxes py-2">
+        <div class="box-100 p-2 white-bg b-rad-5 box-shadow mb-2">
+            <div class="space"></div>
+            <img src="https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/img/brand/mini_logo_2.svg" alt="mini logo" style="max-width: 280px;" class="mb-2"/>
+            <h1 class="mb-0"><i>mini</i> is a frontend framework</h1>
+            <p class="mt-0">That allows you to build modern, responsive websites with ease.</p>
+            <p class="">
+                <a href="https://mini.uwa.agency/" target="_blank" rel="noopener noreferrer" class="btn fourth-color-btn"><?php esc_html_e( 'Visit mini website', 'mini' ); ?></a>
+            </p>
+        </div>
     </div>
     <?php
 }
@@ -923,6 +944,21 @@ function media_upload_styles() {
 }
 add_action('admin_enqueue_scripts', 'media_upload_styles');
 
+function load_mini_css_in_mini_plugin_admin_pages() {
+    $options = get_option('mini_main_settings');
+    $version = isset($options['mini_css_version']) ? $options['mini_css_version'] : 'latest';
+    
+    if ($version === 'latest') {
+        $css_url = 'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/css/mini.min.css';
+    } else {
+        $css_url = 'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini@' . $version . '/css/mini.min.css';
+    }
+    
+    wp_register_style('mini-css', $css_url);
+    wp_enqueue_style('mini-css');
+}
+add_action('admin_enqueue_scripts', 'load_mini_css_in_mini_plugin_admin_pages');
+
 function teams_save_postdata( $post_id ) {
     if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) { return; }
     if( ! current_user_can( 'edit_post', $post_id ) ) { return; }
@@ -940,35 +976,22 @@ function mini_comment_settings_init() {
     register_setting( 'mini_comment', 'mini_comment_settings');
     add_settings_section(
         'mini_comment_section',
-        __( 'Mini comment settings', 'mini' ),
+        __( '<i>mini</i> comment settings', 'mini' ),
         'mini_comment_section_callback',
         'mini-comment'
     );
-    add_settings_field(
-        'mini_comment_field',
-        __( 'Comment settings', 'mini' ),
-        'mini_comment_fields_callback',
-        'mini-comment',
-        'mini_comment_section',
-        array(
-            'label_for'         => 'mini',
-            'class'             => 'mini_row',
-            'mini_custom_data'  => 'custom',
-        )
-    );
 }
 add_action( 'admin_init', 'mini_comment_settings_init' );
-function mini_comment_fields_callback( $args ) {
-    ?>
-    <?= mini_plugin_checkbox_option('mini_comment_settings','mini_disable_comment'); ?>
-    <p class="description">
-        <?php esc_html_e( 'Disable comments', 'mini' ); ?>
-    </p>
-    <?php
-}
 function mini_comment_section_callback( $args ) {
     ?>
-    <p id="<?php echo esc_attr( $args['id'] ); ?>"><?php esc_html_e( 'This is the Comment section', 'mini' ); ?></p>
+    <div class="space"></div>
+    <div class="boxes">
+        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
+            <h4 class="" for="mini_match"><?php esc_html_e( 'Disable comments', 'mini' ); ?></h4>
+            <?= mini_plugin_checkbox_option('mini_comment_settings','mini_disable_comment'); ?>
+            <p class="" for="mini_news">This option will disable comment features and related admin menus.</p>
+        </div>
+    </div>
     <?php
 }
 
@@ -1022,35 +1045,22 @@ function mini_blogging_settings_init() {
     register_setting( 'mini_blogging', 'mini_blogging_settings');
     add_settings_section(
         'mini_blogging_section',
-        __( 'Mini blogging settings', 'mini' ),
+        __( '<i>mini</i> blogging settings', 'mini' ),
         'mini_blogging_section_callback',
         'mini-blogging'
     );
-    add_settings_field(
-        'mini_blogging_field',
-        __( 'Blogging settings', 'mini' ),
-        'mini_blogging_fields_callback',
-        'mini-blogging',
-        'mini_blogging_section',
-        array(
-            'label_for'         => 'mini',
-            'class'             => 'mini_row',
-            'mini_custom_data'  => 'custom',
-        )
-    );
 }
 add_action( 'admin_init', 'mini_blogging_settings_init' );
-function mini_blogging_fields_callback( $args ) {
-    ?>
-    <?= mini_plugin_checkbox_option('mini_blogging_settings','mini_disable_blogging'); ?>
-    <p class="description">
-        <?php esc_html_e( 'Disable blogging', 'mini' ); ?>
-    </p>
-    <?php
-}
 function mini_blogging_section_callback( $args ) {
     ?>
-    <p id="<?php echo esc_attr( $args['id'] ); ?>"><?php esc_html_e( 'This is the Blogging section', 'mini' ); ?></p>
+    <div class="space"></div>
+    <div class="boxes">
+        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
+            <h4 class="danger-text" for="mini_match"><?php esc_html_e( 'Disable blogging', 'mini' ); ?></h4>
+            <?= mini_plugin_checkbox_option('mini_blogging_settings','mini_disable_blogging'); ?>
+            <p class="" for="mini_news">This option will <u>disable blogging features</u> including posts, blog archive pages and related admin menus.</p>
+        </div>
+    </div>
     <?php
 }
 function mini_blogging_page_html() {
