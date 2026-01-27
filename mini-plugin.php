@@ -947,11 +947,13 @@ add_action('admin_enqueue_scripts', 'media_upload_styles');
 function load_mini_css_in_mini_plugin_admin_pages() {
     $options = get_option('mini_main_settings');
     $version = isset($options['mini_css_version']) ? $options['mini_css_version'] : 'latest';
-    
+     
     if ($version === 'latest') {
         $css_url = 'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/css/mini.min.css';
+        $css_url = 'https://serversaur.doingthings.space/mini/css/mini.css';
     } else {
         $css_url = 'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini@' . $version . '/css/mini.min.css';
+        $css_url = 'https://serversaur.doingthings.space/mini/css/mini.css';
     }
     
     wp_register_style('mini-css', $css_url);
