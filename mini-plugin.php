@@ -235,7 +235,7 @@ function mini_plugin_main_page_html() {
             <h1 class="mb-0"><i>mini</i> is a frontend framework</h1>
             <p class="mt-0">That allows you to build modern, responsive websites with ease.</p>
             <p class="">
-                <a href="https://mini.uwa.agency/" target="_blank" rel="noopener noreferrer" class="btn fourth-color-btn"><?php esc_html_e( 'Visit mini website', 'mini' ); ?></a>
+                <a href="https://mini.uwa.agency/" target="_blank" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Visit mini website', 'mini' ); ?></a>
             </p>
         </div>
     </div>
@@ -950,10 +950,8 @@ function load_mini_css_in_mini_plugin_admin_pages() {
      
     if ($version === 'latest') {
         $css_url = 'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/css/mini.min.css';
-        $css_url = 'https://serversaur.doingthings.space/mini/css/mini.css';
     } else {
         $css_url = 'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini@' . $version . '/css/mini.min.css';
-        $css_url = 'https://serversaur.doingthings.space/mini/css/mini.css';
     }
     
     wp_register_style('mini-css', $css_url);
