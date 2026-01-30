@@ -70,30 +70,33 @@ function mini_setup_default_menus() {
     $footer_menu = wp_get_nav_menu_object('Footer Menu');
     $user_menu = wp_get_nav_menu_object('User Menu');
 
+    // Get locations once
+    $locations = get_theme_mod('nav_menu_locations', []);
+    $updated = false;
+
     // Create Main Menu if it doesn't exist
     if (!$main_menu) {
         $main_menu_id = wp_create_nav_menu('Main Menu');
-        // Assign to location
-        $locations = get_theme_mod('nav_menu_locations');
         $locations['main-menu'] = $main_menu_id;
-        set_theme_mod('nav_menu_locations', $locations);
+        $updated = true;
     }
 
     // Create Footer Menu if it doesn't exist
     if (!$footer_menu) {
         $footer_menu_id = wp_create_nav_menu('Footer Menu');
-        // Assign to location
-        $locations = get_theme_mod('nav_menu_locations');
         $locations['footer-menu'] = $footer_menu_id;
-        set_theme_mod('nav_menu_locations', $locations);
+        $updated = true;
     }
 
     // Create User Menu if it doesn't exist
     if (!$user_menu) {
         $user_menu_id = wp_create_nav_menu('User Menu');
-        // Assign to location
-        $locations = get_theme_mod('nav_menu_locations');
         $locations['user-menu'] = $user_menu_id;
+        $updated = true;
+    }
+
+    // Update locations once if any changes were made
+    if ($updated) {
         set_theme_mod('nav_menu_locations', $locations);
     }
 }
@@ -217,23 +220,34 @@ add_action( 'admin_menu', 'mini_plugin_settings_pages' );
 /* END - mini menu */
 
 function mini_plugin_admin_styles() {
+    $screen = get_current_screen();
+    if (!$screen) {
+        return;
+    }
+    
     echo '<style>
         #adminmenu .wp-menu-image img {
-            /* your styles here */
             width: 20px;
             height: 20px;
             padding: 0;
         }
         input[type=checkbox]:checked::before {
-            margin :0;
-        }
+            margin: 0;
+        }';
+    
+    // SEO styles only on post edit screens
+    if (in_array($screen->post_type, ['post', 'page', 'news', 'event', 'match', 'slide']) && in_array($screen->base, ['post', 'post-new'])) {
+        echo '
         /* SEO Meta Box Styles */
         .mini-seo-tabs .nav-tab-wrapper {
             margin-bottom: 0;
         }
         .mini-seo-tab-content {
             padding: 10px 0;
-        }
+        }';
+    }
+    
+    echo '
     </style>';
 }
 add_action('admin_head', 'mini_plugin_admin_styles');
@@ -556,8 +570,15 @@ function mini_seo_admin_scripts() {
     <?php
     wp_enqueue_media();
 }
-add_action('admin_footer-post.php', 'mini_seo_admin_scripts');
-add_action('admin_footer-post-new.php', 'mini_seo_admin_scripts');
+
+function mini_should_load_seo_scripts() {
+    if (!is_mini_option_enabled('mini_seo_settings', 'mini_enable_seo')) {
+        return;
+    }
+    mini_seo_admin_scripts();
+}
+add_action('admin_footer-post.php', 'mini_should_load_seo_scripts');
+add_action('admin_footer-post-new.php', 'mini_should_load_seo_scripts');
 
 
 /* START - mini settings */
@@ -565,6 +586,66 @@ function mini_plugin_main_page_html() {
     if ( ! current_user_can( 'manage_options' ) ) {
         return;
     }
+    
+    // Recommended plugins array
+    $recommended_plugins = array(
+        array(
+            'name' => 'Contact Form 7',
+            'slug' => 'contact-form-7',
+            'file' => 'contact-form-7/wp-contact-form-7.php',
+            'description' => 'Simple and flexible contact form plugin.'
+        ),
+        array(
+            'name' => 'Flamingo',
+            'slug' => 'flamingo',
+            'description' => 'Store Contact Form 7 submissions in your database.'
+        ),
+        array(
+            'name' => 'Iubenda',
+            'slug' => 'iubenda-cookie-law-solution',
+            'file' => 'iubenda-cookie-law-solution/iubenda_cookie_solution.php',
+            'description' => 'Cookie consent and privacy policy compliance solution.'
+        ),
+        array(
+            'name' => 'Ninja GDPR',
+            'slug' => 'ninja-gdpr-compliance',
+            'file' => 'ninja-gdpr-compliance/njt-gdpr.php',
+            'description' => 'GDPR and CCPA compliance with cookie consent banner.'
+        ),
+        array(
+            'name' => 'Altcha',
+            'slug' => 'altcha-wordpress-next',
+            'file' => 'altcha-wordpress-next-2.5.0/altcha.php',
+            'description' => 'Anti-spam and bot protection.'
+        ),
+        array(
+            'name' => 'Amministrazione Trasparente',
+            'slug' => 'amministrazione-trasparente',
+            'file' => 'amministrazione-trasparente/amministrazionetrasparente.php',
+            'description' => 'Italian public administration transparency compliance.'
+        ),
+        array(
+            'name' => 'Dashboard Widgets Suite',
+            'slug' => 'dashboard-widgets-suite',
+            'file' => 'dashboard-widgets-suite/dashboard-widgets.php',
+            'description' => 'Customize your WordPress dashboard with useful widgets.'
+        ),
+        array(
+            'name' => 'Login Logout Menu',
+            'slug' => 'login-logout-menu',
+            'file' => 'login-logout-menu/login-logout-menu.php',
+            'description' => 'Add login/logout links to your navigation menus.'
+        )
+    );
+    
+    // Check which plugins are installed/active
+    if (!function_exists('get_plugins')) {
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+    }
+    
+    $all_plugins = get_plugins();
+    $active_plugins = get_option('active_plugins', array());
+    
     ?>
     <div class="boxes py-2">
         <div class="box-100 p-2 white-bg b-rad-5 box-shadow mb-2">
@@ -575,6 +656,70 @@ function mini_plugin_main_page_html() {
             <p class="">
                 <a href="https://mini.uwa.agency/" target="_blank" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Visit mini website', 'mini' ); ?></a>
             </p>
+        </div>
+
+        <div class="box-100 p-2 mb-2">
+            <h4 class="grey-text regular"><?php _e('Recommended Plugins', 'mini'); ?></h4>
+            <p><?php _e('Here are some useful plugins that work great with mini:', 'mini'); ?></p>            
+            <div class="boxes">
+                <?php foreach ($recommended_plugins as $plugin) : 
+                    // Use custom file path if specified, otherwise use default pattern
+                    $plugin_file = isset($plugin['file']) ? $plugin['file'] : $plugin['slug'] . '/' . $plugin['slug'] . '.php';
+                    $is_installed = isset($all_plugins[$plugin_file]);
+                    $is_active = in_array($plugin_file, $active_plugins);
+                    
+                    // Button configuration
+                    if ($is_active) {
+                        $button_text = __('Active', 'mini');
+                        $button_class = 'light-grey-btn grey-text';
+                        $button_disabled = 'disabled';
+                        $status_color = 'success-bg';
+                        $status = __('Active', 'mini');
+                    } elseif ($is_installed) {
+                        $activate_url = wp_nonce_url(
+                            admin_url('plugins.php?action=activate&plugin=' . urlencode($plugin_file)),
+                            'activate-plugin_' . $plugin_file
+                        );
+                        $button_text = __('Activate', 'mini');
+                        $button_class = 'success-btn';
+                        $button_disabled = '';
+                        $status_color = 'warning-bg';
+                        $status = __('Installed', 'mini');
+                    } else {
+                        $install_url = wp_nonce_url(
+                            admin_url('update.php?action=install-plugin&plugin=' . urlencode($plugin['slug'])),
+                            'install-plugin_' . $plugin['slug']
+                        );
+                        $button_text = __('Install', 'mini');
+                        $button_class = 'success-btn';
+                        $button_disabled = '';
+                        $status_color = 'grey-bg';
+                        $status = __('Not installed', 'mini');
+                    }
+                ?>
+                <div class="box-25 p-2 white-bg b-rad-5 box-shadow">
+                    <h5 class="m-0">
+                        <?php echo esc_html($plugin['name']); ?>
+                        <span class="flag white-text px-05 b-rad-5 <?php echo esc_attr($status_color); ?> XS"><?php echo esc_html($status); ?></span>
+                    </h5>
+                    <p class="m-0 S"><?php echo esc_html($plugin['description']); ?></p>
+                    <div class="space-15"></div>
+                    <?php if ($is_active) : ?>
+                        <button class="btn S <?php echo esc_attr($button_class); ?>" <?php echo $button_disabled; ?>>
+                            <span class="iconoir-check-circle"></span> <?php echo esc_html($button_text); ?>
+                        </button>
+                    <?php elseif ($is_installed) : ?>
+                        <a href="<?php echo esc_url($activate_url); ?>" class="btn S <?php echo esc_attr($button_class); ?>">
+                            <span class="iconoir-play-circle"></span> <?php echo esc_html($button_text); ?>
+                        </a>
+                    <?php else : ?>
+                        <a href="<?php echo esc_url($install_url); ?>" class="btn S <?php echo esc_attr($button_class); ?>">
+                            <span class="iconoir-download-circle"></span> <?php echo esc_html($button_text); ?>
+                        </a>
+                    <?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
     <?php
@@ -616,63 +761,60 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_news')) {
 /* NEWS - shortcodes */
 function get_latest_news_callback() {
     $args = array(
-        'post_per_page' => 3, /* how many post you need to display */
-        'offset' => 0,
+        'posts_per_page' => 3,
         'orderby' => 'post_date',
         'order' => 'DESC',
-        'post_type' => 'news', /* your post type name */
-        'post_status' => 'publish'
+        'post_type' => 'news',
+        'post_status' => 'publish',
+        'no_found_rows' => true,
+        'update_post_meta_cache' => false,
+        'update_post_term_cache' => false,
     );
+    
     $query = new WP_Query($args);
-    if ($query->have_posts()) :
-        $news_list = '';
-        $news_list .= '
-        <div class="boxes">
-        ';
-        $n = 1;
-        while ($query->have_posts()) : $query->the_post();
-        if ($n==1) {
-            $news_list .= '
-            <div class="box-100 my-0 p-0" data-aos="fade-up">
-            ';
-        } else {
-            $news_list .= '
-            <div class="box-50 my-0 p-0" data-aos="fade-up" data-aos-delay="'.(150*($n-1)).'">
-            ';
-        }
-        $news_list .= '
-                <div class="boxes">
-        ';
-        if (get_the_post_thumbnail(get_the_ID())!=false) {
-            $news_list .= '
+    
+    if (!$query->have_posts()) {
+        wp_reset_postdata();
+        return '';
+    }
+    
+    ob_start();
+    ?>
+    <div class="boxes">
+    <?php
+    $n = 1;
+    while ($query->have_posts()) : $query->the_post();
+        $box_class = ($n === 1) ? 'box-100' : 'box-50';
+        $delay = ($n > 1) ? 'data-aos-delay="' . esc_attr(150 * ($n - 1)) . '"' : '';
+        $has_thumbnail = has_post_thumbnail();
+        $inner_box_class = $has_thumbnail ? 'box-50' : 'box-100';
+        ?>
+        <div class="<?php echo esc_attr($box_class); ?> my-0 p-0" data-aos="fade-up" <?php echo $delay; ?>>
+            <div class="boxes">
+                <?php if ($has_thumbnail) : ?>
                     <div class="box-50">
-                    <a href="'.get_the_permalink().'">'.get_the_post_thumbnail(get_the_ID(), 'large', ['class' => 'img']).'</a>
+                        <a href="<?php the_permalink(); ?>"><?php the_post_thumbnail('large', ['class' => 'img']); ?></a>
                     </div>
-                    <div class="box-50">
-            ';
-        } else {
-            $news_list .= '
-                    <div class="box-100">
-            ';
-        }
-        $news_list .= '
-                        <h3>
-                            <a href="'.get_the_permalink().'">'.get_the_title().'</a>
-                        </h3>
-                        <p class="">'.get_the_excerpt(get_the_ID()).'</p>
-                        <p class="">
-                            <a href="'.get_the_permalink().'" class="btn">'.esc_html__( 'Read more', 'mini' ).'</a>
-                        </p>
-                    </div>
+                <?php endif; ?>
+                <div class="<?php echo esc_attr($inner_box_class); ?>">
+                    <h3>
+                        <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+                    </h3>
+                    <p><?php the_excerpt(); ?></p>
+                    <p>
+                        <a href="<?php the_permalink(); ?>" class="btn"><?php esc_html_e('Read more', 'mini'); ?></a>
+                    </p>
                 </div>
-        ';
-        $news_list .= '
+            </div>
         </div>
-        ';
+        <?php
         $n++;
-        endwhile;
-        return $news_list;
-    endif;
+    endwhile;
+    ?>
+    </div>
+    <?php
+    wp_reset_postdata();
+    return ob_get_clean();
 }
 add_shortcode('latest_news', 'get_latest_news_callback');
 /* END - Custom post type - NEWS */
@@ -686,14 +828,13 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
 
 /* SLIDE - shortcodes */
 function get_slides_callback($number=3) {
-
     $args = array(
-        'post_per_page' => $number, /* how many post you need to display */
-        'offset' => 0,
+        'posts_per_page' => absint($number),
         'orderby' => 'post_date',
         'order' => 'DESC',
-        'post_type' => 'slide', /* your post type name */
-        'post_status' => 'publish'
+        'post_type' => 'slide',
+        'post_status' => 'publish',
+        'no_found_rows' => true,
     );
     $query = new WP_Query($args);
     if ($query->have_posts()) :
@@ -735,8 +876,11 @@ function get_slides_callback($number=3) {
     </div>
 </div>
         ';
+        wp_reset_postdata();
         return $slider;
     endif;
+    
+    return '';
 }
 add_shortcode('slider', 'get_slides_callback');
 /* END - Custom post type - SLIDE */
@@ -751,13 +895,13 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
 /* EVENT shortcodes */
 function get_next_event_callback($num = 1) {
     $args = array(
-        'post_per_page' => $num, /* how many post you need to display */
-        'offset' => 0,
-        'meta_key'	=> 'event_date',
-        'orderby'	=> 'meta_value',
+        'posts_per_page' => absint($num),
+        'meta_key' => 'event_date',
+        'orderby' => 'meta_value',
         'order' => 'DESC',
-        'post_type' => 'event', /* your post type name */
-        'post_status' => 'publish'
+        'post_type' => 'event',
+        'post_status' => 'publish',
+        'no_found_rows' => true,
     );
     $query = new WP_Query($args);
     if ($query->have_posts()) :
@@ -873,8 +1017,11 @@ function get_next_event_callback($num = 1) {
             }
             if ($to_come == true) { $n++; }
         endwhile;
+        wp_reset_postdata();
         return $event_list;
     endif;
+    
+    return '';
 }
 add_shortcode('next_event', 'get_next_event_callback');
 add_shortcode('next_events', function() { return get_next_event_callback(3); });
@@ -900,13 +1047,13 @@ function get_next_match_callback($num = 1, $invert = false) {
         $location_address_box_color = 'light-grey-box';
     }
     $args = array(
-        'post_per_page' => $num, /* how many post you need to display */
-        'offset' => 0,
-        'meta_key'	=> 'event_date',
-        'orderby'	=> 'meta_value',
+        'posts_per_page' => absint($num),
+        'meta_key' => 'event_date',
+        'orderby' => 'meta_value',
         'order' => 'DESC',
-        'post_type' => 'match', /* your post type name */
-        'post_status' => 'publish'
+        'post_type' => 'match',
+        'post_status' => 'publish',
+        'no_found_rows' => true,
     );
     $query = new WP_Query($args);
     if ($query->have_posts()) :
@@ -1097,8 +1244,11 @@ function get_next_match_callback($num = 1, $invert = false) {
             }
             if ($to_come == true) { $n++; }
         endwhile;
+        wp_reset_postdata();
         return $match_list;
     endif;
+    
+    return '';
 }
 add_shortcode('next_match', 'get_next_match_callback');
 add_shortcode('next_match_inv', function() { return get_next_match_callback(1, true); });
@@ -1125,40 +1275,47 @@ function date_time_box_html( $post, $meta ){
     $end_date_value = get_post_meta( $post->ID, 'event_end_date', true) ?: '';
     $time_value = get_post_meta( $post->ID, 'event_time', true) ?: '';
     $end_time_value = get_post_meta( $post->ID, 'event_end_time', true) ?: '';
-    
-    echo '
+    ?>
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 1rem;">
         <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="event_date" style="margin-bottom: 0.5rem; display: block;">' . __("Date", 'mini' ) . ':</label>
-            <input type="date" id="event_date" name="event_date" value="'.$date_value.'" style="min-width: 220px; display: block;" />
+            <label for="event_date" style="margin-bottom: 0.5rem; display: block;"><?php _e('Date', 'mini'); ?>:</label>
+            <input type="date" id="event_date" name="event_date" value="<?php echo esc_attr($date_value); ?>" style="min-width: 220px; display: block;" />
         </div>
         <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="event_end_date" style="margin-bottom: 0.5rem; display: block;">' . __("End date (optional)", 'mini' ) . ':</label>
-            <input type="date" id="event_end_date" name="event_end_date" value="'.$end_date_value.'" style="min-width: 220px; display: block;" />
+            <label for="event_end_date" style="margin-bottom: 0.5rem; display: block;"><?php _e('End date (optional)', 'mini'); ?>:</label>
+            <input type="date" id="event_end_date" name="event_end_date" value="<?php echo esc_attr($end_date_value); ?>" style="min-width: 220px; display: block;" />
         </div>
     </div>
-    ';
-    echo '
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 1rem;">
         <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="event_time" style="margin-bottom: 0.5rem; display: block;">' . __("Time", 'mini' ) . ':</label>
-            <input type="time" id="event_time" name="event_time" value="'.$time_value.'" style="min-width: 220px; display: block;" />
+            <label for="event_time" style="margin-bottom: 0.5rem; display: block;"><?php _e('Time', 'mini'); ?>:</label>
+            <input type="time" id="event_time" name="event_time" value="<?php echo esc_attr($time_value); ?>" style="min-width: 220px; display: block;" />
         </div>
         <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="event_end_time" style="margin-bottom: 0.5rem; display: block;">' . __("End time (optional)", 'mini' ) . ':</label>
-            <input type="time" id="event_end_time" name="event_end_time" value="'.$end_time_value.'" style="min-width: 220px; display: block;" />
+            <label for="event_end_time" style="margin-bottom: 0.5rem; display: block;"><?php _e('End time (optional)', 'mini'); ?>:</label>
+            <input type="time" id="event_end_time" name="event_end_time" value="<?php echo esc_attr($end_time_value); ?>" style="min-width: 220px; display: block;" />
         </div>
     </div>
-    ';
+    <?php
 }
 function date_time_save_postdata( $post_id ) {
     if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) { return; }
-    if( ! current_user_can( 'edit_post', $post_id ) ) { return; }
+    if ( ! current_user_can( 'edit_post', $post_id ) ) { return; }
+    if ( ! isset($_POST['event_date']) && ! isset($_POST['event_time']) ) { return; }
     
-    update_post_meta( $post_id, 'event_date', $_POST['event_date'] ?? null );
-    update_post_meta( $post_id, 'event_end_date', $_POST['event_end_date'] ?? null );
-    update_post_meta( $post_id, 'event_time', $_POST['event_time'] ?? null );
-    update_post_meta( $post_id, 'event_end_time', $_POST['event_end_time'] ?? null );
+    // Sanitize and save date/time fields
+    if ( isset($_POST['event_date']) ) {
+        update_post_meta( $post_id, 'event_date', sanitize_text_field($_POST['event_date']) );
+    }
+    if ( isset($_POST['event_end_date']) ) {
+        update_post_meta( $post_id, 'event_end_date', sanitize_text_field($_POST['event_end_date']) );
+    }
+    if ( isset($_POST['event_time']) ) {
+        update_post_meta( $post_id, 'event_time', sanitize_text_field($_POST['event_time']) );
+    }
+    if ( isset($_POST['event_end_time']) ) {
+        update_post_meta( $post_id, 'event_end_time', sanitize_text_field($_POST['event_end_time']) );
+    }
 }
 
 /* ADD Location options */
@@ -1168,36 +1325,41 @@ function add_location_box() {
     add_meta_box(
         'location',
         esc_html__( 'Location', 'mini' ),
-        'Location_box_html',
+        'location_box_html',
         ['event', 'match'],
         'side'
     );
 }
-function Location_box_html( $post, $meta ){
+function location_box_html( $post, $meta ){
     $location_name_value = get_post_meta( $post->ID, 'location_name', true) ?: '';
     $location_address_value = get_post_meta( $post->ID, 'location_address', true) ?: '';
-    
-    echo '
+    ?>
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 1rem;">
         <div style="flex: 1;">
-            <label for="location_name" style="margin-bottom: 0.5rem; display: block;">' . __("Location", 'mini' ) . ':</label>
-            <input type="text" id="location_name" name="location_name" value="'.$location_name_value.'" style="min-width: 220px; width: 50%;" />
+            <label for="location_name" style="margin-bottom: 0.5rem; display: block;"><?php _e('Location', 'mini'); ?>:</label>
+            <input type="text" id="location_name" name="location_name" value="<?php echo esc_attr($location_name_value); ?>" style="min-width: 220px; width: 100%;" />
         </div>
     </div>
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 1rem;">
         <div style="flex: 1;">
-            <label for="location_address" style="margin-bottom: 0.5rem; display: block;">' . __("Location address", 'mini' ) . ':</label>
-            <input type="text" id="location_address" name="location_address" value="'.$location_address_value.'" style="min-width: 220px; width: 50%;" />
+            <label for="location_address" style="margin-bottom: 0.5rem; display: block;"><?php _e('Location address', 'mini'); ?>:</label>
+            <input type="text" id="location_address" name="location_address" value="<?php echo esc_attr($location_address_value); ?>" style="min-width: 220px; width: 100%;" />
         </div>
     </div>
-    ';
+    <?php
 }
 function location_save_postdata( $post_id ) {
     if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) { return; }
-    if( ! current_user_can( 'edit_post', $post_id ) ) { return; }
+    if ( ! current_user_can( 'edit_post', $post_id ) ) { return; }
+    if ( ! isset($_POST['location_name']) && ! isset($_POST['location_address']) ) { return; }
     
-    update_post_meta( $post_id, 'location_name', $_POST['location_name'] ?? null );
-    update_post_meta( $post_id, 'location_address', $_POST['location_address'] ?? null );
+    // Sanitize and save location fields
+    if ( isset($_POST['location_name']) ) {
+        update_post_meta( $post_id, 'location_name', sanitize_text_field($_POST['location_name']) );
+    }
+    if ( isset($_POST['location_address']) ) {
+        update_post_meta( $post_id, 'location_address', sanitize_text_field($_POST['location_address']) );
+    }
 }
 
 /* ADD Teams options */
@@ -1220,93 +1382,118 @@ function teams_box_html( $post, $meta ){
     $team_2_value = get_post_meta( $post->ID, 'team_2', true) ?: '';
     $team_2_logo_value = get_post_meta( $post->ID, 'team_2_logo', true) ?: '';
     $team_2_score_value = get_post_meta( $post->ID, 'team_2_score', true) ?: '';
-    
-    echo '
+    ?>
     <div style="display: flex; flex-flow: row wrap;">
         <div style="flex: 1;">
-            <h3>' . __("Team one", 'mini' ) . '</h3>
+            <h3><?php _e('Team one', 'mini'); ?></h3>
         </div>
     </div>
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 0.5rem;">
         <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="team_1" style="margin-bottom: 0.5rem; display: block;">' . __("Team one", 'mini' ) . ':</label>
-            <input type="text" id="team_1" name="team_1" value="'.$team_1_value.'" style="min-width: 220px;" />
+            <label for="team_1" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team one', 'mini'); ?>:</label>
+            <input type="text" id="team_1" name="team_1" value="<?php echo esc_attr($team_1_value); ?>" style="min-width: 220px;" />
         </div>
         <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="team_1_logo" style="margin-bottom: 0.5rem; display: block;">' . __("Team one logo", 'mini' ) . ':</label>
-            <input id="team_1_logo" type="text" name="team_1_logo" value="'.$team_1_logo_value.'" style="margin-bottom: 0.5rem; display: block; min-width: 220px;"/>
-            <input id="team_1_logo_button" class="components-button editor-post-status__toggle is-compact is-tertiary has-text has-icon" type="button" value="' . __("Upload logo", 'mini' ) . '" />
+            <label for="team_1_logo" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team one logo', 'mini'); ?>:</label>
+            <input id="team_1_logo" type="text" name="team_1_logo" value="<?php echo esc_url($team_1_logo_value); ?>" style="margin-bottom: 0.5rem; display: block; min-width: 220px;"/>
+            <input id="team_1_logo_button" class="components-button editor-post-status__toggle is-compact is-tertiary has-text has-icon" type="button" value="<?php esc_attr_e('Upload logo', 'mini'); ?>" />
         </div>
         <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="team_1_score" style="margin-bottom: 0.5rem; display: block;">' . __("Team one score", 'mini' ) . ':</label>
-            <input type="number" id="team_1_score" name="team_1_score" value="'.$team_1_score_value.'" style="min-width: 220px;" />
+            <label for="team_1_score" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team one score', 'mini'); ?>:</label>
+            <input type="number" id="team_1_score" name="team_1_score" value="<?php echo esc_attr($team_1_score_value); ?>" style="min-width: 220px;" />
         </div>
     </div>
-    ';
-    echo '
     <div style="display: flex; flex-flow: row wrap;">
         <div style="flex: 1;">
-            <h3>' . __("Team two", 'mini' ) . '</h3>
+            <h3><?php _e('Team two', 'mini'); ?></h3>
         </div>
     </div>
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 0.5rem;">
         <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="team_2" style="margin-bottom: 0.5rem; display: block;">' . __("Team two", 'mini' ) . ':</label>
-            <input type="text" id="team_2" name="team_2" value="'.$team_2_value.'" style="min-width: 220px;" />
+            <label for="team_2" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team two', 'mini'); ?>:</label>
+            <input type="text" id="team_2" name="team_2" value="<?php echo esc_attr($team_2_value); ?>" style="min-width: 220px;" />
         </div>
         <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="team_2_logo" style="margin-bottom: 0.5rem; display: block;">' . __("Team two logo", 'mini' ) . ':</label>
-            <input id="team_2_logo" type="text" name="team_2_logo" value="'.$team_2_logo_value.'" style="margin-bottom: 0.5rem; display: block; min-width: 220px;"/>
-            <input id="team_2_logo_button" class="components-button editor-post-status__toggle is-compact is-tertiary has-text has-icon" type="button" value="' . __("Upload logo", 'mini' ) . '" />
+            <label for="team_2_logo" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team two logo', 'mini'); ?>:</label>
+            <input id="team_2_logo" type="text" name="team_2_logo" value="<?php echo esc_url($team_2_logo_value); ?>" style="margin-bottom: 0.5rem; display: block; min-width: 220px;"/>
+            <input id="team_2_logo_button" class="components-button editor-post-status__toggle is-compact is-tertiary has-text has-icon" type="button" value="<?php esc_attr_e('Upload logo', 'mini'); ?>" />
         </div>
         <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="team_2_score" style="margin-bottom: 0.5rem; display: block;">' . __("Team two score", 'mini' ) . ':</label>
-            <input type="number" id="team_2_score" name="team_2_score" value="'.$team_2_score_value.'" style="min-width: 220px;" />
+            <label for="team_2_score" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team two score', 'mini'); ?>:</label>
+            <input type="number" id="team_2_score" name="team_2_score" value="<?php echo esc_attr($team_2_score_value); ?>" style="min-width: 220px;" />
         </div>
     </div>
-    ';
+    <?php
 }
 
-function media_upload_scripts() {    
+function media_upload_scripts() {
+    $screen = get_current_screen();
+    if (!$screen || !in_array($screen->post_type, ['match', 'event'])) {
+        return;
+    }
+    
     wp_enqueue_script('media-upload');
     wp_enqueue_script('thickbox');
-    wp_register_script('media-upload-script', WP_PLUGIN_URL.'/mini/media-upload/media-upload.js', array('jquery','media-upload','thickbox'));
+    wp_register_script('media-upload-script', plugins_url('media-upload/media-upload.js', __FILE__), array('jquery','media-upload','thickbox'), '1.0', true);
     wp_enqueue_script('media-upload-script');
 }
 add_action('admin_enqueue_scripts', 'media_upload_scripts');
 
 function media_upload_styles() {
+    $screen = get_current_screen();
+    if (!$screen || !in_array($screen->post_type, ['match', 'event'])) {
+        return;
+    }
+    
     wp_enqueue_style('thickbox');
-    wp_register_style('media-upload-style', plugins_url( 'mini/media-upload/media-upload.css' ));
+    wp_register_style('media-upload-style', plugins_url('media-upload/media-upload.css', __FILE__), array(), '1.0');
     wp_enqueue_style('media-upload-style');
 }
 add_action('admin_enqueue_scripts', 'media_upload_styles');
 
 function load_mini_css_in_mini_plugin_admin_pages() {
-    $options = get_option('mini_main_settings');
-    $version = isset($options['mini_css_version']) ? $options['mini_css_version'] : 'latest';
-     
-    if ($version === 'latest') {
-        $css_url = 'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/css/mini.min.css';
-    } else {
-        $css_url = 'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini@' . $version . '/css/mini.min.css';
-    }
+    $screen = get_current_screen();
     
-    wp_register_style('mini-css', $css_url);
-    wp_enqueue_style('mini-css');
+    // Load on mini admin pages OR post/page edit screens
+    if ($screen && (strpos($screen->id, 'mini') !== false || in_array($screen->base, ['post', 'post-new']))) {
+        $options = get_option('mini_main_settings');
+        $version = isset($options['mini_css_version']) ? sanitize_text_field($options['mini_css_version']) : 'latest';
+         
+        if ($version === 'latest') {
+            $css_url = 'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/css/mini.min.css';
+        } else {
+            $css_url = 'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini@' . esc_attr($version) . '/css/mini.min.css';
+        }
+        
+        wp_enqueue_style('mini-css', $css_url, array(), $version);
+    }
 }
 add_action('admin_enqueue_scripts', 'load_mini_css_in_mini_plugin_admin_pages');
 
 function teams_save_postdata( $post_id ) {
     if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) { return; }
-    if( ! current_user_can( 'edit_post', $post_id ) ) { return; }
+    if ( ! current_user_can( 'edit_post', $post_id ) ) { return; }
+    if ( ! isset($_POST['team_1']) && ! isset($_POST['team_2']) ) { return; }
     
-    update_post_meta( $post_id, 'team_1', $_POST['team_1'] ?? null );
-    update_post_meta( $post_id, 'team_1_logo', $_POST['team_1_logo'] ?? null );
-    update_post_meta( $post_id, 'team_1_score', $_POST['team_1_score'] ?? null );
-    update_post_meta( $post_id, 'team_2', $_POST['team_2'] ?? null );
-    update_post_meta( $post_id, 'team_2_logo', $_POST['team_2_logo'] ?? null );
-    update_post_meta( $post_id, 'team_2_score', $_POST['team_2_score'] ?? null );
+    // Sanitize and save team fields
+    if ( isset($_POST['team_1']) ) {
+        update_post_meta( $post_id, 'team_1', sanitize_text_field($_POST['team_1']) );
+    }
+    if ( isset($_POST['team_1_logo']) ) {
+        update_post_meta( $post_id, 'team_1_logo', esc_url_raw($_POST['team_1_logo']) );
+    }
+    if ( isset($_POST['team_1_score']) ) {
+        update_post_meta( $post_id, 'team_1_score', absint($_POST['team_1_score']) );
+    }
+    if ( isset($_POST['team_2']) ) {
+        update_post_meta( $post_id, 'team_2', sanitize_text_field($_POST['team_2']) );
+    }
+    if ( isset($_POST['team_2_logo']) ) {
+        update_post_meta( $post_id, 'team_2_logo', esc_url_raw($_POST['team_2_logo']) );
+    }
+    if ( isset($_POST['team_2_score']) ) {
+        update_post_meta( $post_id, 'team_2_score', absint($_POST['team_2_score']) );
+    }
 }
 
 /* START - DISABLE comments */
@@ -1496,18 +1683,28 @@ function mini_seo_settings_init() {
 add_action( 'admin_init', 'mini_seo_settings_init' );
 
 function mini_seo_section_callback( $args ) {
+    $seo_enabled = is_mini_option_enabled('mini_seo_settings', 'mini_enable_seo');
     ?>
     <div class="space"></div>
     <div class="boxes">
         <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
             <h4><?php esc_html_e( 'Enable SEO Features', 'mini' ); ?></h4>
-            <?= mini_plugin_checkbox_option('mini_seo_settings','mini_enable_seo'); ?>
-            <p>Enable SEO meta tags for pages, posts and custom content types.</p>
+            <label for="mini_enable_seo">    
+                <input
+                    type="checkbox"
+                    id="mini_enable_seo"
+                    name="mini_seo_settings[mini_enable_seo]"
+                    class="me-1"
+                    value="1"
+                    <?php checked($seo_enabled, true); ?>
+                >
+                Enable SEO meta tags for pages, posts and custom content types.
+            </label>
             <p class="S grey-text">When enabled, you'll be able to customize title, description, keywords, robots directives, and social media tags for each page/post.</p>
         </div>
         <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
             <h4><?php esc_html_e( 'Default Settings', 'mini' ); ?></h4>
-            <p><strong>Default Meta Description:</strong></p>
+            <label for="mini_seo_image" class="bold"><?php _e('Default Meta Description', 'mini'); ?>:</label>
             <textarea 
                 name="mini_seo_settings[default_description]" 
                 rows="3" 
@@ -1515,25 +1712,34 @@ function mini_seo_section_callback( $args ) {
                 maxlength="160"
                 placeholder="Default site description (max 160 characters)"
             ><?php echo esc_attr( get_variable('mini_seo_settings', 'default_description') ); ?></textarea>
-            <p class="S grey-text">This will be used when individual pages don't have their own description.</p>
-            
-            <div style="margin-top: 20px;">
-                <p><strong>Default SEO Image:</strong></p>
+            <p class="S grey-text mt-05">This will be used when individual pages don't have their own description.</p>
+            <div class="sep my-2 light-grey-border"></div>
+            <label for="mini_seo_image" class="bold"><?php _e('Default SEO Image', 'mini'); ?>:</label>
+            <div class="flex mb-1">
+                <button type="button" class="button me-1" id="mini_seo_default_image_button" style="width: 120px;">Select Image</button>
                 <input 
                     type="url" 
                     name="mini_seo_settings[default_image]" 
                     id="mini_seo_default_image"
                     value="<?php echo esc_url( get_variable('mini_seo_settings', 'default_image') ); ?>"
-                    style="width: 100%;"
                     placeholder="https://"
                 >
-                <button type="button" class="button" id="mini_seo_default_image_button" style="margin-top: 5px;">Select Image</button>
-                <?php if (get_variable('mini_seo_settings', 'default_image')): ?>
-                    <div style="margin-top: 10px;">
-                        <img src="<?php echo esc_url( get_variable('mini_seo_settings', 'default_image') ); ?>" style="max-width: 200px; height: auto;">
-                    </div>
-                <?php endif; ?>
-                <p class="S grey-text">Fallback image for SEO/social media when no custom or featured image is set.<br><strong>Recommended: 1200×630px</strong></p>
+            </div>
+            <p class="desc XS">
+                <?php _e('Fallback image for SEO/social media when no custom or featured image is set.<br><strong>Recommended: 1200*630px</strong>', 'mini'); ?>
+            </p>
+            <div class="space-2"></div>
+            <?php $default_image = get_variable('mini_seo_settings', 'default_image'); ?>
+            <div id="mini_seo_default_preview_container" class="b-rad-10 oh box-shadow-light" style="max-width: 480px;<?php echo !$default_image ? ' display: none;' : ''; ?>">
+                <div style="position: relative; width: 100%; padding-bottom: 52.5%; background: #eee; overflow: hidden;">
+                    <img id="mini_seo_default_preview_image" src="<?php echo esc_url($default_image); ?>" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div class="white-bg p-1">
+                    <p class="desc XS mb-0">
+                        <?php _e('Preview in Open Graph format (1.91:1 ratio)', 'mini'); ?>
+                        <span id="mini_seo_default_dimensions" style="margin-left: 10px; color: #666;"></span>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -1564,6 +1770,31 @@ function mini_seo_page_html() {
     </div>
     <script type="text/javascript">
     jQuery(document).ready(function($) {
+        // Function to check image dimensions
+        function checkImageDimensions(imageUrl, callback) {
+            var img = new Image();
+            img.onload = function() {
+                callback(this.width, this.height);
+            };
+            img.onerror = function() {
+                callback(null, null);
+            };
+            img.src = imageUrl;
+        }
+        
+        // Function to update dimension display
+        function updateDimensionDisplay($element, width, height) {
+            if (width && height) {
+                var isOptimal = (width === 1200 && height === 630) || (width === 1200 && height === 628);
+                var ratio = (width / height).toFixed(2);
+                var color = isOptimal ? '#0a0' : (ratio >= 1.85 && ratio <= 1.95 ? '#f90' : '#d00');
+                $element.html('(<span style="color: ' + color + ';">' + width + '×' + height + 'px</span>)');
+            } else {
+                $element.html('');
+            }
+        }
+        
+        // Media uploader for default image
         var defaultImageFrame;
         $('#mini_seo_default_image_button').on('click', function(e) {
             e.preventDefault();
@@ -1583,11 +1814,39 @@ function mini_seo_page_html() {
             
             defaultImageFrame.on('select', function() {
                 var attachment = defaultImageFrame.state().get('selection').first().toJSON();
-                $('#mini_seo_default_image').val(attachment.url);
+                $('#mini_seo_default_image').val(attachment.url).trigger('change');
             });
             
             defaultImageFrame.open();
         });
+        
+        // Update preview when default image URL changes
+        $('#mini_seo_default_image').on('change input', function() {
+            var imageUrl = $(this).val().trim();
+            var $previewContainer = $('#mini_seo_default_preview_container');
+            var $previewImage = $('#mini_seo_default_preview_image');
+            var $dimensions = $('#mini_seo_default_dimensions');
+            
+            if (imageUrl) {
+                $previewImage.attr('src', imageUrl);
+                $previewContainer.show();
+                
+                // Check dimensions
+                checkImageDimensions(imageUrl, function(width, height) {
+                    updateDimensionDisplay($dimensions, width, height);
+                });
+            } else {
+                $previewContainer.hide();
+                $dimensions.html('');
+            }
+        });
+        
+        // Check initial dimensions if image exists
+        <?php if ($default_image): ?>
+        checkImageDimensions('<?php echo esc_js($default_image); ?>', function(width, height) {
+            updateDimensionDisplay($('#mini_seo_default_dimensions'), width, height);
+        });
+        <?php endif; ?>
     });
     </script>
     <?php
