@@ -203,6 +203,15 @@ function mini_plugin_settings_pages() {
         'mini_blogging_page_html',
         9
     );
+    add_submenu_page(
+        'mini',
+        'SEO',
+        'SEO',
+        'manage_options',
+        'mini-seo',
+        'mini_seo_page_html',
+        9
+    );
 }
 add_action( 'admin_menu', 'mini_plugin_settings_pages' );
 /* END - mini menu */
@@ -218,9 +227,338 @@ function mini_plugin_admin_styles() {
         input[type=checkbox]:checked::before {
             margin :0;
         }
+        /* SEO Meta Box Styles */
+        .mini-seo-tabs .nav-tab-wrapper {
+            margin-bottom: 0;
+        }
+        .mini-seo-tab-content {
+            padding: 10px 0;
+        }
     </style>';
 }
 add_action('admin_head', 'mini_plugin_admin_styles');
+
+function mini_seo_admin_scripts() {
+    global $post;
+    if (!isset($post)) {
+        return;
+    }
+    ?>
+    <script type="text/javascript">
+    jQuery(document).ready(function($) {
+        // Tab switching
+        $('.mini-seo-tab').on('click', function(e) {
+            e.preventDefault();
+            var target = $(this).attr('href');
+            
+            $('.mini-seo-tab').removeClass('nav-tab-active');
+            $(this).addClass('nav-tab-active');
+            
+            $('.mini-seo-tab-content').hide();
+            $(target).show();
+        });
+        
+        // Character counter for title
+        function updateTitleCount() {
+            var count = $('#mini_seo_title').val().length;
+            $('#mini_seo_title_count').text(count);
+        }
+        
+        // Character counter for description
+        function updateDescriptionCount() {
+            var count = $('#mini_seo_description').val().length;
+            $('#mini_seo_description_count').text(count);
+        }
+        
+        $('#mini_seo_title').on('input', updateTitleCount);
+        $('#mini_seo_description').on('input', updateDescriptionCount);
+        
+        // Initial count
+        updateTitleCount();
+        updateDescriptionCount();
+        
+        // Track if OG/Twitter fields have been manually edited
+        var ogTitleManuallyEdited = <?php echo $seo_og_title && $seo_og_title !== $seo_title ? 'true' : 'false'; ?>;
+        var ogDescManuallyEdited = <?php echo $seo_og_description && $seo_og_description !== $seo_description ? 'true' : 'false'; ?>;
+        var twitterTitleManuallyEdited = <?php echo $seo_twitter_title && $seo_twitter_title !== $seo_title ? 'true' : 'false'; ?>;
+        var twitterDescManuallyEdited = <?php echo $seo_twitter_description && $seo_twitter_description !== $seo_description ? 'true' : 'false'; ?>;
+        
+        // Initialize OG and Twitter fields with SEO values if empty
+        if (!$('#mini_seo_og_title').val() && $('#mini_seo_title').val()) {
+            $('#mini_seo_og_title').val($('#mini_seo_title').val());
+        }
+        if (!$('#mini_seo_og_description').val() && $('#mini_seo_description').val()) {
+            $('#mini_seo_og_description').val($('#mini_seo_description').val());
+        }
+        if (!$('#mini_seo_twitter_title').val() && $('#mini_seo_title').val()) {
+            $('#mini_seo_twitter_title').val($('#mini_seo_title').val());
+        }
+        if (!$('#mini_seo_twitter_description').val() && $('#mini_seo_description').val()) {
+            $('#mini_seo_twitter_description').val($('#mini_seo_description').val());
+        }
+        
+        // Mark fields as manually edited when user types in them
+        $('#mini_seo_og_title').on('input', function() {
+            ogTitleManuallyEdited = true;
+        });
+        $('#mini_seo_og_description').on('input', function() {
+            ogDescManuallyEdited = true;
+        });
+        $('#mini_seo_twitter_title').on('input', function() {
+            twitterTitleManuallyEdited = true;
+        });
+        $('#mini_seo_twitter_description').on('input', function() {
+            twitterDescManuallyEdited = true;
+        });
+        
+        // Update preview title and description in real-time
+        $('#mini_seo_title').on('input', function() {
+            var title = $(this).val().trim();
+            $('#mini_seo_preview_title').text(title || '<?php echo esc_js(get_the_title($post->ID)); ?>');
+            
+            // Auto-sync OG and Twitter titles if not manually edited
+            if (!ogTitleManuallyEdited) {
+                $('#mini_seo_og_title').val(title);
+            }
+            if (!twitterTitleManuallyEdited) {
+                $('#mini_seo_twitter_title').val(title);
+            }
+        });
+        
+        $('#mini_seo_description').on('input', function() {
+            var description = $(this).val().trim();
+            $('#mini_seo_preview_description').text(description || '<?php echo esc_js(get_variable('mini_seo_settings', 'default_description')); ?>');
+            
+            // Auto-sync OG and Twitter descriptions if not manually edited
+            if (!ogDescManuallyEdited) {
+                $('#mini_seo_og_description').val(description);
+            }
+            if (!twitterDescManuallyEdited) {
+                $('#mini_seo_twitter_description').val(description);
+            }
+        });
+        
+        // Media uploader for SEO image
+        var seoImageFrame;
+        $('#mini_seo_image_button').on('click', function(e) {
+            e.preventDefault();
+            
+            if (seoImageFrame) {
+                seoImageFrame.open();
+                return;
+            }
+            
+            seoImageFrame = wp.media({
+                title: 'Select SEO Image',
+                button: {
+                    text: 'Use this image'
+                },
+                multiple: false
+            });
+            
+            seoImageFrame.on('select', function() {
+                var attachment = seoImageFrame.state().get('selection').first().toJSON();
+                $('#mini_seo_image').val(attachment.url).trigger('change');
+            });
+            
+            seoImageFrame.open();
+        });
+        
+        // Function to check image dimensions
+        function checkImageDimensions(imageUrl, callback) {
+            var img = new Image();
+            img.onload = function() {
+                callback(this.width, this.height);
+            };
+            img.onerror = function() {
+                callback(null, null);
+            };
+            img.src = imageUrl;
+        }
+        
+        // Function to update dimension display
+        function updateDimensionDisplay(width, height) {
+            var $dimensions = $('#mini_seo_image_dimensions');
+            if (width && height) {
+                var isOptimal = (width === 1200 && height === 630) || (width === 1200 && height === 628);
+                var ratio = (width / height).toFixed(2);
+                var color = isOptimal ? '#0a0' : (ratio >= 1.85 && ratio <= 1.95 ? '#f90' : '#d00');
+                $dimensions.html('(<span style="color: ' + color + ';">' + width + '×' + height + 'px</span>)');
+            } else {
+                $dimensions.html('');
+            }
+        }
+        
+        // Update preview when custom SEO image changes
+        $('#mini_seo_image').on('change input', function() {
+            var imageUrl = $(this).val().trim();
+            var $previewContainer = $('#mini_seo_preview_container');
+            var $previewImage = $('#mini_seo_preview_image');
+            var $previewSource = $('#mini_seo_preview_source');
+            
+            if (imageUrl) {
+                // Show custom image
+                $previewImage.attr('src', imageUrl);
+                $previewSource.text('<?php _e('Using custom SEO image', 'mini'); ?>');
+                $previewContainer.show();
+                
+                // Check dimensions
+                checkImageDimensions(imageUrl, function(width, height) {
+                    updateDimensionDisplay(width, height);
+                });
+            } else {
+                // Revert to featured or default image
+                <?php if (has_post_thumbnail($post->ID)): ?>
+                $previewImage.attr('src', '<?php echo esc_js(get_the_post_thumbnail_url($post->ID, 'large')); ?>');
+                $previewSource.text('<?php _e('Using featured image', 'mini'); ?>');
+                $previewContainer.show();
+                checkImageDimensions('<?php echo esc_js(get_the_post_thumbnail_url($post->ID, 'large')); ?>', function(width, height) {
+                    updateDimensionDisplay(width, height);
+                });
+                <?php elseif (get_variable('mini_seo_settings', 'default_image')): ?>
+                $previewImage.attr('src', '<?php echo esc_js(get_variable('mini_seo_settings', 'default_image')); ?>');
+                $previewSource.text('<?php _e('Using default SEO image', 'mini'); ?>');
+                $previewContainer.show();
+                checkImageDimensions('<?php echo esc_js(get_variable('mini_seo_settings', 'default_image')); ?>', function(width, height) {
+                    updateDimensionDisplay(width, height);
+                });
+                <?php else: ?>
+                $previewContainer.hide();
+                $('#mini_seo_image_dimensions').html('');
+                <?php endif; ?>
+            }
+        });
+        
+        // Check initial image dimensions
+        <?php if ($preview_image): ?>
+        checkImageDimensions('<?php echo esc_js($preview_image); ?>', function(width, height) {
+            updateDimensionDisplay(width, height);
+        });
+        <?php endif; ?>
+        
+        // Keyword analysis functionality
+        $('#mini_analyze_content').on('click', function() {
+            var content = '';
+            var title = $('#title').val() || '';
+            
+            // Get content from different editor types
+            if (typeof tinymce !== 'undefined' && tinymce.get('content')) {
+                // Classic editor
+                content = tinymce.get('content').getContent({format: 'text'});
+            } else if ($('#content').length) {
+                // Textarea fallback
+                content = $('#content').val();
+            } else if (typeof wp !== 'undefined' && wp.data && wp.data.select('core/editor')) {
+                // Gutenberg editor
+                var blocks = wp.data.select('core/editor').getBlocks();
+                content = blocks.map(function(block) {
+                    return block.attributes.content || '';
+                }).join(' ');
+            }
+            
+            // Add title to content for analysis
+            content = title + ' ' + content;
+            
+            if (!content.trim()) {
+                alert('<?php _e('No content found to analyze. Please add some content first.', 'mini'); ?>');
+                return;
+            }
+            
+            // Process content to extract keywords
+            var keywords = analyzeContent(content);
+            displayKeywordSuggestions(keywords);
+        });
+        
+        function analyzeContent(text) {
+            // Common stop words to filter out
+            var stopWords = ['the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'i', 'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at', 'this', 'but', 'his', 'by', 'from', 'they', 'we', 'say', 'her', 'she', 'or', 'an', 'will', 'my', 'one', 'all', 'would', 'there', 'their', 'what', 'so', 'up', 'out', 'if', 'about', 'who', 'get', 'which', 'go', 'me', 'when', 'make', 'can', 'like', 'time', 'no', 'just', 'him', 'know', 'take', 'people', 'into', 'year', 'your', 'good', 'some', 'could', 'them', 'see', 'other', 'than', 'then', 'now', 'look', 'only', 'come', 'its', 'over', 'think', 'also', 'back', 'after', 'use', 'two', 'how', 'our', 'work', 'first', 'well', 'way', 'even', 'new', 'want', 'because', 'any', 'these', 'give', 'day', 'most', 'us', 'is', 'was', 'are', 'been', 'has', 'had', 'were', 'said', 'did', 'having', 'may', 'should', 'am'];
+            
+            // Clean and tokenize
+            var words = text.toLowerCase()
+                .replace(/[^a-z0-9\s]/g, ' ')
+                .split(/\s+/)
+                .filter(function(word) {
+                    return word.length > 3 && stopWords.indexOf(word) === -1;
+                });
+            
+            // Count word frequency
+            var frequency = {};
+            words.forEach(function(word) {
+                frequency[word] = (frequency[word] || 0) + 1;
+            });
+            
+            // Sort by frequency and get top 20
+            var sorted = Object.keys(frequency).sort(function(a, b) {
+                return frequency[b] - frequency[a];
+            });
+            
+            return sorted.slice(0, 20).map(function(word) {
+                return {word: word, count: frequency[word]};
+            });
+        }
+        
+        function displayKeywordSuggestions(keywords) {
+            var $list = $('#mini_keyword_suggestions_list');
+            var $container = $('#mini_keyword_suggestions');
+            
+            $list.empty();
+            
+            keywords.forEach(function(item) {
+                var $badge = $('<span></span>')
+                    .css({
+                        'display': 'inline-block',
+                        'padding': '6px 12px',
+                        'background': 'var(--dark-grey)',
+                        'border': '1px solid var(--false-black)',
+                        'border-radius': '5px',
+                        'cursor': 'pointer',
+                        'font-size': 'var(--p)',
+                        'transition': 'all 0.2s',
+                        'color': 'var(--white)',
+                    })
+                    .html(item.word + ' <span style="color: var(--grey);">(' + item.count + ')</span>')
+                    .on('mouseenter', function() {
+                        $(this).css({'background': 'var(--link-color)', 'color': 'var(--white)', 'border-color': 'var(--link-hover-color)'});
+                        $(this).find('span').css('color', 'var(--light-grey)');
+                    })
+                    .on('mouseleave', function() {
+                        $(this).css({'background': 'var(--dark-grey)', 'color': 'var(--white)', 'border-color': 'var(--false-black)'});
+                        $(this).find('span').css('color', 'var(--grey)');
+                    })
+                    .on('click', function() {
+                        addKeyword(item.word);
+                    });
+                
+                $list.append($badge);
+            });
+            
+            $container.show();
+        }
+        
+        function addKeyword(keyword) {
+            var $keywords = $('#mini_seo_keywords');
+            var current = $keywords.val().trim();
+            var keywordList = current ? current.split(',').map(function(k) { return k.trim(); }) : [];
+            
+            // Check if keyword already exists
+            if (keywordList.indexOf(keyword) === -1) {
+                keywordList.push(keyword);
+                $keywords.val(keywordList.join(', '));
+                
+                // Visual feedback
+                $keywords.css('background', 'var(--main-color-transp)').delay(200).queue(function() {
+                    $(this).css('background', 'var(--white)').dequeue();
+                });
+            }
+        }
+    });
+    </script>
+    <?php
+    wp_enqueue_media();
+}
+add_action('admin_footer-post.php', 'mini_seo_admin_scripts');
+add_action('admin_footer-post-new.php', 'mini_seo_admin_scripts');
+
 
 /* START - mini settings */
 function mini_plugin_main_page_html() {
@@ -1144,3 +1482,570 @@ function remove_tools_settings_menu_page() {
 }
 add_action( 'admin_init', 'remove_tools_settings_menu_page' );
 /* END - DISABLE CF7 settings for non-admins */
+
+/* START - SEO settings */
+function mini_seo_settings_init() {
+    register_setting( 'mini_seo', 'mini_seo_settings');
+    add_settings_section(
+        'mini_seo_section',
+        __( '<i>mini</i> SEO settings', 'mini' ),
+        'mini_seo_section_callback',
+        'mini-seo'
+    );
+}
+add_action( 'admin_init', 'mini_seo_settings_init' );
+
+function mini_seo_section_callback( $args ) {
+    ?>
+    <div class="space"></div>
+    <div class="boxes">
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+            <h4><?php esc_html_e( 'Enable SEO Features', 'mini' ); ?></h4>
+            <?= mini_plugin_checkbox_option('mini_seo_settings','mini_enable_seo'); ?>
+            <p>Enable SEO meta tags for pages, posts and custom content types.</p>
+            <p class="S grey-text">When enabled, you'll be able to customize title, description, keywords, robots directives, and social media tags for each page/post.</p>
+        </div>
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+            <h4><?php esc_html_e( 'Default Settings', 'mini' ); ?></h4>
+            <p><strong>Default Meta Description:</strong></p>
+            <textarea 
+                name="mini_seo_settings[default_description]" 
+                rows="3" 
+                style="width: 100%;"
+                maxlength="160"
+                placeholder="Default site description (max 160 characters)"
+            ><?php echo esc_attr( get_variable('mini_seo_settings', 'default_description') ); ?></textarea>
+            <p class="S grey-text">This will be used when individual pages don't have their own description.</p>
+            
+            <div style="margin-top: 20px;">
+                <p><strong>Default SEO Image:</strong></p>
+                <input 
+                    type="url" 
+                    name="mini_seo_settings[default_image]" 
+                    id="mini_seo_default_image"
+                    value="<?php echo esc_url( get_variable('mini_seo_settings', 'default_image') ); ?>"
+                    style="width: 100%;"
+                    placeholder="https://"
+                >
+                <button type="button" class="button" id="mini_seo_default_image_button" style="margin-top: 5px;">Select Image</button>
+                <?php if (get_variable('mini_seo_settings', 'default_image')): ?>
+                    <div style="margin-top: 10px;">
+                        <img src="<?php echo esc_url( get_variable('mini_seo_settings', 'default_image') ); ?>" style="max-width: 200px; height: auto;">
+                    </div>
+                <?php endif; ?>
+                <p class="S grey-text">Fallback image for SEO/social media when no custom or featured image is set.<br><strong>Recommended: 1200×630px</strong></p>
+            </div>
+        </div>
+    </div>
+    <?php
+}
+
+function mini_seo_page_html() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+    
+    if ( isset( $_GET['settings-updated'] ) ) {
+        add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
+    }
+    settings_errors( 'mini_messages' );
+    wp_enqueue_media();
+    ?>
+    <div class="wrap">
+        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+        <br/>
+        <form action="options.php" method="post">
+            <?php
+            settings_fields( 'mini_seo' );
+            do_settings_sections( 'mini-seo' );
+            submit_button( 'Save Settings' );
+            ?>
+        </form>
+    </div>
+    <script type="text/javascript">
+    jQuery(document).ready(function($) {
+        var defaultImageFrame;
+        $('#mini_seo_default_image_button').on('click', function(e) {
+            e.preventDefault();
+            
+            if (defaultImageFrame) {
+                defaultImageFrame.open();
+                return;
+            }
+            
+            defaultImageFrame = wp.media({
+                title: 'Select Default SEO Image',
+                button: {
+                    text: 'Use this image'
+                },
+                multiple: false
+            });
+            
+            defaultImageFrame.on('select', function() {
+                var attachment = defaultImageFrame.state().get('selection').first().toJSON();
+                $('#mini_seo_default_image').val(attachment.url);
+            });
+            
+            defaultImageFrame.open();
+        });
+    });
+    </script>
+    <?php
+}
+/* END - SEO settings */
+
+/* START - SEO meta boxes */
+function mini_add_seo_meta_boxes() {
+    if (!is_mini_option_enabled('mini_seo_settings', 'mini_enable_seo')) {
+        return;
+    }
+    
+    $post_types = ['post', 'page'];
+    
+    // Add custom post types if enabled
+    if (is_mini_option_enabled('mini_content_settings', 'mini_news')) {
+        $post_types[] = 'news';
+    }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
+        $post_types[] = 'event';
+    }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_match')) {
+        $post_types[] = 'match';
+    }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
+        $post_types[] = 'slide';
+    }
+    
+    foreach ($post_types as $post_type) {
+        add_meta_box(
+            'mini_seo_meta_box',
+            __('mini SEO', 'mini'),
+            'mini_seo_meta_box_callback',
+            $post_type,
+            'normal',
+            'high'
+        );
+    }
+}
+add_action('add_meta_boxes', 'mini_add_seo_meta_boxes');
+
+function mini_seo_meta_box_callback($post) {
+    wp_nonce_field('mini_seo_meta_box', 'mini_seo_nonce');
+    
+    $active_tab = isset($_GET['seo_tab']) ? $_GET['seo_tab'] : 'seo';
+    
+    // Get current values
+    $seo_title = get_post_meta($post->ID, '_mini_seo_title', true);
+    $seo_description = get_post_meta($post->ID, '_mini_seo_description', true);
+    $seo_keywords = get_post_meta($post->ID, '_mini_seo_keywords', true);
+    $seo_robots_index = get_post_meta($post->ID, '_mini_seo_robots_index', true);
+    $seo_robots_follow = get_post_meta($post->ID, '_mini_seo_robots_follow', true);
+    $seo_og_title = get_post_meta($post->ID, '_mini_seo_og_title', true);
+    $seo_og_description = get_post_meta($post->ID, '_mini_seo_og_description', true);
+    $seo_og_image = get_post_meta($post->ID, '_mini_seo_og_image', true);
+    $seo_twitter_card = get_post_meta($post->ID, '_mini_seo_twitter_card', true);
+    $seo_twitter_title = get_post_meta($post->ID, '_mini_seo_twitter_title', true);
+    $seo_twitter_description = get_post_meta($post->ID, '_mini_seo_twitter_description', true);
+    $seo_image = get_post_meta($post->ID, '_mini_seo_image', true);
+    $seo_canonical = get_post_meta($post->ID, '_mini_seo_canonical', true);
+    
+    $preview_url = get_permalink($post->ID) ?: home_url();
+    
+    // Determine preview image: custom SEO image → featured image → default image
+    $preview_image = '';
+    if ($seo_image) {
+        $preview_image = $seo_image;
+    } elseif (has_post_thumbnail($post->ID)) {
+        $preview_image = get_the_post_thumbnail_url($post->ID, 'large');
+    } else {
+        $preview_image = get_variable('mini_seo_settings', 'default_image');
+    }
+    
+    ?>
+    <div class="mini-seo-tabs">
+        <h2 class="nav-tab-wrapper">
+            <a href="#seo" class="nav-tab mini-seo-tab <?php echo $active_tab == 'seo' ? 'nav-tab-active' : ''; ?>"><?php _e('SEO', 'mini'); ?></a>
+            <a href="#keywords" class="nav-tab mini-seo-tab <?php echo $active_tab == 'keywords' ? 'nav-tab-active' : ''; ?>"><?php _e('Keywords', 'mini'); ?></a>
+            <a href="#robots" class="nav-tab mini-seo-tab <?php echo $active_tab == 'robots' ? 'nav-tab-active' : ''; ?>"><?php _e('Robots', 'mini'); ?></a>
+            <a href="#facebook" class="nav-tab mini-seo-tab <?php echo $active_tab == 'facebook' ? 'nav-tab-active' : ''; ?>"><?php _e('Facebook', 'mini'); ?></a>
+            <a href="#twitter" class="nav-tab mini-seo-tab <?php echo $active_tab == 'twitter' ? 'nav-tab-active' : ''; ?>"><?php _e('X (Twitter)', 'mini'); ?></a>
+            <a href="#advanced" class="nav-tab mini-seo-tab <?php echo $active_tab == 'advanced' ? 'nav-tab-active' : ''; ?>"><?php _e('Advanced', 'mini'); ?></a>
+        </h2>
+        
+        <div id="seo" class="mini-seo-tab-content" style="display: <?php echo $active_tab == 'seo' ? 'block' : 'none'; ?>;">
+            <div class="boxes">
+                <div class="box-40">
+                    <label class="bold mb-0"><?php _e('Preview', 'mini'); ?></label>
+                    <p class="mt-0" style="color: #006621;"><?php echo esc_html($preview_url); ?></p>
+                    <div class="space"></div>
+                    <?php if ($preview_image): ?>
+                    <div id="mini_seo_preview_container" class="b-rad-10 oh box-shadow-light" style="max-width: 480px;">
+                        <div style="position: relative; width: 100%; padding-bottom: 52.5%; background: #eee; overflow: hidden;">
+                            <img id="mini_seo_preview_image" src="<?php echo esc_url($preview_image); ?>" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="white-bg p-2">
+                            <p id="mini_seo_preview_title" class="bold L mb-05">
+                                <?php echo esc_html($seo_title ?: get_the_title($post->ID)); ?>
+                            </p>
+                            <p id="mini_seo_preview_description" class="S grey-text mt-0">
+                                <?php echo esc_html($seo_description ?: get_variable('mini_seo_settings', 'default_description')); ?>
+                            </p>
+                            <p class="S light-grey-text up-case">
+                                <?php echo esc_html(parse_url($preview_url, PHP_URL_HOST)); ?>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="space-2"></div>
+                        <p class="desc XS">
+                            <span id="mini_seo_preview_source">
+                                <?php _e('Using:', 'mini'); ?> <b><?php 
+                                if ($seo_image) {
+                                    _e('custom SEO image', 'mini');
+                                } elseif (has_post_thumbnail($post->ID)) {
+                                    _e('featured image', 'mini');
+                                } else {
+                                    _e('default SEO image', 'mini');
+                                }
+                                ?></b>
+                            </span>
+                            <span id="mini_seo_image_dimensions" class="grey-text"></span>
+                        </p>
+                        <p class="desc XS">
+                            <?php _e('Preview shown in Open Graph format (1.91:1 ratio). Recommended: 1200×630px', 'mini'); ?>
+                        </p>
+                    <?php else: ?>
+                    <div id="mini_seo_preview_container" style="max-width: 500px; margin-top: 15px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: #fff; display: none;">
+                        <div style="position: relative; width: 100%; padding-bottom: 52.5%; background: #eee; overflow: hidden;">
+                            <img id="mini_seo_preview_image" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div style="padding: 12px 16px; background: #f6f7f9;">
+                            <div id="mini_seo_preview_title" style="font-size: 16px; font-weight: 600; color: #1d2129; margin-bottom: 4px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;"></div>
+                            <div id="mini_seo_preview_description" style="font-size: 14px; color: #606770; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;"></div>
+                            <div style="font-size: 12px; color: #8a8d91; margin-top: 8px; text-transform: uppercase;">
+                                <?php echo esc_html(parse_url($preview_url, PHP_URL_HOST)); ?>
+                            </div>
+                        </div>
+                        <p class="desc">
+                            <span id="mini_seo_preview_source"></span>
+                            <span id="mini_seo_image_dimensions" style="margin-left: 10px; color: #666;"></span>
+                        </p>
+                        <p class="desc">
+                            <?php _e('Preview shown in Open Graph format (1.91:1 ratio). Recommended: 1200×630px', 'mini'); ?>
+                        </p>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <div class="box-60">
+                
+                    <label for="mini_seo_title" class="bold"><?php _e('Title', 'mini'); ?></label>
+                    <input type="text" id="mini_seo_title" class="mb-05" name="mini_seo_title" value="<?php echo esc_attr($seo_title); ?>" maxlength="60">
+                    <p class="desc">
+                        <span id="mini_seo_title_count">0</span> <?php _e('characters. Most search engines use a maximum of 60 chars for the title.', 'mini'); ?>
+                    </p>
+                    <div class="space-2"></div>
+                    <label for="mini_seo_description" class="bold"><?php _e('Description', 'mini'); ?></label>
+                    <textarea id="mini_seo_description" class="mb-05" name="mini_seo_description" rows="4" style="width: 100%;" maxlength="160"><?php echo esc_textarea($seo_description); ?></textarea>
+                    <p class="desc">
+                        <span id="mini_seo_description_count" class="bold">0</span> <?php _e('characters. Most search engines use a maximum of 160 chars for the description.', 'mini'); ?>
+                    </p>
+                    <div class="space-2"></div>
+                    <label for="mini_seo_image" class="bold"><?php _e('Custom SEO Image', 'mini'); ?></label>
+                    <div class="flex mb-1">
+                        <button type="button" class="button me-1" id="mini_seo_image_button" style="width: 120px;">Select Image</button>
+                        <input type="url" id="mini_seo_image" name="mini_seo_image" value="<?php echo esc_url($seo_image); ?>" placeholder="https://">
+                    </div>
+                    <p class="desc XS">
+                        <span class="bold"><?php _e('Optional:', 'mini'); ?></span><br/>
+                        <?php _e('Set a custom image for SEO/social media. <br/>If not set, the featured image will be used. <br/>If no featured image exists, the default SEO image will be used.', 'mini'); ?>
+                    </p>
+                    <p class="desc XS">
+                        <span class="bold"><?php _e('Recommended dimensions:', 'mini'); ?></span><br/>
+                        <strong></strong> 1200x630px (Open Graph) | 1200x628px (Twitter) | 400x400px (Twitter Summary)
+                    </p>
+
+                </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="keywords" class="mini-seo-tab-content" style="display: <?php echo $active_tab == 'keywords' ? 'block' : 'none'; ?>;">
+            <div class="boxes">
+                <div class="box-66">
+                    <label for="mini_seo_keywords" class="bold"><?php _e('Keywords', 'mini'); ?></label>
+                    <textarea id="mini_seo_keywords" name="mini_seo_keywords" rows="4" style="width: 100%;"><?php echo esc_textarea($seo_keywords); ?></textarea>
+                    <p class="desc"><?php _e('Separate keywords with commas. Example: <i>keyword1</i>, <i>keyword2</i>, <i>keyword3</i>', 'mini'); ?></p>
+                    
+                    <div style="margin-top: 15px;">
+                        <button type="button" class="button" id="mini_analyze_content"><?php _e('Analyze Content for Keywords', 'mini'); ?></button>
+                        <p class="desc" style="margin-top: 8px;"><?php _e('Click to extract the most frequently used words from your content', 'mini'); ?></p>
+                    </div>
+                    
+                    <div id="mini_keyword_suggestions" style="margin-top: 15px; display: none;">
+                        <p class="label bold"><?php _e('Suggested Keywords', 'mini'); ?> <span class="S light"><?php _e('(click to add)', 'mini'); ?></span>:</p>
+                        <div id="mini_keyword_suggestions_list" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="robots" class="mini-seo-tab-content" style="display: <?php echo $active_tab == 'robots' ? 'block' : 'none'; ?>;">
+            <div class="boxes">
+                <div class="box-66">
+                    <label class="bold"><?php _e('Robots Meta Tag', 'mini'); ?></label>
+                    <div class="space-2"></div>
+                    <label>
+                        <input type="checkbox" name="mini_seo_robots_index" value="1" <?php checked($seo_robots_index, '1'); ?>>
+                        <b><?php _e('Index', 'mini'); ?></b> <span class="S"><?php _e('(allow search engines to index this page)', 'mini'); ?></span>
+                    </label>
+                    <label>
+                        <input type="checkbox" name="mini_seo_robots_follow" value="1" <?php checked($seo_robots_follow, '1'); ?>>
+                        <b><?php _e('Follow', 'mini'); ?></b> <span class="S"><?php _e('(allow search engines to follow links on this page)', 'mini'); ?></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div id="facebook" class="mini-seo-tab-content" style="display: <?php echo $active_tab == 'facebook' ? 'block' : 'none'; ?>;">
+            <div class="boxes">
+                <div class="box-66">
+                    <h5 class=""><?php _e('Open Graph (Facebook) Tags', 'mini'); ?></h5>
+                    <div class="space-2"></div>
+                    <label for="mini_seo_og_title" class="bold"><?php _e('OG Title', 'mini'); ?></label>
+                    <input type="text" id="mini_seo_og_title" name="mini_seo_og_title" value="<?php echo esc_attr($seo_og_title); ?>" placeholder="<?php _e('Uses SEO Title if left empty', 'mini'); ?>">
+                    <p class="desc XS"><?php _e('Leave empty to automatically use the SEO Title. Updates automatically unless you manually edit this field.', 'mini'); ?></p>
+                    <div class="space-2"></div>
+                    <label for="mini_seo_og_description" class="bold"><?php _e('OG Description', 'mini'); ?></label>
+                    <textarea id="mini_seo_og_description" name="mini_seo_og_description" rows="3" style="width: 100%;" placeholder="<?php _e('Uses SEO Description if left empty', 'mini'); ?>"><?php echo esc_textarea($seo_og_description); ?></textarea>
+                    <p class="desc XS"><?php _e('Leave empty to automatically use the SEO Description. Updates automatically unless you manually edit this field.', 'mini'); ?></p>
+                    <div class="space-2"></div>
+                    <label for="mini_seo_og_image" class="bold"><?php _e('OG Image URL', 'mini'); ?></label>
+                    <input type="url" id="mini_seo_og_image" name="mini_seo_og_image" value="<?php echo esc_url($seo_og_image); ?>" style="width: 100%;" placeholder="https://">
+                </div>
+            </div>
+        </div>
+        
+        <div id="twitter" class="mini-seo-tab-content" style="display: <?php echo $active_tab == 'twitter' ? 'block' : 'none'; ?>;">
+            <div class="boxes">
+                <div class="box-66">
+                    <h5 class=""><?php _e('X (Twitter) Card Tags', 'mini'); ?></h5>
+                    <div class="space-2"></div>
+                    <label for="mini_seo_twitter_card" class="bold"><?php _e('Card Type', 'mini'); ?></label>
+                    <select id="mini_seo_twitter_card" name="mini_seo_twitter_card" style="width: 100%;">
+                        <option value=""><?php _e('-- Select --', 'mini'); ?></option>
+                        <option value="summary" <?php selected($seo_twitter_card, 'summary'); ?>><?php _e('Summary', 'mini'); ?></option>
+                        <option value="summary_large_image" <?php selected($seo_twitter_card, 'summary_large_image'); ?>><?php _e('Summary Large Image', 'mini'); ?></option>
+                    </select>
+                    <div class="space-2"></div>
+                    <label for="mini_seo_twitter_title" class="bold"><?php _e('Twitter Title', 'mini'); ?></label>
+                    <input type="text" id="mini_seo_twitter_title" name="mini_seo_twitter_title" value="<?php echo esc_attr($seo_twitter_title); ?>" style="width: 100%;" placeholder="<?php _e('Uses SEO Title if left empty', 'mini'); ?>">
+                    <p class="desc XS"><?php _e('Leave empty to automatically use the SEO Title. Updates automatically unless you manually edit this field.', 'mini'); ?></p>
+                    <div class="space-2"></div>
+                    <label for="mini_seo_twitter_description" class="bold"><?php _e('Twitter Description', 'mini'); ?></label>
+                    <textarea id="mini_seo_twitter_description" name="mini_seo_twitter_description" rows="3" placeholder="<?php _e('Uses SEO Description if left empty', 'mini'); ?>"><?php echo esc_textarea($seo_twitter_description); ?></textarea>
+                    <p class="desc XS"><?php _e('Leave empty to automatically use the SEO Description. Updates automatically unless you manually edit this field.', 'mini'); ?></p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="advanced" class="mini-seo-tab-content" style="display: <?php echo $active_tab == 'advanced' ? 'block' : 'none'; ?>;">
+            <div class="boxes">
+                <div class="box-66">
+                    <h5><?php _e('Advanced SEO Settings', 'mini'); ?></h5>
+                    <div class="space-2"></div>
+                    
+                    <label for="mini_seo_canonical" class="bold"><?php _e('Canonical URL', 'mini'); ?></label>
+                    <input type="url" id="mini_seo_canonical" name="mini_seo_canonical" value="<?php echo esc_url($seo_canonical); ?>" style="width: 100%;" placeholder="<?php echo esc_url(get_permalink($post->ID)); ?>">
+                    <p class="desc">
+                        <?php _e('The canonical URL tells search engines which URL is the primary/preferred version of this content.', 'mini'); ?>
+                    </p>
+                    <p class="desc XS">
+                        <strong><?php _e('Leave empty to use the default:', 'mini'); ?></strong> <code><?php echo esc_url(get_permalink($post->ID)); ?></code>
+                    </p>
+                    <p class="desc XS">
+                        <strong><?php _e('When to use:', 'mini'); ?></strong><br>
+                        • <?php _e('To prevent duplicate content issues', 'mini'); ?><br>
+                        • <?php _e('If this content exists on another URL/domain', 'mini'); ?><br>
+                        • <?php _e('To consolidate ranking signals to one URL', 'mini'); ?>
+                    </p>
+                    <p class="desc XS" style="color: #d63638;">
+                        <strong>⚠ <?php _e('Warning:', 'mini'); ?></strong> <?php _e('Setting this to another domain will tell search engines to ignore this page and index the other URL instead.', 'mini'); ?>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+}
+/* END - SEO meta boxes */
+
+/* START - SEO meta box save */
+function mini_save_seo_meta_box($post_id) {
+    // Check if nonce is set
+    if (!isset($_POST['mini_seo_nonce'])) {
+        return;
+    }
+    
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['mini_seo_nonce'], 'mini_seo_meta_box')) {
+        return;
+    }
+    
+    // Check if autosave
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    
+    // Check user permissions
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+    
+    // Save SEO fields
+    $fields = [
+        'mini_seo_title',
+        'mini_seo_description',
+        'mini_seo_keywords',
+        'mini_seo_robots_index',
+        'mini_seo_robots_follow',
+        'mini_seo_og_title',
+        'mini_seo_og_description',
+        'mini_seo_og_image',
+        'mini_seo_twitter_card',
+        'mini_seo_twitter_title',
+        'mini_seo_twitter_description',
+        'mini_seo_image',
+        'mini_seo_canonical',
+    ];
+    
+    foreach ($fields as $field) {
+        if (isset($_POST[$field])) {
+            update_post_meta($post_id, '_' . $field, sanitize_text_field($_POST[$field]));
+        } else {
+            delete_post_meta($post_id, '_' . $field);
+        }
+    }
+}
+add_action('save_post', 'mini_save_seo_meta_box');
+/* END - SEO meta box save */
+
+/* START - SEO frontend output */
+function mini_output_seo_meta_tags() {
+    if (!is_mini_option_enabled('mini_seo_settings', 'mini_enable_seo')) {
+        return;
+    }
+    
+    global $post;
+    
+    // Only output on singular pages
+    if (!is_singular()) {
+        return;
+    }
+    
+    $seo_title = get_post_meta($post->ID, '_mini_seo_title', true);
+    $seo_description = get_post_meta($post->ID, '_mini_seo_description', true);
+    $seo_keywords = get_post_meta($post->ID, '_mini_seo_keywords', true);
+    $seo_robots_index = get_post_meta($post->ID, '_mini_seo_robots_index', true);
+    $seo_robots_follow = get_post_meta($post->ID, '_mini_seo_robots_follow', true);
+    $seo_og_title = get_post_meta($post->ID, '_mini_seo_og_title', true);
+    $seo_og_description = get_post_meta($post->ID, '_mini_seo_og_description', true);
+    $seo_og_image = get_post_meta($post->ID, '_mini_seo_og_image', true);
+    $seo_twitter_card = get_post_meta($post->ID, '_mini_seo_twitter_card', true);
+    $seo_twitter_title = get_post_meta($post->ID, '_mini_seo_twitter_title', true);
+    $seo_twitter_description = get_post_meta($post->ID, '_mini_seo_twitter_description', true);
+    $seo_canonical = get_post_meta($post->ID, '_mini_seo_canonical', true);
+    
+    // Output canonical URL
+    $canonical_url = !empty($seo_canonical) ? $seo_canonical : get_permalink($post->ID);
+    echo '<link rel="canonical" href="' . esc_url($canonical_url) . '">' . "\n";
+    
+    // Fallback to defaults
+    if (empty($seo_description)) {
+        $seo_description = get_variable('mini_seo_settings', 'default_description');
+    }
+    
+    // Output meta description
+    if (!empty($seo_description)) {
+        echo '<meta name="description" content="' . esc_attr($seo_description) . '">' . "\n";
+    }
+    
+    // Output meta keywords
+    if (!empty($seo_keywords)) {
+        echo '<meta name="keywords" content="' . esc_attr($seo_keywords) . '">' . "\n";
+    }
+    
+    // Output robots meta
+    $robots = [];
+    if ($seo_robots_index == '1') {
+        $robots[] = 'index';
+    } else {
+        $robots[] = 'noindex';
+    }
+    
+    if ($seo_robots_follow == '1') {
+        $robots[] = 'follow';
+    } else {
+        $robots[] = 'nofollow';
+    }
+    
+    if (!empty($robots)) {
+        echo '<meta name="robots" content="' . esc_attr(implode(', ', $robots)) . '">' . "\n";
+    }
+    
+    // Open Graph tags
+    if (!empty($seo_og_title)) {
+        echo '<meta property="og:title" content="' . esc_attr($seo_og_title) . '">' . "\n";
+    }
+    
+    if (!empty($seo_og_description)) {
+        echo '<meta property="og:description" content="' . esc_attr($seo_og_description) . '">' . "\n";
+    }
+    
+    if (!empty($seo_og_image)) {
+        echo '<meta property="og:image" content="' . esc_url($seo_og_image) . '">' . "\n";
+    }
+    
+    echo '<meta property="og:url" content="' . esc_url(get_permalink()) . '">' . "\n";
+    echo '<meta property="og:type" content="website">' . "\n";
+    
+    // Twitter Card tags
+    if (!empty($seo_twitter_card)) {
+        echo '<meta name="twitter:card" content="' . esc_attr($seo_twitter_card) . '">' . "\n";
+    }
+    
+    if (!empty($seo_twitter_title)) {
+        echo '<meta name="twitter:title" content="' . esc_attr($seo_twitter_title) . '">' . "\n";
+    }
+    
+    if (!empty($seo_twitter_description)) {
+        echo '<meta name="twitter:description" content="' . esc_attr($seo_twitter_description) . '">' . "\n";
+    }
+    
+    if (!empty($seo_og_image)) {
+        echo '<meta name="twitter:image" content="' . esc_url($seo_og_image) . '">' . "\n";
+    }
+}
+add_action('wp_head', 'mini_output_seo_meta_tags', 1);
+
+function mini_override_document_title($title) {
+    if (!is_mini_option_enabled('mini_seo_settings', 'mini_enable_seo')) {
+        return $title;
+    }
+    
+    if (!is_singular()) {
+        return $title;
+    }
+    
+    global $post;
+    $seo_title = get_post_meta($post->ID, '_mini_seo_title', true);
+    
+    if (!empty($seo_title)) {
+        return $seo_title;
+    }
+    
+    return $title;
+}
+add_filter('pre_get_document_title', 'mini_override_document_title');
+/* END - SEO frontend output */
+
+
+
