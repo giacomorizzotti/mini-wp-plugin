@@ -116,6 +116,7 @@ function mini_content_section_callback( $args ) {
     $news_enabled = is_mini_option_enabled('mini_content_settings', 'mini_news');
     $event_enabled = is_mini_option_enabled('mini_content_settings', 'mini_event');
     $match_enabled = is_mini_option_enabled('mini_content_settings', 'mini_match');
+    $course_enabled = is_mini_option_enabled('mini_content_settings', 'mini_course');
     ?>
     <p id="<?php echo esc_attr( $args['id'] ); ?>">
         <i>mini</i> allows you to manage many custom content types to extend WordPress features.
@@ -132,7 +133,7 @@ function mini_content_section_callback( $args ) {
                     value="1"
                     <?php checked($slide_enabled, true); ?>
                 >
-                Enable the "Slide" content type to manage slideshows.
+                Enable the "Slide" content type to manage <u>slideshows</u> and <u>slides</u>.
             </label>
             <p class="S grey-text" for="mini_slide">It enables slides management (like posts or pages) and related admin menus.</p>
             <p class="S grey-text" for="mini_slide">This option loads <i>mini</i> <b>slider.js</b> library.</p>
@@ -148,7 +149,7 @@ function mini_content_section_callback( $args ) {
                     value="1"
                     <?php checked($news_enabled, true); ?>
                 >
-                Enable the "News" content type to manage news articles.
+                Enable the "News" content type to manage <u>news articles</u>.
             </label>
             <p class="S grey-text" for="mini_news">It enables news management (like posts or pages) and related admin menus.</p>
         </div>
@@ -163,7 +164,7 @@ function mini_content_section_callback( $args ) {
                     value="1"
                     <?php checked($event_enabled, true); ?>
                 >
-                Enable the "Event" content type to manage events.
+                Enable the "Event" content type to manage <u>events</u>.
             </label>
             <p class="S grey-text" for="mini_event">It enables events management (like posts or pages) and related admin menus.</p>
         </div>
@@ -178,9 +179,24 @@ function mini_content_section_callback( $args ) {
                     value="1"
                     <?php checked($match_enabled, true); ?>
                 >
-                Enable the "Match" content type to manage sport events.
+                Enable "Match" content type to manage sport <u>events</u>.
             </label>
             <p class="S grey-text" for="mini_match">It enables matches management (like posts or pages) and related admin menus.</p>
+        </div>
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+            <h4 class="grey-text light" for="mini_course"><?php esc_html_e( 'Courses', 'mini' ); ?></h4>
+            <label for="mini_course" class="bold bk-text">    
+                <input
+                    type="checkbox"
+                    id="mini_course"
+                    name="mini_content_settings[mini_course]"
+                    class="me-1"
+                    value="1"
+                    <?php checked($course_enabled, true); ?>
+                >
+                Enable "Course" content type to manage <u>courses</u> and <u>lessons</u>.
+            </label>
+            <p class="S grey-text" for="mini_course">It enables courses management with dates, locations, and lesson organization.</p>
         </div>
     </div>
     <?php
@@ -760,7 +776,14 @@ function mini_plugin_main_page_html() {
 /* END - mini settings*/
 
 /* START - Custom post types - Consolidated */
-function register_mini_post_type($type, $singular, $plural, $icon, $has_archive = true) {
+function register_mini_post_type($type, $singular, $plural, $icon, $has_archive = true, $hierarchical = false) {
+    $supports = ['title', 'editor', 'thumbnail', 'excerpt', 'panels'];
+    
+    // Add page-attributes support for hierarchical post types (enables parent dropdown and menu_order)
+    if ($hierarchical) {
+        $supports[] = 'page-attributes';
+    }
+    
     register_post_type($type, [
         'labels' => [
             'name' => __($plural, 'mini'),
@@ -777,11 +800,12 @@ function register_mini_post_type($type, $singular, $plural, $icon, $has_archive 
             'archives' => __($plural, 'mini'),
         ],
         'public' => true,
+        'hierarchical' => $hierarchical,
         'has_archive' => $has_archive,
         'menu_icon' => $icon,
         'rewrite' => ['slug' => $type],
         'show_in_rest' => true,
-        'supports' => ['title', 'editor', 'thumbnail', 'excerpt', 'panels']
+        'supports' => $supports
     ]);
 }
 
@@ -1290,6 +1314,59 @@ add_shortcode('next_3_matches', function() { return get_next_match_callback(3, f
 add_shortcode('next_4_matches', function() { return get_next_match_callback(4, false); });
 /* END - Custom post type - MATCH */
 
+/* START - Custom post type - COURSE */
+if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
+    add_action('init', function() {
+        register_mini_post_type('course', 'Course', 'Courses', 'dashicons-welcome-learn-more');
+        
+        // Register lesson post type as hierarchical (lessons can have courses as parents)
+        register_mini_post_type('lesson', 'Lesson', 'Lessons', 'dashicons-book', false, true);
+    });
+}
+/* END - Custom post type - COURSE */
+
+
+/* ADD Date-only options for courses */
+add_action( 'add_meta_boxes', 'add_date_only_box' );
+add_action( 'save_post', 'date_only_save_postdata' );
+function add_date_only_box() {
+    add_meta_box(
+        'date-only',
+        esc_html__( 'Date', 'mini' ),
+        'date_only_box_html',
+        ['course'],
+        'side'
+    );
+}
+function date_only_box_html( $post, $meta ){
+    $date_value = get_post_meta( $post->ID, 'event_date', true) ?: '';
+    $end_date_value = get_post_meta( $post->ID, 'event_end_date', true) ?: '';
+    ?>
+    <div style="display: flex; flex-flow: row wrap; margin-bottom: 1rem;">
+        <div style="flex: 1; margin-bottom: 0.5rem;">
+            <label for="event_date" style="margin-bottom: 0.5rem; display: block;"><?php _e('Date', 'mini'); ?>:</label>
+            <input type="date" id="event_date" name="event_date" value="<?php echo esc_attr($date_value); ?>" style="min-width: 220px; display: block;" />
+        </div>
+        <div style="flex: 1; margin-bottom: 0.5rem;">
+            <label for="event_end_date" style="margin-bottom: 0.5rem; display: block;"><?php _e('End date (optional)', 'mini'); ?>:</label>
+            <input type="date" id="event_end_date" name="event_end_date" value="<?php echo esc_attr($end_date_value); ?>" style="min-width: 220px; display: block;" />
+        </div>
+    </div>
+    <?php
+}
+function date_only_save_postdata( $post_id ) {
+    if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) { return; }
+    if ( ! current_user_can( 'edit_post', $post_id ) ) { return; }
+    if ( ! isset($_POST['event_date']) ) { return; }
+    
+    // Sanitize and save date fields
+    if ( isset($_POST['event_date']) ) {
+        update_post_meta( $post_id, 'event_date', sanitize_text_field($_POST['event_date']) );
+    }
+    if ( isset($_POST['event_end_date']) ) {
+        update_post_meta( $post_id, 'event_end_date', sanitize_text_field($_POST['event_end_date']) );
+    }
+}
 
 /* ADD Date and time options */
 add_action( 'add_meta_boxes', 'add_date_time_box' );
@@ -1297,9 +1374,9 @@ add_action( 'save_post', 'date_time_save_postdata' );
 function add_date_time_box() {
     add_meta_box(
         'date-time',
-        esc_html__( 'Date', 'mini' ),
+        esc_html__( 'Date & Time', 'mini' ),
         'date_time_box_html',
-        ['event', 'match'],
+        ['event', 'match', 'lesson'],
         'side'
     );
 }
@@ -1359,7 +1436,7 @@ function add_location_box() {
         'location',
         esc_html__( 'Location', 'mini' ),
         'location_box_html',
-        ['event', 'match'],
+        ['event', 'match', 'course', 'lesson'],
         'side'
     );
 }
@@ -1487,15 +1564,34 @@ add_action('admin_enqueue_scripts', 'media_upload_styles');
 function load_mini_css_in_mini_plugin_admin_pages() {
     $screen = get_current_screen();
     
-    // Load on mini admin pages OR post/page edit screens
-    if ($screen && (strpos($screen->id, 'mini') !== false || in_array($screen->base, ['post', 'post-new']))) {
-        $options = get_option('mini_main_settings');
-        $version = isset($options['mini_css_version']) ? sanitize_text_field($options['mini_css_version']) : 'latest';
-         
-        if ($version === 'latest') {
-            $css_url = 'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/css/mini.min.css';
+    // Load on mini admin pages OR post/page edit screens OR dashboard
+    if ($screen && (strpos($screen->id, 'mini') !== false || in_array($screen->base, ['post', 'post-new', 'dashboard']))) {
+        // Check theme CDN options first
+        $cdn_options = get_option('mini_cdn_options');
+        $theme_options = get_option('mini_theme_options');
+        $plugin_options = get_option('mini_main_settings');
+        
+        // Check if DEV CDN is enabled
+        if (is_array($cdn_options) && isset($cdn_options['cdn']) && $cdn_options['cdn'] && 
+            isset($cdn_options['cdn_dev']) && $cdn_options['cdn_dev']) {
+            // Use DEV CDN
+            $css_url = 'https://serversaur.doingthings.space/mini/css/mini.min.css';
+            $version = 'dev';
         } else {
-            $css_url = 'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini@' . esc_attr($version) . '/css/mini.min.css';
+            // Get version from theme or plugin options
+            if (isset($theme_options['mini_css_version'])) {
+                $version = sanitize_text_field($theme_options['mini_css_version']);
+            } elseif (isset($plugin_options['mini_css_version'])) {
+                $version = sanitize_text_field($plugin_options['mini_css_version']);
+            } else {
+                $version = 'latest';
+            }
+             
+            if ($version === 'latest') {
+                $css_url = 'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/css/mini.min.css';
+            } else {
+                $css_url = 'https://cdn.jsdelivr.net/gh/giacomorizzotti/mini@' . esc_attr($version) . '/css/mini.min.css';
+            }
         }
         
         wp_enqueue_style('mini-css', $css_url, array(), $version);
@@ -1614,9 +1710,9 @@ function mini_blogging_section_callback( $args ) {
     <div class="space"></div>
     <div class="boxes">
         <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="danger-text" for="mini_match"><?php esc_html_e( 'Disable blogging', 'mini' ); ?></h4>
+            <h4 class="danger-text" for="mini_disable_blogging"><?php esc_html_e( 'Disable blogging', 'mini' ); ?></h4>
             <?= mini_plugin_checkbox_option('mini_blogging_settings','mini_disable_blogging'); ?>
-            <p class="" for="mini_news">This option will <u>disable blogging features</u> including posts, blog archive pages and related admin menus.</p>
+            <p class="">This option will <u>disable blogging features</u> including posts, blog archive pages and related admin menus.</p>
         </div>
     </div>
     <?php
@@ -1906,6 +2002,10 @@ function mini_add_seo_meta_boxes() {
     }
     if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
         $post_types[] = 'slide';
+    }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
+        $post_types[] = 'course';
+        $post_types[] = 'lesson';
     }
     
     foreach ($post_types as $post_type) {
@@ -2340,4 +2440,335 @@ add_filter('pre_get_document_title', 'mini_override_document_title');
 /* END - SEO frontend output */
 
 
+/* START - Dashboard Customization */
+
+/**
+ * Remove default dashboard widgets
+ */
+function mini_remove_dashboard_widgets() {
+    // Remove WordPress default widgets
+    remove_meta_box('dashboard_quick_press', 'dashboard', 'side');          // Quick Draft
+    remove_meta_box('dashboard_recent_drafts', 'dashboard', 'side');        // Recent Drafts
+    remove_meta_box('dashboard_primary', 'dashboard', 'side');              // WordPress Events and News
+    remove_meta_box('dashboard_secondary', 'dashboard', 'side');            // Other WordPress News
+    remove_meta_box('dashboard_incoming_links', 'dashboard', 'normal');     // Incoming Links
+    remove_meta_box('dashboard_plugins', 'dashboard', 'normal');            // Plugins
+    remove_meta_box('dashboard_right_now', 'dashboard', 'normal');          // At a Glance (Right Now)
+    remove_meta_box('dashboard_recent_comments', 'dashboard', 'normal');    // Recent Comments
+    remove_meta_box('dashboard_activity', 'dashboard', 'normal');           // Activity
+    remove_meta_box('dashboard_site_health', 'dashboard', 'normal');        // Site Health Status
+    
+    // Remove Yoast SEO widget if it exists
+    //remove_meta_box('wpseo-dashboard-overview', 'dashboard', 'side');
+    
+    // Remove Jetpack widget if it exists
+    //remove_meta_box('jetpack_summary_widget', 'dashboard', 'normal');
+}
+add_action('wp_dashboard_setup', 'mini_remove_dashboard_widgets', 999);
+
+/**
+ * Add custom dashboard widgets
+ */
+function mini_add_custom_dashboard_widgets() {
+    wp_add_dashboard_widget(
+        'mini_content_stats',
+        __('Content Statistics', 'mini'),
+        'mini_content_stats_widget'
+    );
+    
+    wp_add_dashboard_widget(
+        'mini_recent_content',
+        __('Recent Content', 'mini'),
+        'mini_recent_content_widget'
+    );
+}
+add_action('wp_dashboard_setup', 'mini_add_custom_dashboard_widgets');
+
+/**
+ * Content Statistics Widget
+ */
+function mini_content_stats_widget() {
+    $stats = array();
+    
+    // Get counts for enabled post types
+    if (is_mini_option_enabled('mini_content_settings', 'mini_news')) {
+        $news_count = wp_count_posts('news');
+        $stats['news'] = array(
+            'label' => __('News', 'mini'),
+            'count' => $news_count->publish,
+            'icon' => 'dashicons-text-page'
+        );
+    }
+    
+    if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
+        $event_count = wp_count_posts('event');
+        $stats['event'] = array(
+            'label' => __('Events', 'mini'),
+            'count' => $event_count->publish,
+            'icon' => 'dashicons-calendar-alt'
+        );
+    }
+    
+    if (is_mini_option_enabled('mini_content_settings', 'mini_match')) {
+        $match_count = wp_count_posts('match');
+        $stats['match'] = array(
+            'label' => __('Matches', 'mini'),
+            'count' => $match_count->publish,
+            'icon' => 'dashicons-awards'
+        );
+    }
+    
+    if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
+        $course_count = wp_count_posts('course');
+        $lesson_count = wp_count_posts('lesson');
+        $stats['course'] = array(
+            'label' => __('Courses', 'mini'),
+            'count' => $course_count->publish,
+            'icon' => 'dashicons-welcome-learn-more'
+        );
+        $stats['lesson'] = array(
+            'label' => __('Lessons', 'mini'),
+            'count' => $lesson_count->publish,
+            'icon' => 'dashicons-book'
+        );
+    }
+    
+    if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
+        $slide_count = wp_count_posts('slide');
+        $stats['slide'] = array(
+            'label' => __('Slides', 'mini'),
+            'count' => $slide_count->publish,
+            'icon' => 'dashicons-images-alt2'
+        );
+    }
+    
+    // Default post types
+    $post_count = wp_count_posts('post');
+    $page_count = wp_count_posts('page');
+    
+    echo '<div class="boxes">';
+    
+    // Default content
+    
+    echo '<div class="mini-stat-item box-50 second-grainy-grad b-rad-10">';
+    echo '<p class="m-0"><span class="dashicons dashicons-admin-page white-text big block mx-auto" style="height: 40px; width: 40px;"></span></p>';
+        echo '<div class="space-05"></div>';
+    echo '<p class="huge white-text center m-0 mini-stat-count">' . esc_html($page_count->publish) . '</p>';
+    echo '<p class="white-text center m-0 mini-stat-label">' . esc_html__('Pages', 'mini') . '</p>';
+    echo '</div>';
+    
+    // Show Posts only if blogging is not disabled
+    if (!is_mini_option_enabled('mini_blogging_settings', 'mini_disable_blogging')) {
+        echo '<div class="mini-stat-item box-50 second-grainy-grad b-rad-10">';
+        echo '<p class="m-0"><span class="dashicons dashicons-admin-post white-text big block mx-auto" style="height: 40px; width: 40px;"></span></p>';
+        echo '<div class="space-05"></div>';
+        echo '<p class="huge white-text center m-0 mini-stat-count">' . esc_html($post_count->publish) . '</p>';
+        echo '<p class="white-text center m-0 mini-stat-label">' . esc_html__('Posts', 'mini') . '</p>';
+        echo '</div>';
+    }
+
+    // Custom post types
+    foreach ($stats as $stat) {
+        echo '<div class="mini-stat-item box-50 second-grainy-grad b-rad-10">';
+        echo '<p class="m-0"><span class="dashicons ' . esc_attr($stat['icon']) . ' white-text big block mx-auto" style="height: 40px; width: 40px;"></span></p>';
+        echo '<div class="space-05"></div>';
+        echo '<p class="huge white-text center m-0 mini-stat-count">' . esc_html($stat['count']) . '</p>';
+        echo '<p class="white-text center m-0 mini-stat-label">' . esc_html($stat['label']) . '</p>';
+        echo '</div>';
+    }
+    
+    echo '</div>';
+}
+
+/**
+ * Recent Content Widget
+ */
+function mini_recent_content_widget() {
+    $post_types = array('post', 'page');
+    
+    // Add enabled custom post types
+    if (is_mini_option_enabled('mini_content_settings', 'mini_news')) {
+        $post_types[] = 'news';
+    }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
+        $post_types[] = 'event';
+    }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_match')) {
+        $post_types[] = 'match';
+    }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
+        $post_types[] = 'course';
+        $post_types[] = 'lesson';
+    }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
+        $post_types[] = 'slide';
+    }
+    
+    $recent_posts = new WP_Query(array(
+        'post_type' => $post_types,
+        'posts_per_page' => 10,
+        'post_status' => 'publish',
+        'orderby' => 'date',
+        'order' => 'DESC'
+    ));
+    
+    if ($recent_posts->have_posts()) {
+        echo '<style>
+            .mini-recent-list {
+                margin: 0;
+                padding: 0;
+            }
+            .mini-recent-item {
+                padding: 10px 0;
+                border-bottom: 1px solid #f0f0f1;
+            }
+            .mini-recent-item:last-child {
+                border-bottom: none;
+            }
+            .mini-recent-title {
+                font-weight: 600;
+                margin-bottom: 4px;
+            }
+            .mini-recent-title a {
+                text-decoration: none;
+            }
+            .mini-recent-meta {
+                font-size: 12px;
+                color: #646970;
+            }
+            .mini-post-type-badge {
+                display: inline-block;
+                padding: 2px 8px;
+                background: #2271b1;
+                color: white;
+                border-radius: 3px;
+                font-size: 11px;
+                margin-right: 8px;
+            }
+        </style>';
+        
+        echo '<ul class="mini-recent-list">';
+        while ($recent_posts->have_posts()) {
+            $recent_posts->the_post();
+            $post_type_obj = get_post_type_object(get_post_type());
+            
+            echo '<li class="mini-recent-item">';
+            echo '<div class="mini-recent-title">';
+            echo '<a href="' . esc_url(get_edit_post_link()) . '">' . esc_html(get_the_title()) . '</a>';
+            echo '</div>';
+            echo '<div class="mini-recent-meta">';
+            echo '<span class="mini-post-type-badge">' . esc_html($post_type_obj->labels->singular_name) . '</span>';
+            echo esc_html(get_the_date());
+            echo '</div>';
+            echo '</li>';
+        }
+        echo '</ul>';
+        wp_reset_postdata();
+    } else {
+        echo '<p>' . esc_html__('No content found.', 'mini') . '</p>';
+    }
+}
+
+/**
+ * Add admin favicon (fallback if theme not active)
+ */
+function mini_admin_favicon() {
+    // Check if theme's favicon exists
+    $theme_favicon = get_stylesheet_directory() . '/favicon.ico';
+    
+    if (file_exists($theme_favicon)) {
+        echo "<link rel='shortcut icon' href='" . esc_url(get_stylesheet_directory_uri() . '/favicon.ico') . "' />\n";
+    } else {
+        // Fallback: check if plugin has a favicon
+        $plugin_favicon = plugin_dir_path(__FILE__) . 'favicon.ico';
+        if (file_exists($plugin_favicon)) {
+            echo "<link rel='shortcut icon' href='" . esc_url(plugin_dir_url(__FILE__) . 'favicon.ico') . "' />\n";
+        }
+    }
+}
+add_action('admin_head', 'mini_admin_favicon');
+add_action('login_head', 'mini_admin_favicon');
+
+/**
+ * Custom Welcome Message
+ */
+function mini_custom_welcome_panel() {
+    $current_user = wp_get_current_user();
+    $user_name = $current_user->display_name;
+    
+    ?>
+    <div class="boxes welcome-panel-content second-grainy-grad b-rad-10 box-shadow">
+        <div class="box-100 p-2 mini-welcome-panel">
+            <h2 class="white-text regular mb-0 mini-welcome-header">
+                <?php printf(__('Welcome back, <span class="bold">%s!</span>', 'mini'), esc_html($user_name)); ?>
+            </h2>
+            <p class="white-text L mt-0 mini-welcome-text">
+                <?php _e('Ready to create something amazing? Here are some quick actions to get you started.', 'mini'); ?>
+            </p>
+            <div class="space-2"></div>
+            <div class="mini-welcome-actions">
+                <?php
+                // Show buttons based on enabled post types
+                if (is_mini_option_enabled('mini_content_settings', 'mini_news')) {
+                    echo '<a href="' . esc_url(admin_url('post-new.php?post_type=news')) . '" class="btn white-btn-invert transparent-bg white-text mini-welcome-button">';
+                    echo '<span class="dashicons dashicons-text-page"></span>';
+                    echo __('Add News', 'mini');
+                    echo '</a>';
+                }
+                
+                if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
+                    echo '<a href="' . esc_url(admin_url('post-new.php?post_type=event')) . '" class="btn white-btn-invert transparent-bg white-text mini-welcome-button">';
+                    echo '<span class="dashicons dashicons-calendar-alt"></span>';
+                    echo __('Add Event', 'mini');
+                    echo '</a>';
+                }
+                
+                if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
+                    echo '<a href="' . esc_url(admin_url('post-new.php?post_type=course')) . '" class="btn white-btn-invert transparent-bg white-text mini-welcome-button">';
+                    echo '<span class="dashicons dashicons-welcome-learn-more"></span>';
+                    echo __('Add Course', 'mini');
+                    echo '</a>';
+                }
+                
+                // Show Add Post button only if blogging is not disabled
+                if (!is_mini_option_enabled('mini_blogging_settings', 'mini_disable_blogging')) {
+                    echo '<a href="' . esc_url(admin_url('post-new.php')) . '" class="btn white-btn-invert transparent-bg white-text mini-welcome-button">';
+                    echo '<span class="dashicons dashicons-admin-post"></span>';
+                    echo __('Add Post', 'mini');
+                    echo '</a>';
+                }
+                ?>
+                
+                <a href="<?php echo esc_url(admin_url('post-new.php?post_type=page')); ?>" class="btn white-btn-invert transparent-bg white-text mini-welcome-button">
+                    <span class="dashicons dashicons-admin-page"></span>
+                    <?php _e('Add Page', 'mini'); ?>
+                </a>
+                
+                <a href="<?php echo esc_url(home_url('/')); ?>" class="btn white-btn-invert transparent-bg white-text mini-welcome-button" target="_blank">
+                    <span class="dashicons dashicons-visibility"></span>
+                    <?php _e('View Site', 'mini'); ?>
+                </a>
+
+            </div>
+        </div>
+    </div>
+    <?php
+}
+
+/**
+ * Replace default welcome panel with custom one
+ */
+function mini_replace_welcome_panel() {
+    remove_action('welcome_panel', 'wp_welcome_panel');
+    add_action('welcome_panel', 'mini_custom_welcome_panel');
+    
+    // Ensure the welcome panel is visible for current user
+    $user_id = get_current_user_id();
+    if ( get_user_meta( $user_id, 'show_welcome_panel', true ) != 1 ) {
+        update_user_meta( $user_id, 'show_welcome_panel', 1 );
+    }
+}
+add_action('load-index.php', 'mini_replace_welcome_panel');
+
+/* END - Dashboard Customization */
 
