@@ -14,22 +14,15 @@ function is_mini_option_enabled($option_group, $option) {
     return is_array($options) && !empty($options[$option]);
 }
 
-function mini_plugin_checkbox_option(
-    string $option_group, 
-    string $option, 
-    string $status = '',
-) {
-    if (is_mini_option_enabled($option_group, $option)) {
-        $status = 'checked';
-    }
-    return '
-    <input
-        type="checkbox"
-        id="'.$option.'"
-        name="'.$option_group.'['.$option.']"
-        '.$status.'
-    >
-    ';
+function mini_plugin_checkbox_option(string $option_group, string $option) {
+    $checked = is_mini_option_enabled($option_group, $option) ? ' checked="checked"' : '';
+    return sprintf(
+        '<input type="checkbox" id="%s" name="%s[%s]" value="1"%s>',
+        esc_attr($option),
+        esc_attr($option_group),
+        esc_attr($option),
+        $checked
+    );
 }
 
 if (!function_exists('get_variable')) {
@@ -119,34 +112,74 @@ function mini_content_settings_init() {
 }
 add_action( 'admin_init', 'mini_content_settings_init' );
 function mini_content_section_callback( $args ) {
+    $slide_enabled = is_mini_option_enabled('mini_content_settings', 'mini_slide');
+    $news_enabled = is_mini_option_enabled('mini_content_settings', 'mini_news');
+    $event_enabled = is_mini_option_enabled('mini_content_settings', 'mini_event');
+    $match_enabled = is_mini_option_enabled('mini_content_settings', 'mini_match');
     ?>
     <p id="<?php echo esc_attr( $args['id'] ); ?>">
         <i>mini</i> allows you to manage many custom content types to extend WordPress features.
     </p>
     <div class="boxes">
         <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="" for="mini_match"><?php esc_html_e( 'Slides', 'mini' ); ?></h4>
-            <?= mini_plugin_checkbox_option('mini_content_settings','mini_slide'); ?>
-            <p class="" for="mini_slide">Enable the "Slide" content type to manage slideshows.</p>
+            <h4 class="grey-text light" for="mini_match"><?php esc_html_e( 'Slides', 'mini' ); ?></h4>
+            <label for="mini_slide" class="bold bk-text">    
+                <input
+                    type="checkbox"
+                    id="mini_slide"
+                    name="mini_content_settings[mini_slide]"
+                    class="me-1"
+                    value="1"
+                    <?php checked($slide_enabled, true); ?>
+                >
+                Enable the "Slide" content type to manage slideshows.
+            </label>
             <p class="S grey-text" for="mini_slide">It enables slides management (like posts or pages) and related admin menus.</p>
             <p class="S grey-text" for="mini_slide">This option loads <i>mini</i> <b>slider.js</b> library.</p>
         </div>
         <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="" for="mini_match"><?php esc_html_e( 'News', 'mini' ); ?></h4>
-            <?= mini_plugin_checkbox_option('mini_content_settings','mini_news'); ?>
-            <p class="" for="mini_news">Enable the "News" content type to manage news articles.</p>
+            <h4  class="grey-text light" for="mini_match"><?php esc_html_e( 'News', 'mini' ); ?></h4>
+            <label for="mini_news" class="bold bk-text">    
+                <input
+                    type="checkbox"
+                    id="mini_news"
+                    name="mini_content_settings[mini_news]"
+                    class="me-1"
+                    value="1"
+                    <?php checked($news_enabled, true); ?>
+                >
+                Enable the "News" content type to manage news articles.
+            </label>
             <p class="S grey-text" for="mini_news">It enables news management (like posts or pages) and related admin menus.</p>
         </div>
         <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="" for="mini_match"><?php esc_html_e( 'Events', 'mini' ); ?></h4>
-            <?= mini_plugin_checkbox_option('mini_content_settings','mini_event'); ?>
-            <p class="" for="mini_event">Enable the "Event" content type to manage events.</p>
+            <h4 class="grey-text light" for="mini_match"><?php esc_html_e( 'Events', 'mini' ); ?></h4>
+            <label for="mini_event" class="bold bk-text">    
+                <input
+                    type="checkbox"
+                    id="mini_event"
+                    name="mini_content_settings[mini_event]"
+                    class="me-1"
+                    value="1"
+                    <?php checked($event_enabled, true); ?>
+                >
+                Enable the "Event" content type to manage events.
+            </label>
             <p class="S grey-text" for="mini_event">It enables events management (like posts or pages) and related admin menus.</p>
         </div>
         <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="" for="mini_match"><?php esc_html_e( 'Matches', 'mini' ); ?></h4>
-            <?= mini_plugin_checkbox_option('mini_content_settings','mini_match'); ?>
-            <p class="" for="mini_match">Enable "Match" content type to manage sport events.</p>
+            <h4 class="grey-text light" for="mini_match"><?php esc_html_e( 'Matches', 'mini' ); ?></h4>
+            <label for="mini_match" class="bold bk-text">    
+                <input
+                    type="checkbox"
+                    id="mini_match"
+                    name="mini_content_settings[mini_match]"
+                    class="me-1"
+                    value="1"
+                    <?php checked($match_enabled, true); ?>
+                >
+                Enable the "Match" content type to manage sport events.
+            </label>
             <p class="S grey-text" for="mini_match">It enables matches management (like posts or pages) and related admin menus.</p>
         </div>
     </div>
@@ -659,7 +692,7 @@ function mini_plugin_main_page_html() {
         </div>
 
         <div class="box-100 p-2 mb-2">
-            <h4 class="grey-text regular"><?php _e('Recommended Plugins', 'mini'); ?></h4>
+            <h4 class="grey-text regular"><?php _e('Useful Plugins', 'mini'); ?></h4>
             <p><?php _e('Here are some useful plugins that work great with mini:', 'mini'); ?></p>            
             <div class="boxes">
                 <?php foreach ($recommended_plugins as $plugin) : 
@@ -673,7 +706,7 @@ function mini_plugin_main_page_html() {
                         $button_text = __('Active', 'mini');
                         $button_class = 'light-grey-btn grey-text';
                         $button_disabled = 'disabled';
-                        $status_color = 'success-bg';
+                        $status_color = 'success-text success-border';
                         $status = __('Active', 'mini');
                     } elseif ($is_installed) {
                         $activate_url = wp_nonce_url(
@@ -681,9 +714,9 @@ function mini_plugin_main_page_html() {
                             'activate-plugin_' . $plugin_file
                         );
                         $button_text = __('Activate', 'mini');
-                        $button_class = 'success-btn';
+                        $button_class = 'success-btn white-text';
                         $button_disabled = '';
-                        $status_color = 'warning-bg';
+                        $status_color = 'grey-text grey-border';
                         $status = __('Installed', 'mini');
                     } else {
                         $install_url = wp_nonce_url(
@@ -693,14 +726,14 @@ function mini_plugin_main_page_html() {
                         $button_text = __('Install', 'mini');
                         $button_class = 'success-btn';
                         $button_disabled = '';
-                        $status_color = 'grey-bg';
+                        $status_color = 'grey-text grey-border';
                         $status = __('Not installed', 'mini');
                     }
                 ?>
                 <div class="box-25 p-2 white-bg b-rad-5 box-shadow">
                     <h5 class="m-0">
                         <?php echo esc_html($plugin['name']); ?>
-                        <span class="flag white-text px-05 b-rad-5 <?php echo esc_attr($status_color); ?> XS"><?php echo esc_html($status); ?></span>
+                        <span class="flag px-05 b-rad-5 <?php echo esc_attr($status_color); ?> XS"><?php echo esc_html($status); ?></span>
                     </h5>
                     <p class="m-0 S"><?php echo esc_html($plugin['description']); ?></p>
                     <div class="space-15"></div>
