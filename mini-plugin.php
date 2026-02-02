@@ -2670,24 +2670,18 @@ function mini_recent_content_widget() {
 }
 
 /**
- * Add admin favicon (fallback if theme not active)
+ * Add favicon to admin and login areas
+ * Uses plugin's img/favicon.ico
  */
-function mini_admin_favicon() {
-    // Check if theme's favicon exists
-    $theme_favicon = get_stylesheet_directory() . '/favicon.ico';
-    
-    if (file_exists($theme_favicon)) {
-        echo "<link rel='shortcut icon' href='" . esc_url(get_stylesheet_directory_uri() . '/favicon.ico') . "' />\n";
-    } else {
-        // Fallback: check if plugin has a favicon
-        $plugin_favicon = plugin_dir_path(__FILE__) . 'favicon.ico';
-        if (file_exists($plugin_favicon)) {
-            echo "<link rel='shortcut icon' href='" . esc_url(plugin_dir_url(__FILE__) . 'favicon.ico') . "' />\n";
-        }
+function mini_plugin_favicon() {
+    $favicon_path = plugin_dir_path(__FILE__) . 'img/favicon.ico';
+    if (file_exists($favicon_path)) {
+        $favicon_url = plugin_dir_url(__FILE__) . 'img/favicon.ico';
+        echo "<link rel='shortcut icon' href='" . esc_url($favicon_url) . "' />\n";
     }
 }
-add_action('admin_head', 'mini_admin_favicon');
-add_action('login_head', 'mini_admin_favicon');
+add_action('admin_head', 'mini_plugin_favicon');
+add_action('login_head', 'mini_plugin_favicon');
 
 /**
  * Custom Welcome Message
