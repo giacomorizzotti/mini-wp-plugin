@@ -2550,30 +2550,30 @@ function mini_content_stats_widget() {
     
     // Default content
     
-    echo '<div class="mini-stat-item box-50 second-grainy-grad b-rad-10">';
-    echo '<p class="m-0"><span class="dashicons dashicons-admin-page white-text big block mx-auto" style="height: 40px; width: 40px;"></span></p>';
-        echo '<div class="space-05"></div>';
-    echo '<p class="huge white-text center m-0 mini-stat-count">' . esc_html($page_count->publish) . '</p>';
-    echo '<p class="white-text center m-0 mini-stat-label">' . esc_html__('Pages', 'mini') . '</p>';
+    echo '<div class="mini-stat-item box-50 false-white-border border-5 b-rad-10">';
+    echo '<p class="m-0"><span class="dashicons dashicons-admin-page third-color-text big block mx-auto" style="height: 40px; width: 40px;"></span></p>';
+    echo '<div class="space-05"></div>';
+    echo '<p class="giant center m-0 mini-stat-count">' . esc_html($page_count->publish) . '</p>';
+    echo '<p class="center m-0 mini-stat-label">' . esc_html__('Pages', 'mini') . '</p>';
     echo '</div>';
     
     // Show Posts only if blogging is not disabled
     if (!is_mini_option_enabled('mini_blogging_settings', 'mini_disable_blogging')) {
-        echo '<div class="mini-stat-item box-50 second-grainy-grad b-rad-10">';
-        echo '<p class="m-0"><span class="dashicons dashicons-admin-post white-text big block mx-auto" style="height: 40px; width: 40px;"></span></p>';
+        echo '<div class="mini-stat-item box-50 false-white-border border-5 b-rad-10">';
+        echo '<p class="m-0"><span class="dashicons dashicons-admin-post third-color-text big block mx-auto" style="height: 40px; width: 40px;"></span></p>';
         echo '<div class="space-05"></div>';
-        echo '<p class="huge white-text center m-0 mini-stat-count">' . esc_html($post_count->publish) . '</p>';
-        echo '<p class="white-text center m-0 mini-stat-label">' . esc_html__('Posts', 'mini') . '</p>';
+        echo '<p class="giant center m-0 mini-stat-count">' . esc_html($post_count->publish) . '</p>';
+        echo '<p class="center m-0 mini-stat-label">' . esc_html__('Posts', 'mini') . '</p>';
         echo '</div>';
     }
 
     // Custom post types
     foreach ($stats as $stat) {
-        echo '<div class="mini-stat-item box-50 second-grainy-grad b-rad-10">';
-        echo '<p class="m-0"><span class="dashicons ' . esc_attr($stat['icon']) . ' white-text big block mx-auto" style="height: 40px; width: 40px;"></span></p>';
+        echo '<div class="mini-stat-item box-50 false-white-border border-5 b-rad-10">';
+        echo '<p class="m-0"><span class="dashicons ' . esc_attr($stat['icon']) . ' third-color-text big block mx-auto" style="height: 40px; width: 40px;"></span></p>';
         echo '<div class="space-05"></div>';
-        echo '<p class="huge white-text center m-0 mini-stat-count">' . esc_html($stat['count']) . '</p>';
-        echo '<p class="white-text center m-0 mini-stat-label">' . esc_html($stat['label']) . '</p>';
+        echo '<p class="giant center m-0 mini-stat-count">' . esc_html($stat['count']) . '</p>';
+        echo '<p class="center m-0 mini-stat-label">' . esc_html($stat['label']) . '</p>';
         echo '</div>';
     }
     
@@ -2613,53 +2613,20 @@ function mini_recent_content_widget() {
     ));
     
     if ($recent_posts->have_posts()) {
-        echo '<style>
-            .mini-recent-list {
-                margin: 0;
-                padding: 0;
-            }
-            .mini-recent-item {
-                padding: 10px 0;
-                border-bottom: 1px solid #f0f0f1;
-            }
-            .mini-recent-item:last-child {
-                border-bottom: none;
-            }
-            .mini-recent-title {
-                font-weight: 600;
-                margin-bottom: 4px;
-            }
-            .mini-recent-title a {
-                text-decoration: none;
-            }
-            .mini-recent-meta {
-                font-size: 12px;
-                color: #646970;
-            }
-            .mini-post-type-badge {
-                display: inline-block;
-                padding: 2px 8px;
-                background: #2271b1;
-                color: white;
-                border-radius: 3px;
-                font-size: 11px;
-                margin-right: 8px;
-            }
-        </style>';
         
         echo '<ul class="mini-recent-list">';
         while ($recent_posts->have_posts()) {
             $recent_posts->the_post();
             $post_type_obj = get_post_type_object(get_post_type());
             
-            echo '<li class="mini-recent-item">';
-            echo '<div class="mini-recent-title">';
+            echo '<li class=" mb-1 mini-recent-item">';
+            echo '<p class="bold mb-0 mini-recent-title">';
             echo '<a href="' . esc_url(get_edit_post_link()) . '">' . esc_html(get_the_title()) . '</a>';
-            echo '</div>';
-            echo '<div class="mini-recent-meta">';
-            echo '<span class="mini-post-type-badge">' . esc_html($post_type_obj->labels->singular_name) . '</span>';
+            echo '&nbsp;&nbsp;<span class="flag third-color-bg b-rad-3 white-text mini-post-type-badge">' . esc_html($post_type_obj->labels->singular_name) . '</span>';
+            echo '</p>';
+            echo '<p class="mt-0 S grey-text mini-recent-meta">';
             echo esc_html(get_the_date());
-            echo '</div>';
+            echo '</p>';
             echo '</li>';
         }
         echo '</ul>';
@@ -2691,10 +2658,16 @@ function mini_custom_welcome_panel() {
     $user_name = $current_user->display_name;
     
     ?>
-    <div class="boxes welcome-panel-content second-grainy-grad b-rad-10 box-shadow">
+    <div class="boxes welcome-panel-content mini-second-grainy-grad b-rad-10 box-shadow">
         <div class="box-100 p-2 mini-welcome-panel">
             <h2 class="white-text regular mb-0 mini-welcome-header">
-                <?php printf(__('Welcome back, <span class="bold">%s!</span>', 'mini'), esc_html($user_name)); ?>
+                <?php 
+                if (!empty($user_name)) {
+                    printf(__('Ciao, <span class="bold">%s!</span>', 'mini'), esc_html($user_name));
+                } else {
+                    _e('Ciao!', 'mini');
+                }
+                ?>
             </h2>
             <p class="white-text L mt-0 mini-welcome-text">
                 <?php _e('Ready to create something amazing? Here are some quick actions to get you started.', 'mini'); ?>
