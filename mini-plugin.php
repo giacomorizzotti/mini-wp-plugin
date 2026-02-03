@@ -46,6 +46,9 @@ function get_italian_date_formatters() {
 }
 /* END - Useful functions */
 
+/* Include shortcodes */
+require_once plugin_dir_path(__FILE__) . 'inc/shortcodes.php';
+
 /* START - Default menus */
 function mini_create_default_menus() {
     // Register menu locations
@@ -815,132 +818,12 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_news')) {
     });
 }
 
-/* NEWS - shortcodes */
-function get_latest_news_callback() {
-    $args = array(
-        'posts_per_page' => 3,
-        'orderby' => 'post_date',
-        'order' => 'DESC',
-        'post_type' => 'news',
-        'post_status' => 'publish',
-        'no_found_rows' => true,
-        'update_post_meta_cache' => false,
-        'update_post_term_cache' => false,
-    );
-    
-    $query = new WP_Query($args);
-    
-    if (!$query->have_posts()) {
-        wp_reset_postdata();
-        return '';
-    }
-    
-    ob_start();
-    ?>
-    <div class="boxes">
-    <?php
-    $n = 1;
-    while ($query->have_posts()) : $query->the_post();
-        $box_class = ($n === 1) ? 'box-100' : 'box-50';
-        $delay = ($n > 1) ? 'data-aos-delay="' . esc_attr(150 * ($n - 1)) . '"' : '';
-        $has_thumbnail = has_post_thumbnail();
-        $inner_box_class = $has_thumbnail ? 'box-50' : 'box-100';
-        ?>
-        <div class="<?php echo esc_attr($box_class); ?> my-0 p-0" data-aos="fade-up" <?php echo $delay; ?>>
-            <div class="boxes">
-                <?php if ($has_thumbnail) : ?>
-                    <div class="box-50">
-                        <a href="<?php the_permalink(); ?>"><?php the_post_thumbnail('large', ['class' => 'img']); ?></a>
-                    </div>
-                <?php endif; ?>
-                <div class="<?php echo esc_attr($inner_box_class); ?>">
-                    <h3>
-                        <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
-                    </h3>
-                    <p><?php the_excerpt(); ?></p>
-                    <p>
-                        <a href="<?php the_permalink(); ?>" class="btn"><?php esc_html_e('Read more', 'mini'); ?></a>
-                    </p>
-                </div>
-            </div>
-        </div>
-        <?php
-        $n++;
-    endwhile;
-    ?>
-    </div>
-    <?php
-    wp_reset_postdata();
-    return ob_get_clean();
-}
-add_shortcode('latest_news', 'get_latest_news_callback');
-/* END - Custom post type - NEWS */
-
 /* START - Custom post type - SLIDE */
 if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
     add_action('init', function() {
         register_mini_post_type('slide', 'Slide', 'Slides', 'dashicons-slides', false);
     });
 }
-
-/* SLIDE - shortcodes */
-function get_slides_callback($number=3) {
-    $args = array(
-        'posts_per_page' => absint($number),
-        'orderby' => 'post_date',
-        'order' => 'DESC',
-        'post_type' => 'slide',
-        'post_status' => 'publish',
-        'no_found_rows' => true,
-    );
-    $query = new WP_Query($args);
-    if ($query->have_posts()) :
-        $slider = '';
-        $slider .= '
-<div class="container fw grad-fw-down-w">
-    <div class="container fw">
-        <div class="slider-wrapper">
-            <i id="left" class="iconoir-arrow-left-circle slider-controls"></i>
-            <ul class="slider fh">
-        ';
-        $n=1;
-        while ($query->have_posts()) : $query->the_post();
-            $slider .= '
-                <li class="slide">
-            ';
-            if (get_the_post_thumbnail(get_the_ID())!=false) {
-            $slider .= '
-                    <div class="img">
-                        <img src="'.get_the_post_thumbnail_url(get_the_ID()).'" alt="" draggable="false" />
-                    </div>
-            ';
-            }
-            $container_width = get_post_meta(get_the_ID(), 'page_container', true);
-            $slider .= '                    
-                    <div class="caption">
-                        <div class="container '.$container_width.'">
-                        '.get_the_content(get_the_ID()).'
-                        </div>
-                    </div>
-                </li>
-            ';
-        $n++;
-        endwhile;
-        $slider .= '
-            </ul>
-            <i id="right" class="iconoir-arrow-right-circle slider-controls"></i>
-        </div>
-    </div>
-</div>
-        ';
-        wp_reset_postdata();
-        return $slider;
-    endif;
-    
-    return '';
-}
-add_shortcode('slider', 'get_slides_callback');
-/* END - Custom post type - SLIDE */
 
 /* START - Custom post type - EVENT */
 if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
@@ -949,370 +832,12 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
     });
 }
 
-/* EVENT shortcodes */
-function get_next_event_callback($num = 1) {
-    $args = array(
-        'posts_per_page' => absint($num),
-        'meta_key' => 'event_date',
-        'orderby' => 'meta_value',
-        'order' => 'DESC',
-        'post_type' => 'event',
-        'post_status' => 'publish',
-        'no_found_rows' => true,
-    );
-    $query = new WP_Query($args);
-    if ($query->have_posts()) :
-        $n=1;
-        $event_list = '';
-        while ($query->have_posts()) : $query->the_post();
-            $to_come=false;
-            if ( get_post_meta(get_the_ID(), 'event_date') != null && get_post_meta(get_the_ID(), 'event_date')[0] >= date("Y-m-d H:i:s") ) { $to_come = True; }
-            if ( $n <= $num && $to_come == true ) {
-                $event_list .= '
-<div class="boxes g-0">
-    <div class="box-100 my-0">
-        <h4 class="XL m-0">
-            <a href="'.get_the_permalink().'" class="wh-box m-0">'.get_the_title().'</a>
-        </h4>
-    </div>
-                ';
-                if (
-                    get_post_meta(get_the_ID(), 'event_date')[0] != null ||
-                    get_post_meta(get_the_ID(), 'event_time')[0] != null) {
-                    if (get_post_meta(get_the_ID(), 'event_date')[0] != null) {
-                        $formatters = get_italian_date_formatters();
-                        $event_date = strtotime(get_post_meta(get_the_ID(), 'event_date')[0]);
-                        $event_date_day_name = $formatters['day_name']->format($event_date);
-                        $event_date_day = $formatters['day_number']->format($event_date);
-                        $event_date_month = $formatters['month']->format($event_date);
-                        $event_date_year = $formatters['year']->format($event_date);
-                        $event_list .= '
-    <div class="box-50 my-0">
-        <div class="date-time-box flex flex-wrap">
-            <div class="block flex w-100 flex-direction-row flex-wrap">
-                <div class="flex">
-                    <p class="m-0" style="line-height: 1!important;">
-                        <span class="square flex align-items-center justify-content-center second-color-box huge black py-1 px-2 m-0" style="min-width: 140px;">'.$event_date_day.'</span>
-                    </p>
-                    <div class="flex flex-direction-column">
-                        <div class="flex">
-                            <p class="m-0 up-case L">
-                                <span class="second-color-dark-box px-15 m-0">'.$event_date_day_name.'</span>
-                            </p>
-                        </div>
-                        <div class="flex">
-                            <p class="m-0 bold XL"><span class="second-color-box px-15 m-0">'.ucfirst($event_date_month).'</span></p><p class="m-0 XL light"><span class="second-color-dark-box m-0">'.$event_date_year.'</span></p>
-                        </div>
-                        <div class="flex">
-                        ';
-                    }
-                    if (get_post_meta(get_the_ID(), 'event_time')[0] != null) {
-                        $event_time = date('H:i', strtotime(get_post_meta(get_the_ID(), 'event_time')[0]));
-                        $event_list .= '
-                            <div class="time-box">
-                                <p class="m-0 wh-text up-case XL bold" >
-                                    <span class="second-color-dark-box m-0">'.$event_time.'</span>
-                                </p>
-                            </div>
-                        ';
-                    }
-                    $event_list .= '
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-                    ';
-                    if ( 
-                        get_post_meta(get_the_ID(), 'location_name')[0] != null ||
-                        get_post_meta(get_the_ID(), 'location_address')[0] != null
-                    ) {
-                        $event_list .= '
-        <div class="location-box">
-                        ';
-                        if ( get_post_meta(get_the_ID(), 'location_name')[0] != null ) {
-                            $event_list .= '
-            <h4 class="m-0 bold XL">
-                '.get_post_meta(get_the_ID(), 'location_name')[0].'
-            </h4>
-                            ';
-                        }
-                        if ( get_post_meta(get_the_ID(), 'location_address')[0] != null ) {
-                            $event_list .= '
-            <div class="sep"></div>
-            <p class="m-0">
-                '.get_post_meta(get_the_ID(), 'location_address')[0].'
-            </p>
-                        ';
-                        }
-                        $event_list .= '
-        </div>
-                        ';
-                    }
-                    /*
-                    if (get_the_post_thumbnail(get_the_ID())!=false) {
-                        if ($box < 100 ) {
-                            $match_list .= '
-                                <div class="box-100 my-0">
-                                <a href="'.get_the_permalink().'">'.get_the_post_thumbnail(get_the_ID()).'</a>
-                                </div>
-                            ';
-                        } else {
-                            $match_list .= '
-                                <div class="box-33">
-                                <a href="'.get_the_permalink().'">'.get_the_post_thumbnail(get_the_ID()).'</a>
-                                </div>
-                            ';
-                        }
-                    } 
-                    */
-                }
-                $event_list .= '
-    </div>
-</div>
-                ';
-            }
-            if ($to_come == true) { $n++; }
-        endwhile;
-        wp_reset_postdata();
-        return $event_list;
-    endif;
-    
-    return '';
-}
-add_shortcode('next_event', 'get_next_event_callback');
-add_shortcode('next_events', function() { return get_next_event_callback(3); });
-add_shortcode('next_3_events', function() { return get_next_event_callback(3); });
-add_shortcode('next_4_events', function() { return get_next_event_callback(4); });
-/* END - Custom post type - EVENT */
-
 /* START - Custom post type - MATCH */
 if (is_mini_option_enabled('mini_content_settings', 'mini_match')) {
     add_action('init', function() {
         register_mini_post_type('match', 'Match', 'Matches', 'dashicons-superhero');
     });
 }
-
-/* MATCH shortcodes */
-function get_next_match_callback($num = 1, $invert = false) {
-    $text_color = 'col-text';
-    $location_name_box_color = 'bk-box';
-    $location_address_box_color = 'white-box';
-    if ($invert == true) {
-        $text_color = 'wh-text';
-        $location_name_box_color = 'wh-box';
-        $location_address_box_color = 'light-grey-box';
-    }
-    $args = array(
-        'posts_per_page' => absint($num),
-        'meta_key' => 'event_date',
-        'orderby' => 'meta_value',
-        'order' => 'DESC',
-        'post_type' => 'match',
-        'post_status' => 'publish',
-        'no_found_rows' => true,
-    );
-    $query = new WP_Query($args);
-    if ($query->have_posts()) :
-        $n=1;
-        $match_list = '';
-        while ($query->have_posts()) : $query->the_post();
-            $to_come=false;
-            if ( get_post_meta(get_the_ID(), 'event_date') != null && get_post_meta(get_the_ID(), 'event_date')[0] >= date("Y-m-d") ) { $to_come = True; }
-            if ( $n <= $num && $to_come == true ) {
-                $match_list .= '
-<div class="boxes g-0">
-    <div class="box-100 my-0">
-        <h4 class="XL m-0">
-            <a href="'.get_the_permalink().'" class="'.$text_color.' wh-box m-0">'.get_the_title().'</a>
-        </h4>
-    </div>
-                ';
-				if (
-					get_post_meta(get_the_ID(), 'team_1')[0] != null && 
-					get_post_meta(get_the_ID(), 'team_2')[0] != null
-				) {
-                    $match_list .= '
-    <div class="box-zero-50 box-sm-25">
-        <div class="boxes g-0">
-                    ';
-                    if ( get_post_meta(get_the_ID(), 'team_1_logo')[0] ) {
-                        $team_1_logo = get_post_meta(get_the_ID(), 'team_1_logo')[0];
-                        $match_list .= '
-            <div class="box-100 p-15 mb-1 square wh-bg">
-                <div style="background-image: url(\''.$team_1_logo.'\'); background-position: center; background-size: contain; background-repeat: no-repeat; display: block; width: 100%; height: 100%;"></div>
-            </div>
-                        ';
-                    }
-                /*
-                if ( get_post_meta(get_the_ID(), 'team_1_score')) {
-                    $team_1_score = get_post_meta(get_the_ID(), 'team_1_score')[0];
-                    $match_list .= '
-            <div class="box-zero-50 second-color-bg flex align-items-center justify-content-center">
-                <h3 class="huge center wh-text">'.$team_1_score.'</h3>
-            </div>
-                    ';
-                }
-                */
-                    $team_1 = get_post_meta(get_the_ID(), 'team_1')[0];
-                    $match_list .= '
-            <div class="box-100 second-color-dark-bg">
-                <h2 class="XL wh-text m-0">'.$team_1.'</h2>
-            </div>
-        </div>
-    </div>
-    <div class="box-zero-50 box-sm-25">
-        <div class="boxes g-0">
-                    ';
-                    if ( get_post_meta(get_the_ID(), 'team_2_logo')[0] ) {
-                        $team_2_logo = get_post_meta(get_the_ID(), 'team_2_logo')[0];
-                        $match_list .= '
-                        <div class="box-100 p-15 mb-1 square wh-bg">
-                            <div style="background-image: url(\''.$team_2_logo.'\'); background-position: center; background-size: contain; background-repeat: no-repeat; display: block; width: 100%; height: 100%;"></div>
-                        </div>
-                        ';
-                    }
-                    /*
-                    if ( get_post_meta(get_the_ID(), 'team_2_score')) {
-                        $team_2_score = get_post_meta(get_the_ID(), 'team_2_score')[0];
-                        $match_list .= '
-                        <div class="box-zero-50 second-color-bg flex align-items-center justify-content-center">
-                            <h3 class="huge center wh-text">'.$team_2_score.'</h3>
-                        </div>
-                        ';
-                    }
-                    */
-                    $team_2 = get_post_meta(get_the_ID(), 'team_2')[0];
-                    $match_list .= '
-            <div class="box-100 second-color-dark-bg">
-                <h2 class="XL wh-text m-0">'.$team_2.'</h2>
-            </div>
-                    ';
-                    $match_list .= '
-        </div>
-    </div>
-                    ';
-                }
-                if (
-                    get_post_meta(get_the_ID(), 'event_date')[0] != null ||
-                    get_post_meta(get_the_ID(), 'event_time')[0] != null) {
-                    if (get_post_meta(get_the_ID(), 'event_date') != null) {
-                        $formatters = get_italian_date_formatters();
-                        $match_date = strtotime(get_post_meta(get_the_ID(), 'event_date')[0]);
-                        $match_date_day_name = $formatters['day_name']->format($match_date);
-                        $match_date_day = $formatters['day_number']->format($match_date);
-                        $match_date_month = $formatters['month']->format($match_date);
-                        $match_date_year = $formatters['year']->format($match_date);
-                        $match_list .= '
-    <div class="box-50 my-0">
-        <div class="date-time-box flex flex-wrap">
-            <div class="block flex w-100 flex-direction-row flex-wrap">
-                <div class="flex">
-                    <p class="m-0" style="line-height: 1!important;">
-                        <span class="square flex align-items-center justify-content-center color-box huge black py-1 px-2 m-0" style="min-width: 140px;">'.$match_date_day.'</span>
-                    </p>
-                    <div class="flex flex-direction-column">
-                        <div class="flex">
-                            <p class="m-0 up-case L">
-                                <span class="color-dark-box px-15 m-0">'.$match_date_day_name.'</span>
-                            </p>
-                        </div>
-                        <div class="flex">
-                            <p class="m-0 bold XL"><span class="color-box px-15 m-0">'.ucfirst($match_date_month).'</span></p><p class="m-0 XL light"><span class="color-dark-box m-0">'.$match_date_year.'</span></p>
-                        </div>
-                        <div class="flex">
-                        ';
-                    }
-                    if (get_post_meta(get_the_ID(), 'event_time')[0] != null) {
-                        $match_time = date('H:i', strtotime(get_post_meta(get_the_ID(), 'event_time')[0]));
-                        $match_list .= '
-                            <div class="time-box">
-                                <p class="m-0 wh-text up-case XL bold" >
-                                    <span class="color-dark-box m-0">'.$match_time.'</span>
-                                </p>
-                            </div>
-                        ';
-                    }
-                    $match_list .= '
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-                    ';
-                    if ( 
-                        get_post_meta(get_the_ID(), 'location_name')[0] != null ||
-                        get_post_meta(get_the_ID(), 'location_address')[0] != null
-                    ) {
-                        $match_list .= '
-        <div class="location-box">
-                        ';
-                        if ( get_post_meta(get_the_ID(), 'location_name') != null ) {
-                            $match_list .= '
-            <h4 class="m-0 bold XL '.$location_name_box_color.'">
-                '.get_post_meta(get_the_ID(), 'location_name')[0].'
-            </h4>
-                            ';
-                        }
-                        if ( get_post_meta(get_the_ID(), 'location_address') != null ) {
-                            $match_list .= '
-            <div class="sep"></div>
-            <p class="m-0 '.$location_address_box_color.'">
-                '.get_post_meta(get_the_ID(), 'location_address')[0].'
-            </p>
-                        ';
-                        }
-                        $match_list .= '
-        </div>
-                        ';
-                    }
-                    /*
-                    if (get_the_post_thumbnail(get_the_ID())!=false) {
-                        if ($box < 100 ) {
-                            $match_list .= '
-                                <div class="box-100 my-0">
-                                <a href="'.get_the_permalink().'">'.get_the_post_thumbnail(get_the_ID()).'</a>
-                                </div>
-                            ';
-                        } else {
-                            $match_list .= '
-                                <div class="box-33">
-                                <a href="'.get_the_permalink().'">'.get_the_post_thumbnail(get_the_ID()).'</a>
-                                </div>
-                            ';
-                        }
-                    } 
-                        */
-                }
-                $match_list .= '
-    </div>
-</div>
-                ';
-            } else {
-        $match_list = '
-<div class="boxes g-0">
-    <div class="box-100">
-        <h4 class="m-0">
-            <p> <span class="wh-box">'.__('No matches to show', 'mini').'</span></p>
-        </h4>
-    </div>
-</div>
-        ';
-            }
-            if ($to_come == true) { $n++; }
-        endwhile;
-        wp_reset_postdata();
-        return $match_list;
-    endif;
-    
-    return '';
-}
-add_shortcode('next_match', 'get_next_match_callback');
-add_shortcode('next_match_inv', function() { return get_next_match_callback(1, true); });
-add_shortcode('next_matches', function() { return get_next_match_callback(3, false); });
-add_shortcode('next_3_matches', function() { return get_next_match_callback(3, false); });
-add_shortcode('next_4_matches', function() { return get_next_match_callback(4, false); });
-/* END - Custom post type - MATCH */
 
 /* START - Custom post type - COURSE */
 if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
@@ -1385,14 +910,24 @@ function date_time_box_html( $post, $meta ){
     $end_date_value = get_post_meta( $post->ID, 'event_end_date', true) ?: '';
     $time_value = get_post_meta( $post->ID, 'event_time', true) ?: '';
     $end_time_value = get_post_meta( $post->ID, 'event_end_time', true) ?: '';
+    $has_end_date = !empty($end_date_value);
+    $has_end_time = !empty($end_time_value);
     ?>
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 1rem;">
         <div style="flex: 1; margin-bottom: 0.5rem;">
             <label for="event_date" style="margin-bottom: 0.5rem; display: block;"><?php _e('Date', 'mini'); ?>:</label>
             <input type="date" id="event_date" name="event_date" value="<?php echo esc_attr($date_value); ?>" style="min-width: 220px; display: block;" />
         </div>
+    </div>
+    <div style="margin-bottom: 1rem;">
+        <label>
+            <input type="checkbox" id="event_has_end_date" <?php checked($has_end_date); ?> />
+            <?php _e('End date', 'mini'); ?>
+        </label>
+    </div>
+    <div id="event_end_date_wrapper" style="display: <?php echo $has_end_date ? 'block' : 'none'; ?>; margin-bottom: 1rem;">
         <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="event_end_date" style="margin-bottom: 0.5rem; display: block;"><?php _e('End date (optional)', 'mini'); ?>:</label>
+            <label for="event_end_date" style="margin-bottom: 0.5rem; display: block;"><?php _e('End date', 'mini'); ?>:</label>
             <input type="date" id="event_end_date" name="event_end_date" value="<?php echo esc_attr($end_date_value); ?>" style="min-width: 220px; display: block;" />
         </div>
     </div>
@@ -1401,11 +936,52 @@ function date_time_box_html( $post, $meta ){
             <label for="event_time" style="margin-bottom: 0.5rem; display: block;"><?php _e('Time', 'mini'); ?>:</label>
             <input type="time" id="event_time" name="event_time" value="<?php echo esc_attr($time_value); ?>" style="min-width: 220px; display: block;" />
         </div>
+    </div>
+    <div style="margin-bottom: 1rem;">
+        <label>
+            <input type="checkbox" id="event_has_end_time" <?php checked($has_end_time); ?> />
+            <?php _e('End time', 'mini'); ?>
+        </label>
+    </div>
+    <div id="event_end_time_wrapper" style="display: <?php echo $has_end_time ? 'block' : 'none'; ?>; margin-bottom: 1rem;">
         <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="event_end_time" style="margin-bottom: 0.5rem; display: block;"><?php _e('End time (optional)', 'mini'); ?>:</label>
+            <label for="event_end_time" style="margin-bottom: 0.5rem; display: block;"><?php _e('End time', 'mini'); ?>:</label>
             <input type="time" id="event_end_time" name="event_end_time" value="<?php echo esc_attr($end_time_value); ?>" style="min-width: 220px; display: block;" />
         </div>
     </div>
+    <script>
+    (function() {
+        var endDateCheckbox = document.getElementById('event_has_end_date');
+        var endDateWrapper = document.getElementById('event_end_date_wrapper');
+        var endDateInput = document.getElementById('event_end_date');
+        
+        var endTimeCheckbox = document.getElementById('event_has_end_time');
+        var endTimeWrapper = document.getElementById('event_end_time_wrapper');
+        var endTimeInput = document.getElementById('event_end_time');
+        
+        if (endDateCheckbox) {
+            endDateCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    endDateWrapper.style.display = 'block';
+                } else {
+                    endDateWrapper.style.display = 'none';
+                    endDateInput.value = '';
+                }
+            });
+        }
+        
+        if (endTimeCheckbox) {
+            endTimeCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    endTimeWrapper.style.display = 'block';
+                } else {
+                    endTimeWrapper.style.display = 'none';
+                    endTimeInput.value = '';
+                }
+            });
+        }
+    })();
+    </script>
     <?php
 }
 function date_time_save_postdata( $post_id ) {
@@ -1478,10 +1054,9 @@ add_action( 'save_post', 'teams_save_postdata' );
 function add_teams_box() {
     add_meta_box(
         'teams',
-        esc_html__( 'Teams', 'mini' ),
+        __( 'Teams', 'mini' ),
         'teams_box_html',
         ['match'],
-        #'side'
         'normal'
     );
 }
@@ -1493,46 +1068,150 @@ function teams_box_html( $post, $meta ){
     $team_2_logo_value = get_post_meta( $post->ID, 'team_2_logo', true) ?: '';
     $team_2_score_value = get_post_meta( $post->ID, 'team_2_score', true) ?: '';
     ?>
-    <div style="display: flex; flex-flow: row wrap;">
-        <div style="flex: 1;">
-            <h3><?php _e('Team one', 'mini'); ?></h3>
+    <div class="boxes">
+        <div class="box-50 p-0">
+            <div class="boxes">
+                <div class="box-100">
+                    <h3><?php _e('Team one', 'mini'); ?></h3>
+                </div>
+                <div class="box-100">
+                    <label for="team_1" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team one', 'mini'); ?>:</label>
+                    <input type="text" id="team_1" name="team_1" value="<?php echo esc_attr($team_1_value); ?>"/>
+                </div>
+                <div class="box-100">
+                    <label for="team_1_logo" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team one logo', 'mini'); ?>:</label>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <input type="text" id="team_1_logo" name="team_1_logo" value="<?php echo esc_attr($team_1_logo_value); ?>" style="flex: 1;"/>
+                        <button type="button" class="button" id="team_1_logo_button"><?php _e('Select Image', 'mini'); ?></button>
+                    </div>
+                    <?php if ($team_1_logo_value): ?>
+                    <div id="team_1_logo_preview" style="margin-top: 0.5rem;">
+                        <img src="<?php echo esc_url($team_1_logo_value); ?>" style="max-width: 150px; height: auto; border: 1px solid #ddd; border-radius: 4px;"/>
+                    </div>
+                    <?php else: ?>
+                    <div id="team_1_logo_preview" style="margin-top: 0.5rem; display: none;">
+                        <img src="" style="max-width: 150px; height: auto; border: 1px solid #ddd; border-radius: 4px;"/>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <div class="box-50">
+                    <label for="team_1_score" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team one score', 'mini'); ?>:</label>
+                    <input type="text" id="team_1_score" name="team_1_score" value="<?php echo esc_attr($team_1_score_value); ?>"/>
+                </div>
+            </div>
+        </div>
+        <div class="box-50 p-0">
+            <div class="boxes">
+                <div class="box-100">
+                    <h3><?php _e('Team two', 'mini'); ?></h3>
+                </div>
+                <div class="box-100">
+                    <label for="team_2" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team two', 'mini'); ?>:</label>
+                    <input type="text" id="team_2" name="team_2" value="<?php echo esc_attr($team_2_value); ?>"/>
+                </div>
+                <div class="box-100">
+                    <label for="team_2_logo" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team two logo', 'mini'); ?>:</label>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <input type="text" id="team_2_logo" name="team_2_logo" value="<?php echo esc_attr($team_2_logo_value); ?>" style="flex: 1;"/>
+                        <button type="button" class="button" id="team_2_logo_button"><?php _e('Select Image', 'mini'); ?></button>
+                    </div>
+                    <?php if ($team_2_logo_value): ?>
+                    <div id="team_2_logo_preview" style="margin-top: 0.5rem;">
+                        <img src="<?php echo esc_url($team_2_logo_value); ?>" style="max-width: 150px; height: auto; border: 1px solid #ddd; border-radius: 4px;"/>
+                    </div>
+                    <?php else: ?>
+                    <div id="team_2_logo_preview" style="margin-top: 0.5rem; display: none;">
+                        <img src="" style="max-width: 150px; height: auto; border: 1px solid #ddd; border-radius: 4px;"/>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <div class="box-50">
+                    <label for="team_2_score" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team two score', 'mini'); ?>:</label>
+                    <input type="text" id="team_2_score" name="team_2_score" value="<?php echo esc_attr($team_2_score_value); ?>"/>
+                </div>
+            </div>
         </div>
     </div>
-    <div style="display: flex; flex-flow: row wrap; margin-bottom: 0.5rem;">
-        <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="team_1" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team one', 'mini'); ?>:</label>
-            <input type="text" id="team_1" name="team_1" value="<?php echo esc_attr($team_1_value); ?>" style="min-width: 220px;" />
-        </div>
-        <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="team_1_logo" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team one logo', 'mini'); ?>:</label>
-            <input id="team_1_logo" type="text" name="team_1_logo" value="<?php echo esc_url($team_1_logo_value); ?>" style="margin-bottom: 0.5rem; display: block; min-width: 220px;"/>
-            <input id="team_1_logo_button" class="components-button editor-post-status__toggle is-compact is-tertiary has-text has-icon" type="button" value="<?php esc_attr_e('Upload logo', 'mini'); ?>" />
-        </div>
-        <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="team_1_score" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team one score', 'mini'); ?>:</label>
-            <input type="number" id="team_1_score" name="team_1_score" value="<?php echo esc_attr($team_1_score_value); ?>" style="min-width: 220px;" />
-        </div>
-    </div>
-    <div style="display: flex; flex-flow: row wrap;">
-        <div style="flex: 1;">
-            <h3><?php _e('Team two', 'mini'); ?></h3>
-        </div>
-    </div>
-    <div style="display: flex; flex-flow: row wrap; margin-bottom: 0.5rem;">
-        <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="team_2" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team two', 'mini'); ?>:</label>
-            <input type="text" id="team_2" name="team_2" value="<?php echo esc_attr($team_2_value); ?>" style="min-width: 220px;" />
-        </div>
-        <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="team_2_logo" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team two logo', 'mini'); ?>:</label>
-            <input id="team_2_logo" type="text" name="team_2_logo" value="<?php echo esc_url($team_2_logo_value); ?>" style="margin-bottom: 0.5rem; display: block; min-width: 220px;"/>
-            <input id="team_2_logo_button" class="components-button editor-post-status__toggle is-compact is-tertiary has-text has-icon" type="button" value="<?php esc_attr_e('Upload logo', 'mini'); ?>" />
-        </div>
-        <div style="flex: 1; margin-bottom: 0.5rem;">
-            <label for="team_2_score" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team two score', 'mini'); ?>:</label>
-            <input type="number" id="team_2_score" name="team_2_score" value="<?php echo esc_attr($team_2_score_value); ?>" style="min-width: 220px;" />
-        </div>
-    </div>
+    <script type="text/javascript">
+    jQuery(document).ready(function($) {
+        // Media uploader for team 1 logo
+        var team1LogoFrame;
+        $('#team_1_logo_button').on('click', function(e) {
+            e.preventDefault();
+            
+            if (team1LogoFrame) {
+                team1LogoFrame.open();
+                return;
+            }
+            
+            team1LogoFrame = wp.media({
+                title: '<?php _e('Select Team Logo', 'mini'); ?>',
+                button: {
+                    text: '<?php _e('Use this image', 'mini'); ?>'
+                },
+                multiple: false
+            });
+            
+            team1LogoFrame.on('select', function() {
+                var attachment = team1LogoFrame.state().get('selection').first().toJSON();
+                $('#team_1_logo').val(attachment.url);
+                $('#team_1_logo_preview img').attr('src', attachment.url);
+                $('#team_1_logo_preview').show();
+            });
+            
+            team1LogoFrame.open();
+        });
+        
+        // Media uploader for team 2 logo
+        var team2LogoFrame;
+        $('#team_2_logo_button').on('click', function(e) {
+            e.preventDefault();
+            
+            if (team2LogoFrame) {
+                team2LogoFrame.open();
+                return;
+            }
+            
+            team2LogoFrame = wp.media({
+                title: '<?php _e('Select Team Logo', 'mini'); ?>',
+                button: {
+                    text: '<?php _e('Use this image', 'mini'); ?>'
+                },
+                multiple: false
+            });
+            
+            team2LogoFrame.on('select', function() {
+                var attachment = team2LogoFrame.state().get('selection').first().toJSON();
+                $('#team_2_logo').val(attachment.url);
+                $('#team_2_logo_preview img').attr('src', attachment.url);
+                $('#team_2_logo_preview').show();
+            });
+            
+            team2LogoFrame.open();
+        });
+        
+        // Update preview when URL is manually changed
+        $('#team_1_logo').on('change input', function() {
+            var url = $(this).val();
+            if (url) {
+                $('#team_1_logo_preview img').attr('src', url);
+                $('#team_1_logo_preview').show();
+            } else {
+                $('#team_1_logo_preview').hide();
+            }
+        });
+        
+        $('#team_2_logo').on('change input', function() {
+            var url = $(this).val();
+            if (url) {
+                $('#team_2_logo_preview img').attr('src', url);
+                $('#team_2_logo_preview').show();
+            } else {
+                $('#team_2_logo_preview').hide();
+            }
+        });
+    });
+    </script>
     <?php
 }
 
@@ -1542,10 +1221,7 @@ function media_upload_scripts() {
         return;
     }
     
-    wp_enqueue_script('media-upload');
-    wp_enqueue_script('thickbox');
-    wp_register_script('media-upload-script', plugins_url('media-upload/media-upload.js', __FILE__), array('jquery','media-upload','thickbox'), '1.0', true);
-    wp_enqueue_script('media-upload-script');
+    wp_enqueue_media();
 }
 add_action('admin_enqueue_scripts', 'media_upload_scripts');
 
@@ -1556,8 +1232,6 @@ function media_upload_styles() {
     }
     
     wp_enqueue_style('thickbox');
-    wp_register_style('media-upload-style', plugins_url('media-upload/media-upload.css', __FILE__), array(), '1.0');
-    wp_enqueue_style('media-upload-style');
 }
 add_action('admin_enqueue_scripts', 'media_upload_styles');
 
