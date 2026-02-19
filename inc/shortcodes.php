@@ -53,14 +53,14 @@ function mini_render_date_time_box($post_id, $cols=1, $wrapper_class = 'my-0', $
         
         $output .= '
             <p class="m-0" style="line-height: 1!important;">
-                <span class="square flex align-items-center justify-content-center '.$first_box_color_class.' huge black py-1 px-2 m-0" style="min-width: 140px;">'.$event_date_day.'</span>
+                <span class="square flex align-items-center justify-content-center '.$first_box_color_class.' huge black py-1 px-2 m-0 box-shadow" style="min-width: 140px;">'.$event_date_day.'</span>
             </p>
-            <div class="flex flex-direction-column">
+            <div class="flex oh flex-direction-column">
                 <div class="flex">
                     <p class="m-0 up-case L"><span class="'.$second_box_color_class.' py-1 px-15 m-0">'.ucfirst($event_date_day_name).'</span></p>
                 </div>
                 <div class="flex">
-                    <p class="m-0 bold XL"><span class="'.$first_box_color_class.' p-15 m-0">'.ucfirst($event_date_month).'</span></p><p class="m-0 XL light"><span class="'.$second_box_color_class.' m-0 p-1">'.$event_date_year.'</span></p>
+                    <p class="m-0 bold XL box-shadow"><span class="'.$first_box_color_class.' p-15 m-0">'.ucfirst($event_date_month).'</span></p><p class="m-0 XL light"><span class="'.$second_box_color_class.' m-0 p-1">'.$event_date_year.'</span></p>
                 </div>
                 <div class="flex">';
     }
@@ -112,7 +112,7 @@ function mini_render_location_box($post_id, $cols=1, $wrapper_class = 'my-0', $n
         <div class="'.$box_class.' '.$wrapper_class.' location-box">';
     
     if (!empty($location_name)) {
-        $output .= '<h4 class="m-0 bold XL py-1 px-15 '.$name_box_color_class.'">'.$location_name.'</h4>';
+        $output .= '<h4 class="m-0 bold XL py-1 px-15 box-shadow '.$name_box_color_class.'">'.$location_name.'</h4>';
     }
     
     if (!empty($location_address)) {
@@ -298,15 +298,15 @@ function get_next_event_callback($num = 1, $cols=3) {
                 $event_list .= '
                             <div class="box-100 my-0 p-0">
                                 <h4 class="XL m-0 p-15 white-bg">
-                                    <a href="'.get_the_permalink().'" class="m-0">'.get_the_title().'</a>
+                                    <a href="'.get_the_permalink().'" class="m-0 black-text">'.get_the_title().'</a>
                                 </h4>
                             </div>
                 ';
                 if (
                     get_post_meta(get_the_ID(), 'event_date', true) != null ||
                     get_post_meta(get_the_ID(), 'event_time', true) != null) {
-                    $event_list .= mini_render_date_time_box(get_the_ID(), 1, 'p-0', 'second-color-box', 'second-color-dark-box');
-                    $event_list .= mini_render_location_box(get_the_ID(), 1, 'p-0', 'second-color-box', 'second-color-dark-box');
+                    $event_list .= mini_render_date_time_box(get_the_ID(), 1, 'p-0', 'white-box', 'fw-box');
+                    $event_list .= mini_render_location_box(get_the_ID(), 1, 'p-0', 'white-box', 'fw-box');
                 }
                 if (
                     get_the_excerpt(get_the_ID()) != null ) {
@@ -316,7 +316,7 @@ function get_next_event_callback($num = 1, $cols=3) {
                             </div>
                             <div class="box-100 p-0">
                                 <p class="m-0">
-                                    <a href="'.get_the_permalink().'" class="btn L b-rad-0 m-0">'.__('Event details', 'mini').'</a>
+                                    <a href="'.get_the_permalink().'" class="btn m-0">'.__('Event details', 'mini').'</a>
                                 </p>
                             </div>
                     ';
@@ -393,56 +393,57 @@ function get_next_match_callback($num = 1, $cols=3) {
 					get_post_meta(get_the_ID(), 'team_2')[0] != null
 				) {
                     $match_list .= '
-            <div class="box-zero-50" style="max-width: 380px;">
+            <div class="box-zero-50 b-rad-20 oh box-shadow light-grey-border" style="max-width: 380px;">
                 <div class="boxes g-0">
                     ';
                     if ( get_post_meta(get_the_ID(), 'team_1_logo')[0] ) {
                         $team_1_logo = get_post_meta(get_the_ID(), 'team_1_logo')[0];
                         $match_list .= '
-                    <div class="box-100 p-15 mb-1 square wh-bg">
-                        <div style="background-image: url(\''.$team_1_logo.'\'); background-position: center; background-size: contain; background-repeat: no-repeat; display: block; width: 100%; height: 100%;"></div>
+                    <div class="box-100 p-15 pb-0 square fw-bg">
+                        <div class="oh" style="border-top-left-radius: 10px; border-top-right-radius: 10px; background-image: url(\''.$team_1_logo.'\'); background-position: center; background-size: cover; background-repeat: no-repeat; display: block; width: 100%; height: 100%;"></div>
                     </div>
                         ';
                     }
                     $team_1 = get_post_meta(get_the_ID(), 'team_1')[0];
                     $match_list .= '
-                    <div class="box-100 second-color-dark-bg">
-                        <h2 class="XL wh-text m-0"><a href="'.get_the_permalink().'" class="">'.$team_1.'</a></h2>
+                    <div class="box-100 black-bg">
+                        <h2 class="XL m-0 px-1"><a href="'.get_the_permalink().'" class="white-text">'.$team_1.'</a></h2>
                     </div>
                 </div>
             </div>
-            <div class="box-zero-50" style="max-width: 380px;">
+            <div class="box-zero-50 b-rad-20 oh box-shadow light-grey-border" style="max-width: 380px;">
                 <div class="boxes g-0">
                     ';
                     if ( get_post_meta(get_the_ID(), 'team_2_logo')[0] ) {
                         $team_2_logo = get_post_meta(get_the_ID(), 'team_2_logo')[0];
                         $match_list .= '
-                    <div class="box-100 p-15 mb-1 square wh-bg">
-                        <div style="background-image: url(\''.$team_2_logo.'\'); background-position: center; background-size: contain; background-repeat: no-repeat; display: block; width: 100%; height: 100%;"></div>
+                    <div class="box-100 p-15 pb-0 square fw-bg">
+                        <div class="oh" style="border-top-left-radius: 10px; border-top-right-radius: 10px; background-image: url(\''.$team_2_logo.'\'); background-position: center; background-size: cover; background-repeat: no-repeat; display: block; width: 100%; height: 100%;"></div>
                     </div>
                         ';
                     }
                     $team_2 = get_post_meta(get_the_ID(), 'team_2')[0];
                     $match_list .= '
-                    <div class="box-100 second-color-dark-bg">
-                        <h2 class="XL wh-text m-0"><a href="'.get_the_permalink().'" class="">'.$team_2.'</a></h2>
+                    <div class="box-100 black-bg">
+                        <h2 class="XL m-0 px-1"><a href="'.get_the_permalink().'" class="white-text">'.$team_2.'</a></h2>
                     </div>
                     ';
                     $match_list .= '
                 </div>
             </div>
+            <div class="space"></div>
                     ';
                 }
                 if (
                     get_post_meta(get_the_ID(), 'event_date', true) != null ||
                     get_post_meta(get_the_ID(), 'event_time', true) != null) {
-                    $match_list .= mini_render_date_time_box(get_the_ID(), 1, 'p-0', 'second-color-box', 'second-color-dark-box');
-                    $match_list .= mini_render_location_box(get_the_ID(), 1, 'p-0', 'second-color-box', 'second-color-dark-box');
+                    $match_list .= mini_render_date_time_box(get_the_ID(), 1, 'p-0', 'white-box', 'fw-box');
+                    $match_list .= mini_render_location_box(get_the_ID(), 1, 'p-0', 'white-box', 'fw-box');
                 }
                 $match_list .= '
             <div class="box-100 p-0">
                 <p class=" m-0">
-                    <a href="'.get_the_permalink().'" class="btn L b-rad-0 m-0">'.__('Match details', 'mini').'</a>
+                    <a href="'.get_the_permalink().'" class="btn m-0">'.__('Match details', 'mini').'</a>
                 </p>
             </div>
         </div>
