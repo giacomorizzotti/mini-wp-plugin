@@ -44,6 +44,26 @@ function get_italian_date_formatters() {
     }
     return $formatters;
 }
+
+function mini_allow_af_upload_mime_type($mime_types) {
+    $mime_types['af'] = 'application/octet-stream';
+
+    return $mime_types;
+}
+add_filter('upload_mimes', 'mini_allow_af_upload_mime_type');
+
+function mini_fix_af_filetype_check($data, $file, $filename, $mimes, $real_mime) {
+    if (strtolower(pathinfo($filename, PATHINFO_EXTENSION)) !== 'af') {
+        return $data;
+    }
+
+    $data['ext'] = 'af';
+    $data['type'] = 'application/octet-stream';
+    $data['proper_filename'] = $filename;
+
+    return $data;
+}
+add_filter('wp_check_filetype_and_ext', 'mini_fix_af_filetype_check', 10, 5);
 /* END - Useful functions */
 
 /* Include shortcodes */
@@ -99,10 +119,6 @@ function mini_setup_default_menus() {
 register_activation_hook(__FILE__, 'mini_setup_default_menus');
 /* END - Default menus */
 
-/* START - main mini settings */
-// No additional settings needed for now
-/* END - main mini settings */
-
 /* START - content settings */
 function mini_content_settings_init() {
     register_setting( 'mini_content', 'mini_content_settings');
@@ -125,7 +141,7 @@ function mini_content_section_callback( $args ) {
         <i>mini</i> allows you to manage many custom content types to extend WordPress features.
     </p>
     <div class="boxes">
-        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
             <h4 class="grey-text light" for="mini_match"><?php esc_html_e( 'Slides', 'mini' ); ?></h4>
             <label for="mini_slide" class="bold bk-text">    
                 <input
@@ -141,7 +157,7 @@ function mini_content_section_callback( $args ) {
             <p class="S grey-text" for="mini_slide">It enables slides management (like posts or pages) and related admin menus.</p>
             <p class="S grey-text" for="mini_slide">This option loads <i>mini</i> <b>slider.js</b> library.</p>
         </div>
-        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
             <h4  class="grey-text light" for="mini_match"><?php esc_html_e( 'News', 'mini' ); ?></h4>
             <label for="mini_news" class="bold bk-text">    
                 <input
@@ -156,7 +172,7 @@ function mini_content_section_callback( $args ) {
             </label>
             <p class="S grey-text" for="mini_news">It enables news management (like posts or pages) and related admin menus.</p>
         </div>
-        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
             <h4 class="grey-text light" for="mini_match"><?php esc_html_e( 'Events', 'mini' ); ?></h4>
             <label for="mini_event" class="bold bk-text">    
                 <input
@@ -171,7 +187,7 @@ function mini_content_section_callback( $args ) {
             </label>
             <p class="S grey-text" for="mini_event">It enables events management (like posts or pages) and related admin menus.</p>
         </div>
-        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
             <h4 class="grey-text light" for="mini_match"><?php esc_html_e( 'Matches', 'mini' ); ?></h4>
             <label for="mini_match" class="bold bk-text">    
                 <input
@@ -186,7 +202,7 @@ function mini_content_section_callback( $args ) {
             </label>
             <p class="S grey-text" for="mini_match">It enables matches management (like posts or pages) and related admin menus.</p>
         </div>
-        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
             <h4 class="grey-text light" for="mini_course"><?php esc_html_e( 'Courses', 'mini' ); ?></h4>
             <label for="mini_course" class="bold bk-text">    
                 <input
@@ -232,7 +248,7 @@ function mini_content_page_html() {
 function mini_plugin_settings_pages() {
     if ( empty ( $GLOBALS['admin_page_hooks']['mini'] ) ) {
         add_menu_page(
-            'mini options',
+            'mini plugin - Basic options',
             'mini',
             'manage_options',
             'mini',
@@ -242,7 +258,7 @@ function mini_plugin_settings_pages() {
     }
     add_submenu_page(
         'mini',
-        'Content types',
+        'mini plugin - Content types',
         'Content types',
         'manage_options',
         'mini-content',
@@ -251,29 +267,11 @@ function mini_plugin_settings_pages() {
     );
     add_submenu_page(
         'mini',
-        'Blogging',
-        'Blogging',
-        'manage_options',
-        'mini-blogging',
-        'mini_blogging_page_html',
-        9
-    );
-    add_submenu_page(
-        'mini',
-        'SEO',
+        'mini plugin - SEO',
         'SEO',
         'manage_options',
         'mini-seo',
         'mini_seo_page_html',
-        9
-    );
-    add_submenu_page(
-        'mini',
-        'SMTP Mail',
-        'SMTP Mail',
-        'manage_options',
-        'mini-smtp',
-        'mini_smtp_page_html',
         9
     );
 }
@@ -647,8 +645,15 @@ function mini_plugin_main_page_html() {
     if ( ! current_user_can( 'manage_options' ) ) {
         return;
     }
-    
-    // Recommended plugins array
+
+    if ( isset( $_GET['settings-updated'] ) ) {
+        add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
+    }
+    settings_errors( 'mini_messages' );
+
+    $current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'mini';
+    $page_url    = admin_url( 'admin.php?page=mini' );
+
     $recommended_plugins = array(
         array(
             'name' => 'Contact Form 7',
@@ -708,80 +713,114 @@ function mini_plugin_main_page_html() {
     $active_plugins = get_option('active_plugins', array());
     
     ?>
-    <div class="boxes py-2">
-        <div class="box-100 p-2 white-bg b-rad-5 box-shadow mb-2">
-            <div class="space"></div>
-            <img src="https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/img/brand/mini_logo_2.svg" alt="mini logo" style="max-width: 280px;" class="mb-2"/>
-            <h1 class="mb-0"><i>mini</i> is a frontend framework</h1>
-            <p class="mt-0">That allows you to build modern, responsive websites with ease.</p>
-            <p class="">
-                <a href="https://mini.uwa.agency/" target="_blank" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Visit mini website', 'mini' ); ?></a>
-            </p>
-        </div>
+    <div class="wrap">
+    <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
 
-        <div class="box-100 p-2 mb-2">
-            <h4 class="grey-text regular"><?php _e('Useful Plugins', 'mini'); ?></h4>
-            <p><?php _e('Here are some useful plugins that work great with mini:', 'mini'); ?></p>            
-            <div class="boxes">
-                <?php foreach ($recommended_plugins as $plugin) : 
-                    // Use custom file path if specified, otherwise use default pattern
-                    $plugin_file = isset($plugin['file']) ? $plugin['file'] : $plugin['slug'] . '/' . $plugin['slug'] . '.php';
-                    $is_installed = isset($all_plugins[$plugin_file]);
-                    $is_active = in_array($plugin_file, $active_plugins);
-                    
-                    // Button configuration
-                    if ($is_active) {
-                        $button_text = __('Active', 'mini');
-                        $button_class = 'light-grey-btn grey-text';
-                        $button_disabled = 'disabled';
-                        $status_color = 'success-text success-border';
-                        $status = __('Active', 'mini');
-                    } elseif ($is_installed) {
-                        $activate_url = wp_nonce_url(
-                            admin_url('plugins.php?action=activate&plugin=' . urlencode($plugin_file)),
-                            'activate-plugin_' . $plugin_file
-                        );
-                        $button_text = __('Activate', 'mini');
-                        $button_class = 'success-btn white-text';
-                        $button_disabled = '';
-                        $status_color = 'grey-text grey-border';
-                        $status = __('Installed', 'mini');
-                    } else {
-                        $install_url = wp_nonce_url(
-                            admin_url('update.php?action=install-plugin&plugin=' . urlencode($plugin['slug'])),
-                            'install-plugin_' . $plugin['slug']
-                        );
-                        $button_text = __('Install', 'mini');
-                        $button_class = 'success-btn';
-                        $button_disabled = '';
-                        $status_color = 'grey-text grey-border';
-                        $status = __('Not installed', 'mini');
-                    }
-                ?>
-                <div class="box-25 p-2 white-bg b-rad-5 box-shadow">
-                    <h5 class="m-0">
-                        <?php echo esc_html($plugin['name']); ?>
-                        <span class="flag px-05 b-rad-5 <?php echo esc_attr($status_color); ?> XS"><?php echo esc_html($status); ?></span>
-                    </h5>
-                    <p class="m-0 S"><?php echo esc_html($plugin['description']); ?></p>
-                    <div class="space-15"></div>
-                    <?php if ($is_active) : ?>
-                        <button class="btn S <?php echo esc_attr($button_class); ?>" <?php echo $button_disabled; ?>>
-                            <span class="iconoir-check-circle"></span> <?php echo esc_html($button_text); ?>
-                        </button>
-                    <?php elseif ($is_installed) : ?>
-                        <a href="<?php echo esc_url($activate_url); ?>" class="btn S <?php echo esc_attr($button_class); ?>">
-                            <span class="iconoir-play-circle"></span> <?php echo esc_html($button_text); ?>
-                        </a>
-                    <?php else : ?>
-                        <a href="<?php echo esc_url($install_url); ?>" class="btn S <?php echo esc_attr($button_class); ?>">
-                            <span class="iconoir-download-circle"></span> <?php echo esc_html($button_text); ?>
-                        </a>
-                    <?php endif; ?>
+    <nav class="nav-tab-wrapper">
+        <a href="<?php echo esc_url( $page_url . '&tab=mini' ); ?>" class="nav-tab <?php echo $current_tab === 'mini' ? 'nav-tab-active' : ''; ?>"><?php _e( 'mini', 'mini' ); ?></a>
+        <a href="<?php echo esc_url( $page_url . '&tab=blogging' ); ?>" class="nav-tab <?php echo $current_tab === 'blogging' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Blogging', 'mini' ); ?></a>
+        <a href="<?php echo esc_url( $page_url . '&tab=smtp' ); ?>" class="nav-tab <?php echo $current_tab === 'smtp' ? 'nav-tab-active' : ''; ?>"><?php _e( 'SMTP', 'mini' ); ?></a>
+    </nav>
+
+    <?php if ( $current_tab === 'blogging' ) : ?>
+
+        <form action="options.php" method="post">
+            <?php
+            settings_fields( 'mini_blogging' );
+            do_settings_sections( 'mini-blogging' );
+            submit_button( 'Save Settings' );
+            ?>
+        </form>
+
+    <?php elseif ( $current_tab === 'smtp' ) : ?>
+
+        <form action="options.php" method="post">
+            <?php
+            settings_fields( 'mini_smtp' );
+            do_settings_sections( 'mini-smtp' );
+            submit_button( 'Save Settings' );
+            ?>
+        </form>
+
+    <?php else : /* mini tab */ ?>
+
+        <div class="boxes py-2">
+            <div class="box-100 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <div class="space"></div>
+                <img src="https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/img/brand/mini_logo_2.svg" alt="mini logo" style="max-width: 280px;" class="mb-2"/>
+                <h1 class="mb-0"><i>mini</i> is a frontend framework</h1>
+                <p class="mt-0">That allows you to build modern, responsive websites with ease.</p>
+                <p class="">
+                    <a href="https://mini.uwa.agency/" target="_blank" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Visit mini website', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="box-100 mb-2">
+                <h4 class="grey-text regular"><?php _e('Useful Plugins', 'mini'); ?></h4>
+                <p><?php _e('Here are some useful plugins that work great with mini:', 'mini'); ?></p>            
+                <div class="boxes">
+                    <?php foreach ($recommended_plugins as $plugin) : 
+                        // Use custom file path if specified, otherwise use default pattern
+                        $plugin_file = isset($plugin['file']) ? $plugin['file'] : $plugin['slug'] . '/' . $plugin['slug'] . '.php';
+                        $is_installed = isset($all_plugins[$plugin_file]);
+                        $is_active = in_array($plugin_file, $active_plugins);
+                        
+                        // Button configuration
+                        if ($is_active) {
+                            $button_text = __('Active', 'mini');
+                            $button_class = 'light-grey-btn grey-text';
+                            $button_disabled = 'disabled';
+                            $status_color = 'success-text success-border';
+                            $status = __('Active', 'mini');
+                        } elseif ($is_installed) {
+                            $activate_url = wp_nonce_url(
+                                admin_url('plugins.php?action=activate&plugin=' . urlencode($plugin_file)),
+                                'activate-plugin_' . $plugin_file
+                            );
+                            $button_text = __('Activate', 'mini');
+                            $button_class = 'success-btn white-text';
+                            $button_disabled = '';
+                            $status_color = 'grey-text grey-border';
+                            $status = __('Installed', 'mini');
+                        } else {
+                            $install_url = wp_nonce_url(
+                                admin_url('update.php?action=install-plugin&plugin=' . urlencode($plugin['slug'])),
+                                'install-plugin_' . $plugin['slug']
+                            );
+                            $button_text = __('Install', 'mini');
+                            $button_class = 'success-btn';
+                            $button_disabled = '';
+                            $status_color = 'grey-text grey-border';
+                            $status = __('Not installed', 'mini');
+                        }
+                    ?>
+                    <div class="box-25 p-2 white-bg b-rad-5 box-shadow">
+                        <h5 class="m-0">
+                            <?php echo esc_html($plugin['name']); ?>
+                            <span class="flag px-05 b-rad-5 <?php echo esc_attr($status_color); ?> XS"><?php echo esc_html($status); ?></span>
+                        </h5>
+                        <p class="m-0 S"><?php echo esc_html($plugin['description']); ?></p>
+                        <div class="space-15"></div>
+                        <?php if ($is_active) : ?>
+                            <button class="btn S <?php echo esc_attr($button_class); ?>" <?php echo $button_disabled; ?>>
+                                <span class="iconoir-check-circle"></span> <?php echo esc_html($button_text); ?>
+                            </button>
+                        <?php elseif ($is_installed) : ?>
+                            <a href="<?php echo esc_url($activate_url); ?>" class="btn S <?php echo esc_attr($button_class); ?>">
+                                <span class="iconoir-play-circle"></span> <?php echo esc_html($button_text); ?>
+                            </a>
+                        <?php else : ?>
+                            <a href="<?php echo esc_url($install_url); ?>" class="btn S <?php echo esc_attr($button_class); ?>">
+                                <span class="iconoir-download-circle"></span> <?php echo esc_html($button_text); ?>
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
-                <?php endforeach; ?>
             </div>
         </div>
+
+    <?php endif; ?>
+
     </div>
     <?php
 }
@@ -1309,29 +1348,6 @@ function teams_save_postdata( $post_id ) {
 }
 
 /* START - DISABLE comments */
-function mini_comment_settings_init() {
-    register_setting( 'mini_comment', 'mini_comment_settings');
-    add_settings_section(
-        'mini_comment_section',
-        __( '<i>mini</i> comment settings', 'mini' ),
-        'mini_comment_section_callback',
-        'mini-comment'
-    );
-}
-add_action( 'admin_init', 'mini_comment_settings_init' );
-function mini_comment_section_callback( $args ) {
-    ?>
-    <div class="space"></div>
-    <div class="boxes">
-        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="" for="mini_match"><?php esc_html_e( 'Disable comments', 'mini' ); ?></h4>
-            <?= mini_plugin_checkbox_option('mini_comment_settings','mini_disable_comment'); ?>
-            <p class="" for="mini_news">This option will disable comment features and related admin menus.</p>
-        </div>
-    </div>
-    <?php
-}
-
 if (is_mini_option_enabled('mini_comment_settings', 'mini_disable_comment')) {
     add_action('admin_init', 'disable_comments_post_types_support');
     add_filter('comments_open', 'disable_comments_status', 20, 2);
@@ -1380,9 +1396,10 @@ function disable_comments_dashboard() {
 /* START - DISABLE blogging */
 function mini_blogging_settings_init() {
     register_setting( 'mini_blogging', 'mini_blogging_settings');
+    register_setting( 'mini_blogging', 'mini_comment_settings');
     add_settings_section(
         'mini_blogging_section',
-        __( '<i>mini</i> blogging settings', 'mini' ),
+        __( 'Blogging settings', 'mini' ),
         'mini_blogging_section_callback',
         'mini-blogging'
     );
@@ -1392,57 +1409,19 @@ function mini_blogging_section_callback( $args ) {
     ?>
     <div class="space"></div>
     <div class="boxes">
-        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="danger-text" for="mini_disable_blogging"><?php esc_html_e( 'Disable blogging', 'mini' ); ?></h4>
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+            <h4 class="" for="mini_disable_blogging"><?php esc_html_e( 'Disable blogging', 'mini' ); ?></h4>
             <?= mini_plugin_checkbox_option('mini_blogging_settings','mini_disable_blogging'); ?>
             <p class="">This option will <u>disable blogging features</u> including posts, blog archive pages and related admin menus.</p>
+        </div>
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+            <h4 class=""><?php esc_html_e( 'Disable comments', 'mini' ); ?></h4>
+            <?= mini_plugin_checkbox_option('mini_comment_settings','mini_disable_comment'); ?>
+            <p class="">This option will disable comment features and related admin menus.</p>
         </div>
     </div>
     <?php
 }
-function mini_blogging_page_html() {
-    if ( ! current_user_can( 'manage_options' ) ) {
-        return;
-    }
-    
-    $active_tab = $_GET['tab'] ?? 'blogging';
-    
-    if ( isset( $_GET['settings-updated'] ) ) {
-        add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
-    }
-    settings_errors( 'mini_messages' );
-    ?>
-    <div class="wrap">
-        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-        
-        <h2 class="nav-tab-wrapper">
-            <a href="?page=mini-blogging&tab=blogging" class="nav-tab <?php echo $active_tab == 'blogging' ? 'nav-tab-active' : ''; ?>"><?php _e('Blogging', 'mini'); ?></a>
-            <a href="?page=mini-blogging&tab=comments" class="nav-tab <?php echo $active_tab == 'comments' ? 'nav-tab-active' : ''; ?>"><?php _e('Comments', 'mini'); ?></a>
-        </h2>
-        
-        <br/>
-        
-        <?php if ($active_tab == 'blogging') : ?>
-            <form action="options.php" method="post">
-                <?php
-                settings_fields( 'mini_blogging' );
-                do_settings_sections( 'mini-blogging' );
-                submit_button( 'Save Settings' );
-                ?>
-            </form>
-        <?php elseif ($active_tab == 'comments') : ?>
-            <form action="options.php" method="post">
-                <?php
-                settings_fields( 'mini_comment' );
-                do_settings_sections( 'mini-comment' );
-                submit_button( 'Save Settings' );
-                ?>
-            </form>
-        <?php endif; ?>
-    </div>
-    <?php
-}
-
 if (is_mini_option_enabled('mini_blogging_settings', 'mini_disable_blogging')) {
     add_action( 'admin_menu', 'remove_post_admin_menus' );
     add_action( 'wp_before_admin_bar_render', 'remove_post_toolbar_menus' );
@@ -1514,6 +1493,7 @@ function mini_seo_section_callback( $args ) {
             </label>
             <p class="S grey-text">When enabled, you'll be able to customize title, description, keywords, robots directives, and social media tags for each page/post.</p>
         </div>
+        <div class="sep"></div>
         <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
             <h4><?php esc_html_e( 'Default Settings', 'mini' ); ?></h4>
             <label for="mini_seo_image" class="bold"><?php _e('Default Meta Description', 'mini'); ?>:</label>
@@ -2481,19 +2461,19 @@ function mini_smtp_section_callback( $args ) {
             </label>
         </div>
 
-        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
             <h4 class="grey-text light"><?php esc_html_e( 'SMTP Host', 'mini' ); ?></h4>
             <input type="text" id="mini_smtp_host" name="mini_smtp_settings[mini_smtp_host]" value="<?php echo $host; ?>" placeholder="smtp.example.com" class="regular-text">
             <p class="S grey-text"><?php esc_html_e( 'The hostname of your SMTP server.', 'mini' ); ?></p>
         </div>
 
-        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
             <h4 class="grey-text light"><?php esc_html_e( 'SMTP Port', 'mini' ); ?></h4>
             <input type="number" id="mini_smtp_port" name="mini_smtp_settings[mini_smtp_port]" value="<?php echo $port; ?>" placeholder="587" class="small-text">
             <p class="S grey-text"><?php esc_html_e( 'Common ports: 25 (no encryption), 465 (SSL), 587 (TLS/STARTTLS).', 'mini' ); ?></p>
         </div>
 
-        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
             <h4 class="grey-text light"><?php esc_html_e( 'Encryption', 'mini' ); ?></h4>
             <select id="mini_smtp_encryption" name="mini_smtp_settings[mini_smtp_encryption]">
                 <option value="tls"  <?php selected( $encryption, 'tls' );  ?>>TLS / STARTTLS (recommended)</option>
@@ -2503,7 +2483,7 @@ function mini_smtp_section_callback( $args ) {
             <p class="S grey-text"><?php esc_html_e( 'Select the encryption method supported by your SMTP server.', 'mini' ); ?></p>
         </div>
 
-        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-20 p-2 white-bg b-rad-5 box-shadow">
             <h4 class="grey-text light"><?php esc_html_e( 'Authentication', 'mini' ); ?></h4>
             <label for="mini_smtp_auth" class="bold bk-text">
                 <input type="checkbox" id="mini_smtp_auth" name="mini_smtp_settings[mini_smtp_auth]" value="1" <?php checked( $auth ); ?> class="me-1">
@@ -2511,13 +2491,13 @@ function mini_smtp_section_callback( $args ) {
             </label>
         </div>
 
-        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-40 p-2 white-bg b-rad-5 box-shadow">
             <h4 class="grey-text light"><?php esc_html_e( 'Username', 'mini' ); ?></h4>
             <input type="text" id="mini_smtp_username" name="mini_smtp_settings[mini_smtp_username]" value="<?php echo $username; ?>" placeholder="user@example.com" class="regular-text" autocomplete="off">
             <p class="S grey-text"><?php esc_html_e( 'SMTP account username (usually your email address).', 'mini' ); ?></p>
         </div>
 
-        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-40 p-2 white-bg b-rad-5 box-shadow">
             <h4 class="grey-text light"><?php esc_html_e( 'Password', 'mini' ); ?></h4>
             <input type="password" id="mini_smtp_password" name="mini_smtp_settings[mini_smtp_password]" value="" placeholder="Leave blank to keep current password" class="regular-text" autocomplete="new-password">
             <p class="S grey-text"><?php esc_html_e( 'SMTP account password. Leave blank to keep the existing value.', 'mini' ); ?></p>

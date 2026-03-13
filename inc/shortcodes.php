@@ -187,6 +187,45 @@ function get_latest_news_callback() {
 }
 add_shortcode('latest_news', 'get_latest_news_callback');
 
+/* POSTS archive-style Shortcodes */
+/**
+ * Renders posts using the same template part as the archive page.
+ *
+ * Usage: [posts] [posts number="5"] [posts type="news"] [posts number="4" type="event"]
+ */
+function mini_posts_shortcode( $atts ) {
+    $atts = shortcode_atts( array(
+        'number' => 5,
+        'type'   => 'post',
+    ), $atts, 'posts' );
+
+    $query = new WP_Query( array(
+        'post_type'              => sanitize_key( $atts['type'] ),
+        'posts_per_page'         => absint( $atts['number'] ),
+        'post_status'            => 'publish',
+        'no_found_rows'          => true,
+        'update_post_term_cache' => false,
+    ) );
+
+    if ( ! $query->have_posts() ) {
+        wp_reset_postdata();
+        return '';
+    }
+
+    ob_start();
+    echo '<div class="boxes">';
+    while ( $query->have_posts() ) {
+        $query->the_post();
+        get_template_part( 'template-parts/content', get_post_type(), [ 'is_shortcode' => true ] );
+        echo '<div class="space-5"></div>';
+    }
+    echo '</div>';
+    wp_reset_postdata();
+
+    return ob_get_clean();
+}
+add_shortcode( 'posts', 'mini_posts_shortcode' );
+
 /* SLIDE Shortcodes */
 function get_slides_callback($number=3) {
     $args = array(
@@ -209,21 +248,67 @@ function get_slides_callback($number=3) {
         ';
         $n=1;
         while ($query->have_posts()) : $query->the_post();
+            $post_id = get_the_ID();
+
+            if (function_exists('mini_get_page_layout')) {
+                $layout = mini_get_page_layout($post_id);
+            } else {
+                $space_top = get_post_meta($post_id, 'space_top', true);
+                $space_bottom = get_post_meta($post_id, 'space_bot', true);
+                $spacing_class = '';
+                if ($space_top && $space_bottom) {
+                    $spacing_class = 'space-top-bot';
+                } elseif ($space_top) {
+                    $spacing_class = 'space-top';
+                } elseif ($space_bottom) {
+                    $spacing_class = 'space-bot';
+                }
+
+                $layout = array(
+                    'title_presence' => get_post_meta($post_id, 'title_presence', true),
+                    'container_width' => get_post_meta($post_id, 'page_container', true),
+                    'spacing_class' => $spacing_class,
+                );
+            }
+
+            $container_classes = trim(
+                sanitize_html_class((string) ($layout['container_width'] ?? ''))
+            );
+
+            $boxes_classes = trim(
+                sanitize_html_class((string) ($layout['spacing_class'] ?? ''))
+            );
+
+            $show_title = !empty($layout['title_presence']);
+            $slide_title = esc_html(get_the_title($post_id));
+            $slide_content = apply_filters('the_content', get_the_content(null, false, $post_id));
+
             $slider .= '
                 <li class="slide">
             ';
-            if (get_the_post_thumbnail(get_the_ID())!=false) {
+            if (get_the_post_thumbnail($post_id)!=false) {
             $slider .= '
                     <div class="img">
-                        <img src="'.get_the_post_thumbnail_url(get_the_ID()).'" alt="" draggable="false" />
+                        <img src="'.esc_url(get_the_post_thumbnail_url($post_id)).'" alt="" draggable="false" />
                     </div>
             ';
             }
-            $container_width = get_post_meta(get_the_ID(), 'page_container', true);
             $slider .= '                    
                     <div class="caption">
-                        <div class="container '.$container_width.'">
-                        '.get_the_content(get_the_ID()).'
+                        <div class="container fw">
+                            <div class="container '.esc_attr($container_classes).'">
+                                <div class="boxes fh align-content-end '.esc_attr($boxes_classes).'">';
+            if ($show_title) {
+                $slider .= '
+                                    <div class="box-100">
+                                        <h2 class="m-0 white-box p-1">'.$slide_title.'</h2>
+                                    </div>
+                ';
+            }
+            $slider .= '
+                        '.$slide_content.'
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </li>
