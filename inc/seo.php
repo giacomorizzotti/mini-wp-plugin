@@ -512,6 +512,7 @@ function mini_seo_meta_box_callback($post) {
     // Treat unset value as indexable/followable by default; only explicit "0" means noindex/nofollow.
     $seo_noindex_checked = ($seo_robots_index === '0');
     $seo_nofollow_checked = ($seo_robots_follow === '0');
+    $seo_twitter_card_value = !empty($seo_twitter_card) ? $seo_twitter_card : 'summary';
     
     // Determine preview image: custom SEO image → featured image → default image
     $preview_image = '';
@@ -693,9 +694,8 @@ function mini_seo_meta_box_callback($post) {
                     <div class="space-2"></div>
                     <label for="mini_seo_twitter_card" class="bold"><?php _e('Card Type', 'mini'); ?></label>
                     <select id="mini_seo_twitter_card" name="mini_seo_twitter_card" style="width: 100%;">
-                        <option value=""><?php _e('-- Select --', 'mini'); ?></option>
-                        <option value="summary" <?php selected($seo_twitter_card, 'summary'); ?>><?php _e('Summary', 'mini'); ?></option>
-                        <option value="summary_large_image" <?php selected($seo_twitter_card, 'summary_large_image'); ?>><?php _e('Summary Large Image', 'mini'); ?></option>
+                        <option value="summary" <?php selected($seo_twitter_card_value, 'summary'); ?>><?php _e('Summary', 'mini'); ?></option>
+                        <option value="summary_large_image" <?php selected($seo_twitter_card_value, 'summary_large_image'); ?>><?php _e('Summary Large Image', 'mini'); ?></option>
                     </select>
                     <div class="space-2"></div>
                     <label for="mini_seo_twitter_title" class="bold"><?php _e('Twitter Title', 'mini'); ?></label>
@@ -892,9 +892,8 @@ function mini_output_seo_meta_tags() {
     echo '<meta property="og:type" content="website">' . "\n";
     
     // Twitter Card tags
-    if (!empty($seo_twitter_card)) {
-        echo '<meta name="twitter:card" content="' . esc_attr($seo_twitter_card) . '">' . "\n";
-    }
+    $twitter_card = !empty($seo_twitter_card) ? $seo_twitter_card : 'summary';
+    echo '<meta name="twitter:card" content="' . esc_attr($twitter_card) . '">' . "\n";
     
     if (!empty($seo_twitter_title)) {
         echo '<meta name="twitter:title" content="' . esc_attr($seo_twitter_title) . '">' . "\n";
