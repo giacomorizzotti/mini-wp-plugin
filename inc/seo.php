@@ -836,6 +836,7 @@ function mini_output_seo_meta_tags() {
     
     // Output canonical URL
     $canonical_url = !empty($seo_canonical) ? $seo_canonical : get_permalink($post->ID);
+    $canonical_url = mini_normalize_canonical_url($canonical_url);
     echo '<link rel="canonical" href="' . esc_url($canonical_url) . '">' . "\n";
     
     // Fallback to defaults
@@ -910,6 +911,62 @@ function mini_output_seo_meta_tags() {
     mini_output_schema_markup($post, $canonical_url, $seo_title, $seo_description, $seo_og_image);
 }
 add_action('wp_head', 'mini_output_seo_meta_tags', 1);
+
+function mini_normalize_canonical_url($url) {
+    $url = trim((string) $url);
+    if ($url === '') {
+        return '';
+    }
+
+    $parts = wp_parse_url($url);
+    if (!is_array($parts)) {
+        return $url;
+    }
+
+    $home_parts = wp_parse_url(home_url('/'));
+    $url_host = isset($parts['host']) ? strtolower($parts['host']) : '';
+    $home_host = isset($home_parts['host']) ? strtolower($home_parts['host']) : '';
+
+    // Do not rewrite canonical URLs that point to external domains.
+    if ($url_host !== '' && $home_host !== '' && $url_host !== $home_host) {
+        return $url;
+    }
+
+    $path = isset($parts['path']) ? (string) $parts['path'] : '/';
+    $basename = wp_basename($path);
+    if ($basename !== '' && strpos($basename, '.') !== false) {
+        return $url;
+    }
+
+    $parts['path'] = user_trailingslashit(untrailingslashit($path));
+
+    $normalized = '';
+    if (!empty($parts['scheme'])) {
+        $normalized .= $parts['scheme'] . '://';
+    }
+    if (!empty($parts['user'])) {
+        $normalized .= $parts['user'];
+        if (!empty($parts['pass'])) {
+            $normalized .= ':' . $parts['pass'];
+        }
+        $normalized .= '@';
+    }
+    if (!empty($parts['host'])) {
+        $normalized .= $parts['host'];
+    }
+    if (!empty($parts['port'])) {
+        $normalized .= ':' . $parts['port'];
+    }
+    $normalized .= $parts['path'];
+    if (isset($parts['query']) && $parts['query'] !== '') {
+        $normalized .= '?' . $parts['query'];
+    }
+    if (isset($parts['fragment']) && $parts['fragment'] !== '') {
+        $normalized .= '#' . $parts['fragment'];
+    }
+
+    return $normalized;
+}
 
 function mini_output_schema_markup($post, $canonical_url, $seo_title, $seo_description, $seo_og_image) {
     if (!is_object($post) || empty($post->ID)) {
