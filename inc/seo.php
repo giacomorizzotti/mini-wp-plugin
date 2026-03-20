@@ -508,6 +508,10 @@ function mini_seo_meta_box_callback($post) {
     $seo_canonical = get_post_meta($post->ID, '_mini_seo_canonical', true);
     
     $preview_url = get_permalink($post->ID) ?: home_url();
+
+    // Treat unset value as indexable/followable by default; only explicit "0" means noindex/nofollow.
+    $seo_noindex_checked = ($seo_robots_index === '0');
+    $seo_nofollow_checked = ($seo_robots_follow === '0');
     
     // Determine preview image: custom SEO image → featured image → default image
     $preview_image = '';
@@ -652,12 +656,12 @@ function mini_seo_meta_box_callback($post) {
                     <label class="bold"><?php _e('Robots Meta Tag', 'mini'); ?></label>
                     <div class="space-2"></div>
                     <label>
-                        <input type="checkbox" name="mini_seo_robots_index" value="1" <?php checked($seo_robots_index, '1'); ?>>
-                        <b><?php _e('Index', 'mini'); ?></b> <span class="S"><?php _e('(allow search engines to index this page)', 'mini'); ?></span>
+                        <input type="checkbox" name="mini_seo_noindex" value="1" <?php checked($seo_noindex_checked, true); ?>>
+                        <b><?php _e('Noindex', 'mini'); ?></b> <span class="S"><?php _e('(prevent search engines from indexing this page)', 'mini'); ?></span>
                     </label>
                     <label>
-                        <input type="checkbox" name="mini_seo_robots_follow" value="1" <?php checked($seo_robots_follow, '1'); ?>>
-                        <b><?php _e('Follow', 'mini'); ?></b> <span class="S"><?php _e('(allow search engines to follow links on this page)', 'mini'); ?></span>
+                        <input type="checkbox" name="mini_seo_nofollow" value="1" <?php checked($seo_nofollow_checked, true); ?>>
+                        <b><?php _e('Nofollow', 'mini'); ?></b> <span class="S"><?php _e('(prevent search engines from following links on this page)', 'mini'); ?></span>
                     </label>
                 </div>
             </div>
@@ -763,8 +767,6 @@ function mini_save_seo_meta_box($post_id) {
         'mini_seo_title',
         'mini_seo_description',
         'mini_seo_keywords',
-        'mini_seo_robots_index',
-        'mini_seo_robots_follow',
         'mini_seo_og_title',
         'mini_seo_og_description',
         'mini_seo_og_image',
@@ -775,14 +777,20 @@ function mini_save_seo_meta_box($post_id) {
         'mini_seo_canonical',
     ];
     
+    // Keep stored robots index meta backwards-compatible while using a noindex checkbox in UI.
+    $robots_index_value = isset($_POST['mini_seo_noindex']) ? '0' : '1';
+    update_post_meta($post_id, '_mini_seo_robots_index', $robots_index_value);
+
+    // Keep stored robots follow meta backwards-compatible while using a nofollow checkbox in UI.
+    $robots_follow_value = isset($_POST['mini_seo_nofollow']) ? '0' : '1';
+    update_post_meta($post_id, '_mini_seo_robots_follow', $robots_follow_value);
+
     foreach ($fields as $field) {
         if (isset($_POST[$field])) {
             $value = wp_unslash($_POST[$field]);
 
             if (in_array($field, ['mini_seo_og_image', 'mini_seo_image', 'mini_seo_canonical'], true)) {
                 $sanitized = esc_url_raw($value);
-            } elseif (in_array($field, ['mini_seo_robots_index', 'mini_seo_robots_follow'], true)) {
-                $sanitized = ((string) $value === '1') ? '1' : '0';
             } elseif ($field === 'mini_seo_twitter_card') {
                 $allowed_cards = ['', 'summary', 'summary_large_image'];
                 $card = sanitize_text_field($value);
@@ -851,16 +859,16 @@ function mini_output_seo_meta_tags() {
     
     // Output robots meta
     $robots = [];
-    if ($seo_robots_index == '1') {
-        $robots[] = 'index';
-    } else {
+    if ($seo_robots_index === '0') {
         $robots[] = 'noindex';
+    } else {
+        $robots[] = 'index';
     }
     
-    if ($seo_robots_follow == '1') {
-        $robots[] = 'follow';
-    } else {
+    if ($seo_robots_follow === '0') {
         $robots[] = 'nofollow';
+    } else {
+        $robots[] = 'follow';
     }
     
     if (!empty($robots)) {
