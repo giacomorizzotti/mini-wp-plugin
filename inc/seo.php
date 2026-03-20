@@ -876,21 +876,35 @@ function mini_output_seo_meta_tags() {
         echo '<meta name="robots" content="' . esc_attr(implode(', ', $robots)) . '">' . "\n";
     }
     
-    // Open Graph tags
-    if (!empty($seo_og_title)) {
-        echo '<meta property="og:title" content="' . esc_attr($seo_og_title) . '">' . "\n";
+    // Open Graph tags with fallbacks so core tags are always present.
+    $og_title = !empty($seo_og_title) ? $seo_og_title : (!empty($seo_title) ? $seo_title : get_the_title($post->ID));
+    $og_description = !empty($seo_og_description) ? $seo_og_description : $seo_description;
+    if (empty($og_description)) {
+        $og_description = wp_trim_words(wp_strip_all_tags(strip_shortcodes((string) get_post_field('post_content', $post->ID))), 30, '...');
     }
-    
-    if (!empty($seo_og_description)) {
-        echo '<meta property="og:description" content="' . esc_attr($seo_og_description) . '">' . "\n";
+
+    $og_image = $seo_og_image;
+    if (empty($og_image)) {
+        $seo_image = get_post_meta($post->ID, '_mini_seo_image', true);
+        if (!empty($seo_image)) {
+            $og_image = $seo_image;
+        } elseif (has_post_thumbnail($post->ID)) {
+            $og_image = get_the_post_thumbnail_url($post->ID, 'large');
+        } else {
+            $og_image = get_variable('mini_seo_settings', 'default_image');
+        }
     }
-    
-    if (!empty($seo_og_image)) {
-        echo '<meta property="og:image" content="' . esc_url($seo_og_image) . '">' . "\n";
+
+    echo '<meta property="og:title" content="' . esc_attr($og_title) . '">' . "\n";
+    if (!empty($og_description)) {
+        echo '<meta property="og:description" content="' . esc_attr($og_description) . '">' . "\n";
     }
-    
-    echo '<meta property="og:url" content="' . esc_url(get_permalink()) . '">' . "\n";
-    echo '<meta property="og:type" content="website">' . "\n";
+    if (!empty($og_image)) {
+        echo '<meta property="og:image" content="' . esc_url($og_image) . '">' . "\n";
+    }
+
+    echo '<meta property="og:url" content="' . esc_url($canonical_url) . '">' . "\n";
+    echo '<meta property="og:type" content="' . (get_post_type($post) === 'post' ? 'article' : 'website') . '">' . "\n";
     
     // Twitter Card tags
     $twitter_card = !empty($seo_twitter_card) ? $seo_twitter_card : 'summary';
