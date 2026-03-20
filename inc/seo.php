@@ -907,8 +907,89 @@ function mini_output_seo_meta_tags() {
     if (!empty($seo_og_image)) {
         echo '<meta name="twitter:image" content="' . esc_url($seo_og_image) . '">' . "\n";
     }
+
+    mini_output_schema_markup($post, $canonical_url, $seo_title, $seo_description, $seo_og_image);
 }
 add_action('wp_head', 'mini_output_seo_meta_tags', 1);
+
+function mini_output_schema_markup($post, $canonical_url, $seo_title, $seo_description, $seo_og_image) {
+    if (!is_object($post) || empty($post->ID)) {
+        return;
+    }
+
+    $post_type = get_post_type($post);
+    $schema_type = ($post_type === 'post') ? 'Article' : 'WebPage';
+
+    $headline = !empty($seo_title) ? $seo_title : get_the_title($post);
+    $description = !empty($seo_description) ? $seo_description : '';
+
+    $image_url = '';
+    if (!empty($seo_og_image)) {
+        $image_url = $seo_og_image;
+    } else {
+        $seo_image = get_post_meta($post->ID, '_mini_seo_image', true);
+        if (!empty($seo_image)) {
+            $image_url = $seo_image;
+        } elseif (has_post_thumbnail($post->ID)) {
+            $image_url = get_the_post_thumbnail_url($post->ID, 'full');
+        }
+    }
+
+    $schema = [
+        '@context' => 'https://schema.org',
+        '@type' => $schema_type,
+        '@id' => $canonical_url,
+        'url' => $canonical_url,
+        'name' => $headline,
+        'headline' => $headline,
+        'description' => $description,
+        'inLanguage' => str_replace('_', '-', get_locale()),
+        'dateModified' => get_the_modified_date('c', $post),
+        'mainEntityOfPage' => [
+            '@type' => 'WebPage',
+            '@id' => $canonical_url,
+        ],
+    ];
+
+    if (!empty($image_url)) {
+        $schema['image'] = [
+            '@type' => 'ImageObject',
+            'url' => esc_url_raw($image_url),
+        ];
+    }
+
+    if ($schema_type === 'Article') {
+        $schema['datePublished'] = get_the_date('c', $post);
+        $schema['author'] = [
+            '@type' => 'Person',
+            'name' => get_the_author_meta('display_name', $post->post_author),
+        ];
+
+        $publisher = [
+            '@type' => 'Organization',
+            'name' => get_bloginfo('name'),
+        ];
+
+        if (function_exists('has_custom_logo') && has_custom_logo()) {
+            $logo_id = get_theme_mod('custom_logo');
+            $logo_src = wp_get_attachment_image_src($logo_id, 'full');
+            if (!empty($logo_src[0])) {
+                $publisher['logo'] = [
+                    '@type' => 'ImageObject',
+                    'url' => esc_url_raw($logo_src[0]),
+                ];
+            }
+        }
+
+        $schema['publisher'] = $publisher;
+    }
+
+    $schema = array_filter($schema, function($value) {
+        return $value !== '' && $value !== null;
+    });
+
+    echo '<script type="application/ld+json">' . wp_json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>' . "\n";
+}
 
 function mini_override_document_title($title) {
     if (!is_mini_option_enabled('mini_seo_settings', 'mini_enable_seo')) {
