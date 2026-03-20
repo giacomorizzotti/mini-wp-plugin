@@ -238,13 +238,13 @@ function get_slides_callback($number=3) {
     );
     $query = new WP_Query($args);
     if ($query->have_posts()) :
+        $show_controls = $query->post_count > 1;
         $slider = '';
         $slider .= '
 <div class="container fw grad-fw-down-w">
     <div class="container fw">
         <div class="slider-wrapper">
-            <i id="left" class="iconoir-arrow-left-circle slider-controls"></i>
-            <ul class="slider fh">
+        '.($show_controls ? '<i id="left" class="iconoir-arrow-left-circle slider-controls"></i>' : '').'            <ul class="slider fh">
         ';
         $n=1;
         while ($query->have_posts()) : $query->the_post();
@@ -317,7 +317,7 @@ function get_slides_callback($number=3) {
         endwhile;
         $slider .= '
             </ul>
-            <i id="right" class="iconoir-arrow-right-circle slider-controls"></i>
+            '.($show_controls ? '<i id="right" class="iconoir-arrow-right-circle slider-controls"></i>' : '').'
         </div>
     </div>
 </div>
