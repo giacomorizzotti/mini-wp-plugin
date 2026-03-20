@@ -809,6 +809,14 @@ add_action('save_post', 'mini_save_seo_meta_box');
 /* END - SEO meta box save */
 
 /* START - SEO frontend output */
+function mini_suppress_wp_canonical() {
+    if (!is_mini_option_enabled('mini_seo_settings', 'mini_enable_seo')) {
+        return;
+    }
+    remove_action('wp_head', 'rel_canonical');
+}
+add_action('wp', 'mini_suppress_wp_canonical');
+
 function mini_output_seo_meta_tags() {
     if (!is_mini_option_enabled('mini_seo_settings', 'mini_enable_seo')) {
         return;
