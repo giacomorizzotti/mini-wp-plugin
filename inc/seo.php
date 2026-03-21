@@ -6,7 +6,7 @@ function mini_seo_settings_init() {
     ]);
     add_settings_section(
         'mini_seo_section',
-        __( '<i>mini</i> SEO settings', 'mini' ),
+        __( 'SEO settings', 'mini' ),
         'mini_seo_section_callback',
         'mini-seo'
     );
@@ -40,6 +40,10 @@ function mini_seo_settings_sanitize($input) {
     mini_sitemap_flush_cache();
 
     return $input;
+}
+
+function mini_seo_section_callback() {
+    // Section description can be added here if needed
 }
 
 function mini_sitemap_get_default_robots_content($sitemap_enabled = null) {
@@ -87,7 +91,7 @@ function mini_sitemap_get_configured_robots_content($sitemap_enabled = null) {
     return trim($content) . "\n";
 }
 
-function mini_seo_section_callback( $args ) {
+function mini_seo_render_tab_content( $tab ) {
     $seo_enabled = is_mini_option_enabled('mini_seo_settings', 'mini_enable_seo');
     $seo_options = get_option('mini_seo_settings');
     $sitemap_explicit = is_array($seo_options) && array_key_exists('mini_enable_sitemap', $seo_options);
@@ -95,37 +99,11 @@ function mini_seo_section_callback( $args ) {
     $include_empty = !isset($seo_options['mini_sitemap_include_empty']) || !empty($seo_options['mini_sitemap_include_empty']);
 
     $robots_preview = mini_sitemap_get_configured_robots_content($sitemap_enabled);
-    ?>
-    <div class="space"></div>
-    <div class="mini-seo-settings-tabs">
-        <h2 class="nav-tab-wrapper" style="margin-bottom: 12px;">
-            <a href="#" class="nav-tab nav-tab-active mini-seo-settings-tab" data-tab="features"><?php esc_html_e('SEO Features', 'mini'); ?></a>
-            <a href="#" class="nav-tab mini-seo-settings-tab" data-tab="general"><?php esc_html_e('General SEO Settings', 'mini'); ?></a>
-            <a href="#" class="nav-tab mini-seo-settings-tab" data-tab="sitemap"><?php esc_html_e('Sitemap', 'mini'); ?></a>
-            <a href="#" class="nav-tab mini-seo-settings-tab" data-tab="robots"><?php esc_html_e('Robots.txt', 'mini'); ?></a>
-        </h2>
 
-        <div id="mini-seo-settings-features" class="mini-seo-settings-tab-content" style="display: block;">
-            <div class="boxes align-items-start">
-                <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-                    <h4><?php esc_html_e('Enable SEO Features', 'mini'); ?></h4>
-                    <label for="mini_enable_seo">
-                        <input
-                            type="checkbox"
-                            id="mini_enable_seo"
-                            name="mini_seo_settings[mini_enable_seo]"
-                            class="me-1"
-                            value="1"
-                            <?php checked($seo_enabled, true); ?>
-                        >
-                        <?php esc_html_e('Enable SEO meta tags for pages, posts and custom content types.', 'mini'); ?>
-                    </label>
-                    <p class="S grey-text"><?php esc_html_e("When enabled, you'll be able to customize title, description, keywords, robots directives, and social media tags for each page/post.", 'mini'); ?></p>
-                </div>
-            </div>
-        </div>
-
-        <div id="mini-seo-settings-general" class="mini-seo-settings-tab-content" style="display: none;">
+    // Render only the specific tab content
+    switch ( $tab ) {
+        case 'general':
+            ?>
             <div class="boxes align-items-start">
                 <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
                     <h4><?php esc_html_e('Default Settings', 'mini'); ?></h4>
@@ -151,7 +129,7 @@ function mini_seo_section_callback( $args ) {
                     <div class="sep my-2 light-grey-border"></div>
                     <label for="mini_seo_image" class="bold"><?php _e('Default SEO Image', 'mini'); ?>:</label>
                     <div class="flex mb-1">
-                        <button type="button" class="button me-1" id="mini_seo_default_image_button" style="width: 120px;">Select Image</button>
+                        <button type="button" class="btn my-0 me-1" id="mini_seo_default_image_button" style="width: 120px;">Select Image</button>
                         <input
                             type="url"
                             name="mini_seo_settings[default_image]"
@@ -178,9 +156,33 @@ function mini_seo_section_callback( $args ) {
                     </div>
                 </div>
             </div>
-        </div>
+            <?php
+            break;
 
-        <div id="mini-seo-settings-sitemap" class="mini-seo-settings-tab-content" style="display: none;">
+        case 'features':
+            ?>
+            <div class="boxes align-items-start">
+                <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
+                    <h4><?php esc_html_e('Enable SEO in contents', 'mini'); ?></h4>
+                    <label for="mini_enable_seo">
+                        <input
+                            type="checkbox"
+                            id="mini_enable_seo"
+                            name="mini_seo_settings[mini_enable_seo]"
+                            class="me-1"
+                            value="1"
+                            <?php checked($seo_enabled, true); ?>
+                        >
+                        <?php esc_html_e('Enable SEO meta tags for pages, posts and custom content types.', 'mini'); ?>
+                    </label>
+                    <p class="S grey-text"><?php esc_html_e("When enabled, you'll be able to customize title, description, keywords, robots directives, and social media tags for each page/post.", 'mini'); ?></p>
+                </div>
+            </div>
+            <?php
+            break;
+
+        case 'sitemap':
+            ?>
             <div class="boxes align-items-start">
                 <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
                     <h4><?php esc_html_e('Sitemap', 'mini'); ?></h4>
@@ -196,7 +198,7 @@ function mini_seo_section_callback( $args ) {
                         <?php esc_html_e('Enable mini XML sitemap', 'mini'); ?>
                     </label>
                     <p class="S grey-text"><?php esc_html_e('Generates custom sitemap endpoints like', 'mini'); ?> <code><?php echo esc_html(home_url('/sitemap.xml')); ?></code>.</p>
-
+                    <div class="space"></div>
                     <label for="mini_sitemap_include_empty">
                         <input
                             type="checkbox"
@@ -209,41 +211,43 @@ function mini_seo_section_callback( $args ) {
                         <?php esc_html_e('Include empty post type sitemaps in index', 'mini'); ?>
                     </label>
                     <p class="S grey-text"><?php esc_html_e('If disabled, only post-type sitemaps containing at least one indexable URL are listed in the sitemap index.', 'mini'); ?></p>
+                    <div class="space"></div>
+                    <div class="line"></div>
                     <div class="space-2"></div>
-                    <div class="sep"></div>
-                    <div class="space-3"></div>
-                    <button type="submit" class="button button-secondary" form="mini-refresh-sitemap-form">
+                    <button type="submit" class="btn second-color-btn" form="mini-refresh-sitemap-form">
                         <?php esc_html_e('Update Sitemap Now', 'mini'); ?>
                     </button>
-                    <p class="description" style="margin-top: 8px;">
+                    <p class="description">
                         <?php esc_html_e('Clears mini sitemap cache and regenerates XML on next request.', 'mini'); ?>
                     </p>
                 </div>
             </div>
-        </div>
+            <?php
+            break;
 
-        <div id="mini-seo-settings-robots" class="mini-seo-settings-tab-content" style="display: none;">
+        case 'robots':
+            ?>
             <div class="boxes align-items-start">
                 <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
                     <h4><?php esc_html_e('Robots.txt', 'mini'); ?></h4>
                     <label for="mini_robots_preview" class="bold"><?php _e('Robots.txt Rules', 'mini'); ?></label>
                     <textarea id="mini_robots_preview" name="mini_seo_settings[robots_custom_rules]" rows="10" style="width: 100%; font-family: monospace;"><?php echo esc_textarea($robots_preview); ?></textarea>
                     <p class="S grey-text"><?php esc_html_e('Edit robots.txt directives directly here. When sitemap is enabled, the sitemap line is automatically enforced.', 'mini'); ?></p>
-                    <button type="submit" class="button button-secondary" form="mini-reset-robots-form" onclick="return confirm('Reset robots.txt rules to default?');">
+                    <button type="submit" class="btn second-color-btn-invert" form="mini-reset-robots-form" onclick="return confirm('Reset robots.txt rules to default?');">
                         <?php esc_html_e('Reset robots.txt to default', 'mini'); ?>
                     </button>
                 </div>
             </div>
-        </div>
-    </div>
-    <?php
+            <?php
+            break;
+    }
 }
 
 function mini_seo_page_html() {
     if ( ! current_user_can( 'manage_options' ) ) {
         return;
     }
-    
+
     if ( isset( $_GET['settings-updated'] ) ) {
         add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
     }
@@ -259,17 +263,33 @@ function mini_seo_page_html() {
     settings_errors( 'mini_messages' );
     wp_enqueue_media();
     $default_image = (string) get_variable('mini_seo_settings', 'default_image');
+
+    $current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'general';
+    $page_url    = admin_url( 'admin.php?page=mini-seo' );
     ?>
     <div class="wrap">
         <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-        <br/>
-        <form action="options.php" method="post">
-            <?php
-            settings_fields( 'mini_seo' );
-            do_settings_sections( 'mini-seo' );
-            submit_button( 'Save Settings' );
-            ?>
-        </form>
+
+        <nav class="nav-tab-wrapper">
+            <a href="<?php echo esc_url( $page_url . '&tab=general' ); ?>" class="nav-tab <?php echo $current_tab === 'general' ? 'nav-tab-active' : ''; ?>"><?php _e( 'General SEO Settings', 'mini' ); ?></a>
+            <a href="<?php echo esc_url( $page_url . '&tab=features' ); ?>" class="nav-tab <?php echo $current_tab === 'features' ? 'nav-tab-active' : ''; ?>"><?php _e( 'SEO Contents', 'mini' ); ?></a>
+            <a href="<?php echo esc_url( $page_url . '&tab=sitemap' ); ?>" class="nav-tab <?php echo $current_tab === 'sitemap' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Sitemap', 'mini' ); ?></a>
+            <a href="<?php echo esc_url( $page_url . '&tab=robots' ); ?>" class="nav-tab <?php echo $current_tab === 'robots' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Robots.txt', 'mini' ); ?></a>
+        </nav>
+
+        <?php if ( $current_tab === 'general' || $current_tab === 'features' || $current_tab === 'sitemap' || $current_tab === 'robots' ) : ?>
+
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_seo' );
+                do_settings_sections( 'mini-seo' );
+                // Only show the specific tab content, not all tabs
+                mini_seo_render_tab_content( $current_tab );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+
+        <?php endif; ?>
 
         <form id="mini-refresh-sitemap-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" style="display: none;">
             <?php wp_nonce_field('mini_refresh_sitemap_action', 'mini_refresh_sitemap_nonce'); ?>
@@ -283,44 +303,6 @@ function mini_seo_page_html() {
     </div>
     <script type="text/javascript">
     jQuery(document).ready(function($) {
-        function miniSeoSettingsActivateTab(tab) {
-            if (!tab || !$('#mini-seo-settings-' + tab).length) {
-                tab = 'features';
-            }
-
-            $('.mini-seo-settings-tab').removeClass('nav-tab-active');
-            $('.mini-seo-settings-tab[data-tab="' + tab + '"]').addClass('nav-tab-active');
-
-            $('.mini-seo-settings-tab-content').hide();
-            $('#mini-seo-settings-' + tab).show();
-
-            try {
-                localStorage.setItem('miniSeoSettingsActiveTab', tab);
-            } catch (e) {}
-
-            if (window.location.hash !== '#mini-seo-tab=' + tab) {
-                window.location.hash = 'mini-seo-tab=' + tab;
-            }
-        }
-
-        var tabFromHash = '';
-        if (window.location.hash.indexOf('#mini-seo-tab=') === 0) {
-            tabFromHash = window.location.hash.replace('#mini-seo-tab=', '');
-        }
-
-        var tabFromStorage = '';
-        try {
-            tabFromStorage = localStorage.getItem('miniSeoSettingsActiveTab') || '';
-        } catch (e) {}
-
-        miniSeoSettingsActivateTab(tabFromHash || tabFromStorage || 'features');
-
-        $('.mini-seo-settings-tab').on('click', function(e) {
-            e.preventDefault();
-            var tab = $(this).data('tab');
-            miniSeoSettingsActivateTab(tab);
-        });
-
         // Function to check image dimensions
         function checkImageDimensions(imageUrl, callback) {
             var img = new Image();
@@ -332,7 +314,7 @@ function mini_seo_page_html() {
             };
             img.src = imageUrl;
         }
-        
+
         // Function to update dimension display
         function updateDimensionDisplay($element, width, height) {
             if (width && height) {
@@ -344,17 +326,17 @@ function mini_seo_page_html() {
                 $element.html('');
             }
         }
-        
+
         // Media uploader for default image
         var defaultImageFrame;
         $('#mini_seo_default_image_button').on('click', function(e) {
             e.preventDefault();
-            
+
             if (defaultImageFrame) {
                 defaultImageFrame.open();
                 return;
             }
-            
+
             defaultImageFrame = wp.media({
                 title: 'Select Default SEO Image',
                 button: {
@@ -362,26 +344,26 @@ function mini_seo_page_html() {
                 },
                 multiple: false
             });
-            
+
             defaultImageFrame.on('select', function() {
                 var attachment = defaultImageFrame.state().get('selection').first().toJSON();
                 $('#mini_seo_default_image').val(attachment.url).trigger('change');
             });
-            
+
             defaultImageFrame.open();
         });
-        
+
         // Update preview when default image URL changes
         $('#mini_seo_default_image').on('change input', function() {
             var imageUrl = $(this).val().trim();
             var $previewContainer = $('#mini_seo_default_preview_container');
             var $previewImage = $('#mini_seo_default_preview_image');
             var $dimensions = $('#mini_seo_default_dimensions');
-            
+
             if (imageUrl) {
                 $previewImage.attr('src', imageUrl);
                 $previewContainer.show();
-                
+
                 // Check dimensions
                 checkImageDimensions(imageUrl, function(width, height) {
                     updateDimensionDisplay($dimensions, width, height);
@@ -391,7 +373,7 @@ function mini_seo_page_html() {
                 $dimensions.html('');
             }
         });
-        
+
         // Check initial dimensions if image exists
         <?php if ($default_image): ?>
         checkImageDimensions('<?php echo esc_js($default_image); ?>', function(width, height) {
@@ -614,7 +596,7 @@ function mini_seo_meta_box_callback($post) {
                     <div class="space-2"></div>
                     <label for="mini_seo_image" class="bold"><?php _e('Custom SEO Image', 'mini'); ?></label>
                     <div class="flex mb-1">
-                        <button type="button" class="button me-1" id="mini_seo_image_button" style="width: 120px;">Select Image</button>
+                        <button type="button" class="btn my-0 me-1" id="mini_seo_image_button" style="width: 120px;">Select Image</button>
                         <input type="url" id="mini_seo_image" name="mini_seo_image" value="<?php echo esc_url($seo_image); ?>" placeholder="https://">
                     </div>
                     <p class="desc XS">
@@ -639,7 +621,7 @@ function mini_seo_meta_box_callback($post) {
                     <p class="desc"><?php _e('Separate keywords with commas. Example: <i>keyword1</i>, <i>keyword2</i>, <i>keyword3</i>', 'mini'); ?></p>
                     
                     <div style="margin-top: 15px;">
-                        <button type="button" class="button" id="mini_analyze_content"><?php _e('Analyze Content for Keywords', 'mini'); ?></button>
+                        <button type="button" class="btn" id="mini_analyze_content"><?php _e('Analyze Content for Keywords', 'mini'); ?></button>
                         <p class="desc" style="margin-top: 8px;"><?php _e('Click to extract the most frequently used words from your content', 'mini'); ?></p>
                     </div>
                     

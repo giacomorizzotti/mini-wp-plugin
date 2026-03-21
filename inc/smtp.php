@@ -6,7 +6,7 @@ function mini_smtp_settings_init() {
     ]);
     add_settings_section(
         'mini_smtp_section',
-        __( '<i>mini</i> SMTP mail settings', 'mini' ),
+        __( 'SMTP email settings', 'mini' ),
         'mini_smtp_section_callback',
         'mini-smtp'
     );

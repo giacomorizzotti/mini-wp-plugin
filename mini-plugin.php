@@ -124,7 +124,7 @@ function mini_content_settings_init() {
     register_setting( 'mini_content', 'mini_content_settings');
     add_settings_section(
         'mini_content_section',
-        __( '<i>mini</i> content type settings', 'mini' ),
+        __( 'Content type settings', 'mini' ),
         'mini_content_section_callback',
         'mini-content'
     );
@@ -228,17 +228,41 @@ function mini_content_page_html() {
         add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
     }
     settings_errors( 'mini_messages' );
+
+    $current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'blogging';
+    $page_url    = admin_url( 'admin.php?page=mini-content' );
+
     ?>
     <div class="wrap">
         <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-        <br/>
-        <form action="options.php" method="post">
-            <?php
-            settings_fields( 'mini_content' );
-            do_settings_sections( 'mini-content' );
-            submit_button( 'Save Settings' );
-            ?>
-        </form>
+
+        <nav class="nav-tab-wrapper">
+            <a href="<?php echo esc_url( $page_url . '&tab=blogging' ); ?>" class="nav-tab <?php echo $current_tab === 'blogging' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Blogging', 'mini' ); ?></a>
+            <a href="<?php echo esc_url( $page_url . '&tab=content-types' ); ?>" class="nav-tab <?php echo $current_tab === 'content-types' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Content types', 'mini' ); ?></a>
+        </nav>
+
+        <?php if ( $current_tab === 'blogging' ) : ?>
+
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_blogging' );
+                do_settings_sections( 'mini-blogging' );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+
+        <?php else : /* content-types tab */ ?>
+
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_content' );
+                do_settings_sections( 'mini-content' );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+
+        <?php endif; ?>
+
     </div>
     <?php
 }
@@ -258,8 +282,8 @@ function mini_plugin_settings_pages() {
     }
     add_submenu_page(
         'mini',
-        'mini plugin - Content types',
-        'Content types',
+        'mini plugin - Contents',
+        'Contents',
         'manage_options',
         'mini-content',
         'mini_content_page_html',
@@ -272,6 +296,15 @@ function mini_plugin_settings_pages() {
         'manage_options',
         'mini-seo',
         'mini_seo_page_html',
+        9
+    );
+    add_submenu_page(
+        'mini',
+        'mini plugin - Email',
+        'Email',
+        'manage_options',
+        'mini-email',
+        'mini_email_page_html',
         9
     );
 }
@@ -736,42 +769,12 @@ function mini_plugin_main_page_html() {
 
     <nav class="nav-tab-wrapper">
         <a href="<?php echo esc_url( $page_url . '&tab=mini' ); ?>" class="nav-tab <?php echo $current_tab === 'mini' ? 'nav-tab-active' : ''; ?>"><?php _e( 'mini', 'mini' ); ?></a>
-        <a href="<?php echo esc_url( $page_url . '&tab=blogging' ); ?>" class="nav-tab <?php echo $current_tab === 'blogging' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Blogging', 'mini' ); ?></a>
-        <a href="<?php echo esc_url( $page_url . '&tab=smtp' ); ?>" class="nav-tab <?php echo $current_tab === 'smtp' ? 'nav-tab-active' : ''; ?>"><?php _e( 'SMTP', 'mini' ); ?></a>
+        <a href="<?php echo esc_url( $page_url . '&tab=useful-plugins' ); ?>" class="nav-tab <?php echo $current_tab === 'useful-plugins' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Useful plugins', 'mini' ); ?></a>
     </nav>
 
-    <?php if ( $current_tab === 'blogging' ) : ?>
+    <?php if ( $current_tab === 'useful-plugins' ) : ?>
 
-        <form action="options.php" method="post">
-            <?php
-            settings_fields( 'mini_blogging' );
-            do_settings_sections( 'mini-blogging' );
-            submit_button( 'Save Settings' );
-            ?>
-        </form>
-
-    <?php elseif ( $current_tab === 'smtp' ) : ?>
-
-        <form action="options.php" method="post">
-            <?php
-            settings_fields( 'mini_smtp' );
-            do_settings_sections( 'mini-smtp' );
-            submit_button( 'Save Settings' );
-            ?>
-        </form>
-
-    <?php else : /* mini tab */ ?>
-
-        <div class="boxes py-2">
-            <div class="box-100 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <div class="space"></div>
-                <img src="https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/img/brand/mini_logo_2.svg" alt="mini logo" style="max-width: 280px;" class="mb-2"/>
-                <h1 class="mb-0"><i>mini</i> is a frontend framework</h1>
-                <p class="mt-0">That allows you to build modern, responsive websites with ease.</p>
-                <p class="">
-                    <a href="https://mini.uwa.agency/" target="_blank" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Visit mini website', 'mini' ); ?></a>
-                </p>
-            </div>
+        <div class="boxes">
             <div class="box-100 mb-2">
                 <h4 class="grey-text regular"><?php _e('Useful Plugins', 'mini'); ?></h4>
                 <p><?php _e('Here are some useful plugins that work great with mini:', 'mini'); ?></p>            
@@ -837,12 +840,65 @@ function mini_plugin_main_page_html() {
             </div>
         </div>
 
+    <?php else : /* mini tab */ ?>
+
+        <div class="boxes">
+            <div class="box-100 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <div class="space"></div>
+                <img src="https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/img/brand/mini_logo_2.svg" alt="mini logo" style="max-width: 280px;" class="mb-2"/>
+                <h1 class="mb-0"><i>mini</i> is a frontend framework</h1>
+                <p class="mt-0">That allows you to build modern, responsive websites with ease.</p>
+                <p class="">
+                    <a href="https://mini.uwa.agency/" target="_blank" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Visit mini website', 'mini' ); ?></a>
+                </p>
+            </div>
+        </div>
+
     <?php endif; ?>
 
     </div>
     <?php
 }
 /* END - mini settings*/
+
+/* START - Email settings */
+function mini_email_page_html() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    if ( isset( $_GET['settings-updated'] ) ) {
+        add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
+    }
+    settings_errors( 'mini_messages' );
+
+    $current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'smtp';
+    $page_url    = admin_url( 'admin.php?page=mini-email' );
+
+    ?>
+    <div class="wrap">
+        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+
+        <nav class="nav-tab-wrapper">
+            <a href="<?php echo esc_url( $page_url . '&tab=smtp' ); ?>" class="nav-tab <?php echo $current_tab === 'smtp' ? 'nav-tab-active' : ''; ?>"><?php _e( 'SMTP settings', 'mini' ); ?></a>
+        </nav>
+
+        <?php if ( $current_tab === 'smtp' ) : ?>
+
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_smtp' );
+                do_settings_sections( 'mini-smtp' );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+
+        <?php endif; ?>
+
+    </div>
+    <?php
+}
+/* END - Email settings */
 
 /* START - Content types module include */
 require_once plugin_dir_path(__FILE__) . 'inc/content-types.php';
