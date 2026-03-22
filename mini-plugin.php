@@ -595,10 +595,15 @@ function mini_seo_admin_scripts() {
         
         function analyzeContent(text) {
             // Common stop words to filter out
-            var stopWords = ['the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'i', 'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at', 'this', 'but', 'his', 'by', 'from', 'they', 'we', 'say', 'her', 'she', 'or', 'an', 'will', 'my', 'one', 'all', 'would', 'there', 'their', 'what', 'so', 'up', 'out', 'if', 'about', 'who', 'get', 'which', 'go', 'me', 'when', 'make', 'can', 'like', 'time', 'no', 'just', 'him', 'know', 'take', 'people', 'into', 'year', 'your', 'good', 'some', 'could', 'them', 'see', 'other', 'than', 'then', 'now', 'look', 'only', 'come', 'its', 'over', 'think', 'also', 'back', 'after', 'use', 'two', 'how', 'our', 'work', 'first', 'well', 'way', 'even', 'new', 'want', 'because', 'any', 'these', 'give', 'day', 'most', 'us', 'is', 'was', 'are', 'been', 'has', 'had', 'were', 'said', 'did', 'having', 'may', 'should', 'am'];
+            var stopWords = ['the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'i', 'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at', 'this', 'but', 'his', 'by', 'from', 'they', 'we', 'say', 'her', 'she', 'or', 'an', 'will', 'my', 'one', 'all', 'would', 'there', 'their', 'what', 'so', 'up', 'out', 'if', 'about', 'who', 'get', 'which', 'go', 'me', 'when', 'make', 'can', 'like', 'time', 'no', 'just', 'him', 'know', 'take', 'people', 'into', 'year', 'your', 'good', 'some', 'could', 'them', 'see', 'other', 'than', 'then', 'now', 'look', 'only', 'come', 'its', 'over', 'think', 'also', 'back', 'after', 'use', 'two', 'how', 'our', 'work', 'first', 'well', 'way', 'even', 'new', 'want', 'because', 'any', 'these', 'give', 'day', 'most', 'us', 'is', 'was', 'are', 'been', 'has', 'had', 'were', 'said', 'did', 'having', 'may', 'should', 'am',
+                // HTML tags and attributes
+                'span', 'strong', 'href', 'target', 'blank', 'noreferrer', 'noopener', 'style', 'class', 'type', 'data', 'json', 'nofollow', 'html', 'head', 'body', 'div', 'section', 'article', 'header', 'footer', 'main', 'aside', 'figure', 'figcaption', 'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'form', 'input', 'button', 'select', 'option', 'label', 'textarea', 'script', 'link', 'meta', 'title', 'width', 'height', 'align', 'color', 'font', 'size', 'text', 'decoration', 'underline', 'bold', 'italic', 'https', 'http', 'www', 'rel', 'src', 'alt', 'aria', 'role'];
             
+            // Strip HTML tags before tokenizing
             // Clean and tokenize
-            var words = text.toLowerCase()
+            var words = text
+                .replace(/<[^>]+>/g, ' ')
+                .toLowerCase()
                 .replace(/[^a-z0-9\s]/g, ' ')
                 .split(/\s+/)
                 .filter(function(word) {
