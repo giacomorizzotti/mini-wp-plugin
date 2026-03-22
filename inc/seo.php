@@ -37,6 +37,30 @@ function mini_seo_settings_sanitize($input) {
         $input['robots_custom_rules'] = sanitize_textarea_field($input['robots_custom_rules']);
     }
 
+    if (isset($input['default_author_bio'])) {
+        $input['default_author_bio'] = sanitize_textarea_field($input['default_author_bio']);
+    }
+
+    if (isset($input['default_author_name'])) {
+        $input['default_author_name'] = sanitize_text_field($input['default_author_name']);
+    }
+
+    if (isset($input['default_author_job_title'])) {
+        $input['default_author_job_title'] = sanitize_text_field($input['default_author_job_title']);
+    }
+
+    if (isset($input['default_author_website'])) {
+        $input['default_author_website'] = esc_url_raw($input['default_author_website']);
+    }
+
+    if (isset($input['default_author_twitter'])) {
+        $input['default_author_twitter'] = sanitize_text_field($input['default_author_twitter']);
+    }
+
+    if (isset($input['default_author_linkedin'])) {
+        $input['default_author_linkedin'] = esc_url_raw($input['default_author_linkedin']);
+    }
+
     mini_sitemap_flush_cache();
 
     return $input;
@@ -91,7 +115,7 @@ function mini_sitemap_get_configured_robots_content($sitemap_enabled = null) {
     return trim($content) . "\n";
 }
 
-function mini_seo_render_tab_content( $tab ) {
+function mini_seo_render_tab_content( $current_tab ) {
     $seo_enabled = is_mini_option_enabled('mini_seo_settings', 'mini_enable_seo');
     $seo_options = get_option('mini_seo_settings');
     $sitemap_explicit = is_array($seo_options) && array_key_exists('mini_enable_sitemap', $seo_options);
@@ -100,147 +124,207 @@ function mini_seo_render_tab_content( $tab ) {
 
     $robots_preview = mini_sitemap_get_configured_robots_content($sitemap_enabled);
 
-    // Render only the specific tab content
-    switch ( $tab ) {
-        case 'general':
-            ?>
-            <div class="boxes align-items-start">
-                <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-                    <h4><?php esc_html_e('Default Settings', 'mini'); ?></h4>
-                    <label for="mini_seo_image" class="bold"><?php _e('Default Meta Description', 'mini'); ?>:</label>
-                    <textarea
-                        name="mini_seo_settings[default_description]"
-                        rows="3"
-                        style="width: 100%;"
-                        maxlength="160"
-                        placeholder="Default site description (max 160 characters)"
-                    ><?php echo esc_attr(get_variable('mini_seo_settings', 'default_description')); ?></textarea>
-                    <p class="S grey-text mt-05"><?php esc_html_e("This will be used when individual pages don't have their own description.", 'mini'); ?></p>
-                    <div class="sep my-2 light-grey-border"></div>
-                    <label for="mini_default_keywords" class="bold"><?php _e('Default Website Keywords', 'mini'); ?>:</label>
-                    <textarea
-                        id="mini_default_keywords"
-                        name="mini_seo_settings[default_keywords]"
-                        rows="3"
-                        style="width: 100%;"
-                        placeholder="keyword one, keyword two, keyword three"
-                    ><?php echo esc_textarea(get_variable('mini_seo_settings', 'default_keywords')); ?></textarea>
-                    <p class="S grey-text mt-05"><?php esc_html_e('Used as fallback meta keywords when a page/post has no custom keywords.', 'mini'); ?></p>
-                    <div class="sep my-2 light-grey-border"></div>
-                    <label for="mini_seo_image" class="bold"><?php _e('Default SEO Image', 'mini'); ?>:</label>
-                    <div class="flex mb-1">
-                        <button type="button" class="btn my-0 me-1" id="mini_seo_default_image_button" style="width: 120px;">Select Image</button>
-                        <input
-                            type="url"
-                            name="mini_seo_settings[default_image]"
-                            id="mini_seo_default_image"
-                            value="<?php echo esc_url(get_variable('mini_seo_settings', 'default_image')); ?>"
-                            placeholder="https://"
-                        >
+    // Render all tab content, but show only current
+    ?>
+    <div id="general" class="mini-seo-tab-content" style="display: <?php echo $current_tab === 'general' ? 'block' : 'none'; ?>;">
+        <div class="boxes align-items-start">
+            <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
+                <h4><?php esc_html_e('Default Settings', 'mini'); ?></h4>
+                <label for="mini_seo_image" class="bold"><?php _e('Default Meta Description', 'mini'); ?>:</label>
+                <textarea
+                    name="mini_seo_settings[default_description]"
+                    rows="3"
+                    style="width: 100%;"
+                    maxlength="160"
+                    placeholder="Default site description (max 160 characters)"
+                ><?php echo esc_attr(get_variable('mini_seo_settings', 'default_description')); ?></textarea>
+                <p class="S grey-text mt-05"><?php esc_html_e("This will be used when individual pages don't have their own description.", 'mini'); ?></p>
+                <div class="sep my-2 light-grey-border"></div>
+                <label for="mini_default_keywords" class="bold"><?php _e('Default Website Keywords', 'mini'); ?>:</label>
+                <textarea
+                    id="mini_default_keywords"
+                    name="mini_seo_settings[default_keywords]"
+                    rows="3"
+                    style="width: 100%;"
+                    placeholder="keyword one, keyword two, keyword three"
+                ><?php echo esc_textarea(get_variable('mini_seo_settings', 'default_keywords')); ?></textarea>
+                <p class="S grey-text mt-05"><?php esc_html_e('Used as fallback meta keywords when a page/post has no custom keywords.', 'mini'); ?></p>
+                <div class="sep my-2 light-grey-border"></div>
+                <label for="mini_seo_image" class="bold"><?php _e('Default SEO Image', 'mini'); ?>:</label>
+                <div class="flex mb-1">
+                    <button type="button" class="btn my-0 me-1" id="mini_seo_default_image_button" style="width: 120px;">Select Image</button>
+                    <input
+                        type="url"
+                        name="mini_seo_settings[default_image]"
+                        id="mini_seo_default_image"
+                        value="<?php echo esc_url(get_variable('mini_seo_settings', 'default_image')); ?>"
+                        placeholder="https://"
+                    >
+                </div>
+                <p class="desc XS">
+                    <?php _e('Fallback image for SEO/social media when no custom or featured image is set.<br><strong>Recommended: 1200*630px</strong>', 'mini'); ?>
+                </p>
+                <div class="space-2"></div>
+                <?php $default_image = get_variable('mini_seo_settings', 'default_image'); ?>
+                <div id="mini_seo_default_preview_container" class="b-rad-10 oh box-shadow-light" style="max-width: 480px;<?php echo !$default_image ? ' display: none;' : ''; ?>">
+                    <div style="position: relative; width: 100%; padding-bottom: 52.5%; background: #eee; overflow: hidden;">
+                        <img id="mini_seo_default_preview_image" src="<?php echo esc_url($default_image); ?>" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
                     </div>
-                    <p class="desc XS">
-                        <?php _e('Fallback image for SEO/social media when no custom or featured image is set.<br><strong>Recommended: 1200*630px</strong>', 'mini'); ?>
-                    </p>
-                    <div class="space-2"></div>
-                    <?php $default_image = get_variable('mini_seo_settings', 'default_image'); ?>
-                    <div id="mini_seo_default_preview_container" class="b-rad-10 oh box-shadow-light" style="max-width: 480px;<?php echo !$default_image ? ' display: none;' : ''; ?>">
-                        <div style="position: relative; width: 100%; padding-bottom: 52.5%; background: #eee; overflow: hidden;">
-                            <img id="mini_seo_default_preview_image" src="<?php echo esc_url($default_image); ?>" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
-                        </div>
-                        <div class="white-bg p-1">
-                            <p class="desc XS mb-0">
-                                <?php _e('Preview in Open Graph format (1.91:1 ratio)', 'mini'); ?>
-                                <span id="mini_seo_default_dimensions" style="margin-left: 10px; color: #666;"></span>
-                            </p>
-                        </div>
+                    <div class="white-bg p-1">
+                        <p class="desc XS mb-0">
+                            <?php _e('Preview in Open Graph format (1.91:1 ratio)', 'mini'); ?>
+                            <span id="mini_seo_default_dimensions" style="margin-left: 10px; color: #666;"></span>
+                        </p>
                     </div>
                 </div>
             </div>
-            <?php
-            break;
+        </div>
+    </div>
 
-        case 'features':
-            ?>
-            <div class="boxes align-items-start">
-                <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-                    <h4><?php esc_html_e('Enable SEO in contents', 'mini'); ?></h4>
-                    <label for="mini_enable_seo">
-                        <input
-                            type="checkbox"
-                            id="mini_enable_seo"
-                            name="mini_seo_settings[mini_enable_seo]"
-                            class="me-1"
-                            value="1"
-                            <?php checked($seo_enabled, true); ?>
-                        >
-                        <?php esc_html_e('Enable SEO meta tags for pages, posts and custom content types.', 'mini'); ?>
-                    </label>
-                    <p class="S grey-text"><?php esc_html_e("When enabled, you'll be able to customize title, description, keywords, robots directives, and social media tags for each page/post.", 'mini'); ?></p>
-                </div>
+    <div id="features" class="mini-seo-tab-content" style="display: <?php echo $current_tab === 'features' ? 'block' : 'none'; ?>;">
+        <div class="boxes align-items-start">
+            <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
+                <h4><?php esc_html_e('Enable SEO in contents', 'mini'); ?></h4>
+                <label for="mini_enable_seo">
+                    <input
+                        type="checkbox"
+                        id="mini_enable_seo"
+                        name="mini_seo_settings[mini_enable_seo]"
+                        class="me-1"
+                        value="1"
+                        <?php checked($seo_enabled, true); ?>
+                    >
+                    <?php esc_html_e('Enable SEO meta tags for pages, posts and custom content types.', 'mini'); ?>
+                </label>
+                <p class="S grey-text"><?php esc_html_e("When enabled, you'll be able to customize title, description, keywords, robots directives, and social media tags for each page/post.", 'mini'); ?></p>
             </div>
-            <?php
-            break;
+        </div>
+    </div>
 
-        case 'sitemap':
-            ?>
-            <div class="boxes align-items-start">
-                <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-                    <h4><?php esc_html_e('Sitemap', 'mini'); ?></h4>
-                    <label for="mini_enable_sitemap">
-                        <input
-                            type="checkbox"
-                            id="mini_enable_sitemap"
-                            name="mini_seo_settings[mini_enable_sitemap]"
-                            class="me-1"
-                            value="1"
-                            <?php checked($sitemap_enabled, true); ?>
-                        >
-                        <?php esc_html_e('Enable mini XML sitemap', 'mini'); ?>
-                    </label>
-                    <p class="S grey-text"><?php esc_html_e('Generates custom sitemap endpoints like', 'mini'); ?> <code><?php echo esc_html(home_url('/sitemap.xml')); ?></code>.</p>
-                    <div class="space"></div>
-                    <label for="mini_sitemap_include_empty">
-                        <input
-                            type="checkbox"
-                            id="mini_sitemap_include_empty"
-                            name="mini_seo_settings[mini_sitemap_include_empty]"
-                            class="me-1"
-                            value="1"
-                            <?php checked($include_empty, true); ?>
-                        >
-                        <?php esc_html_e('Include empty post type sitemaps in index', 'mini'); ?>
-                    </label>
-                    <p class="S grey-text"><?php esc_html_e('If disabled, only post-type sitemaps containing at least one indexable URL are listed in the sitemap index.', 'mini'); ?></p>
-                    <div class="space"></div>
-                    <div class="line"></div>
-                    <div class="space-2"></div>
-                    <button type="submit" class="btn second-color-btn" form="mini-refresh-sitemap-form">
-                        <?php esc_html_e('Update Sitemap Now', 'mini'); ?>
-                    </button>
-                    <p class="description">
-                        <?php esc_html_e('Clears mini sitemap cache and regenerates XML on next request.', 'mini'); ?>
-                    </p>
-                </div>
+    <div id="sitemap" class="mini-seo-tab-content" style="display: <?php echo $current_tab === 'sitemap' ? 'block' : 'none'; ?>;">
+        <div class="boxes align-items-start">
+            <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
+                <h4><?php esc_html_e('Sitemap', 'mini'); ?></h4>
+                <label for="mini_enable_sitemap">
+                    <input
+                        type="checkbox"
+                        id="mini_enable_sitemap"
+                        name="mini_seo_settings[mini_enable_sitemap]"
+                        class="me-1"
+                        value="1"
+                        <?php checked($sitemap_enabled, true); ?>
+                    >
+                    <?php esc_html_e('Enable mini XML sitemap', 'mini'); ?>
+                </label>
+                <p class="S grey-text"><?php esc_html_e('Generates custom sitemap endpoints like', 'mini'); ?> <code><?php echo esc_html(home_url('/sitemap.xml')); ?></code>.</p>
+                <div class="space"></div>
+                <label for="mini_sitemap_include_empty">
+                    <input
+                        type="checkbox"
+                        id="mini_sitemap_include_empty"
+                        name="mini_seo_settings[mini_sitemap_include_empty]"
+                        class="me-1"
+                        value="1"
+                        <?php checked($include_empty, true); ?>
+                    >
+                    <?php esc_html_e('Include empty post type sitemaps in index', 'mini'); ?>
+                </label>
+                <p class="S grey-text"><?php esc_html_e('If disabled, only post-type sitemaps containing at least one indexable URL are listed in the sitemap index.', 'mini'); ?></p>
+                <div class="space"></div>
+                <div class="line"></div>
+                <div class="space-2"></div>
+                <button type="submit" class="btn second-color-btn" form="mini-refresh-sitemap-form">
+                    <?php esc_html_e('Update Sitemap Now', 'mini'); ?>
+                </button>
+                <p class="description">
+                    <?php esc_html_e('Clears mini sitemap cache and regenerates XML on next request.', 'mini'); ?>
+                </p>
             </div>
-            <?php
-            break;
+        </div>
+    </div>
 
-        case 'robots':
-            ?>
-            <div class="boxes align-items-start">
-                <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-                    <h4><?php esc_html_e('Robots.txt', 'mini'); ?></h4>
-                    <label for="mini_robots_preview" class="bold"><?php _e('Robots.txt Rules', 'mini'); ?></label>
-                    <textarea id="mini_robots_preview" name="mini_seo_settings[robots_custom_rules]" rows="10" style="width: 100%; font-family: monospace;"><?php echo esc_textarea($robots_preview); ?></textarea>
-                    <p class="S grey-text"><?php esc_html_e('Edit robots.txt directives directly here. When sitemap is enabled, the sitemap line is automatically enforced.', 'mini'); ?></p>
-                    <button type="submit" class="btn second-color-btn-invert" form="mini-reset-robots-form" onclick="return confirm('Reset robots.txt rules to default?');">
-                        <?php esc_html_e('Reset robots.txt to default', 'mini'); ?>
-                    </button>
-                </div>
+    <div id="robots" class="mini-seo-tab-content" style="display: <?php echo $current_tab === 'robots' ? 'block' : 'none'; ?>;">
+        <div class="boxes align-items-start">
+            <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
+                <h4><?php esc_html_e('Robots.txt', 'mini'); ?></h4>
+                <label for="mini_robots_preview" class="bold"><?php _e('Robots.txt Rules', 'mini'); ?></label>
+                <textarea id="mini_robots_preview" name="mini_seo_settings[robots_custom_rules]" rows="10" style="width: 100%; font-family: monospace;"><?php echo esc_textarea($robots_preview); ?></textarea>
+                <p class="S grey-text"><?php esc_html_e('Edit robots.txt directives directly here. When sitemap is enabled, the sitemap line is automatically enforced.', 'mini'); ?></p>
+                <button type="submit" class="btn second-color-btn-invert" form="mini-reset-robots-form" onclick="return confirm('Reset robots.txt rules to default?');">
+                    <?php esc_html_e('Reset robots.txt to default', 'mini'); ?>
+                </button>
             </div>
-            <?php
-            break;
-    }
+        </div>
+    </div>
+
+    <div id="author" class="mini-seo-tab-content" style="display: <?php echo $current_tab === 'author' ? 'block' : 'none'; ?>;">
+        <div class="boxes align-items-start">
+            <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
+                <h4><?php esc_html_e('Default Author Information', 'mini'); ?></h4>
+                <p class="S grey-text"><?php esc_html_e('These defaults are used when no specific author data is available for posts.', 'mini'); ?></p>
+                <div class="sep my-2 light-grey-border"></div>
+                <label for="mini_default_author_name" class="bold"><?php _e('Default Author Name', 'mini'); ?>:</label>
+                <input
+                    type="text"
+                    name="mini_seo_settings[default_author_name]"
+                    value="<?php echo esc_attr(get_variable('mini_seo_settings', 'default_author_name')); ?>"
+                    style="width: 100%;"
+                    placeholder="e.g., Your Site Name"
+                >
+                <p class="S grey-text mt-05"><?php esc_html_e("Used as fallback for author name in JSON-LD and meta tags.", 'mini'); ?></p>
+                <div class="sep my-2 light-grey-border"></div>
+                <label for="mini_default_author_bio" class="bold"><?php _e('Default Author Bio', 'mini'); ?>:</label>
+                <textarea
+                    name="mini_seo_settings[default_author_bio]"
+                    rows="3"
+                    style="width: 100%;"
+                    placeholder="Brief description of the default author's expertise."
+                ><?php echo esc_textarea(get_variable('mini_seo_settings', 'default_author_bio')); ?></textarea>
+                <p class="S grey-text mt-05"><?php esc_html_e("Used as fallback for author bio in JSON-LD.", 'mini'); ?></p>
+                <div class="sep my-2 light-grey-border"></div>
+                <label for="mini_default_author_job_title" class="bold"><?php _e('Default Job Title', 'mini'); ?>:</label>
+                <input
+                    type="text"
+                    name="mini_seo_settings[default_author_job_title]"
+                    value="<?php echo esc_attr(get_variable('mini_seo_settings', 'default_author_job_title')); ?>"
+                    style="width: 100%;"
+                    placeholder="e.g., Content Creator, SEO Specialist"
+                >
+                <p class="S grey-text mt-05"><?php esc_html_e("Used as fallback for author job title in JSON-LD.", 'mini'); ?></p>
+                <div class="sep my-2 light-grey-border"></div>
+                <label for="mini_default_author_website" class="bold"><?php _e('Default Author Website', 'mini'); ?>:</label>
+                <input
+                    type="url"
+                    name="mini_seo_settings[default_author_website]"
+                    value="<?php echo esc_url(get_variable('mini_seo_settings', 'default_author_website')); ?>"
+                    style="width: 100%;"
+                    placeholder="https://"
+                >
+                <p class="S grey-text mt-05"><?php esc_html_e("Used as fallback for author website in JSON-LD.", 'mini'); ?></p>
+                <div class="sep my-2 light-grey-border"></div>
+                <label for="mini_default_author_twitter" class="bold"><?php _e('Default Twitter Handle', 'mini'); ?>:</label>
+                <input
+                    type="text"
+                    name="mini_seo_settings[default_author_twitter]"
+                    value="<?php echo esc_attr(get_variable('mini_seo_settings', 'default_author_twitter')); ?>"
+                    style="width: 100%;"
+                    placeholder="@username"
+                >
+                <p class="S grey-text mt-05"><?php esc_html_e("Used as fallback for author Twitter in JSON-LD.", 'mini'); ?></p>
+                <div class="sep my-2 light-grey-border"></div>
+                <label for="mini_default_author_linkedin" class="bold"><?php _e('Default LinkedIn URL', 'mini'); ?>:</label>
+                <input
+                    type="url"
+                    name="mini_seo_settings[default_author_linkedin]"
+                    value="<?php echo esc_url(get_variable('mini_seo_settings', 'default_author_linkedin')); ?>"
+                    style="width: 100%;"
+                    placeholder="https://"
+                >
+                <p class="S grey-text mt-05"><?php esc_html_e("Used as fallback for author LinkedIn in JSON-LD.", 'mini'); ?></p>
+            </div>
+        </div>
+    </div>
+    <?php
 }
 
 function mini_seo_page_html() {
@@ -275,9 +359,10 @@ function mini_seo_page_html() {
             <a href="<?php echo esc_url( $page_url . '&tab=features' ); ?>" class="nav-tab <?php echo $current_tab === 'features' ? 'nav-tab-active' : ''; ?>"><?php _e( 'SEO Contents', 'mini' ); ?></a>
             <a href="<?php echo esc_url( $page_url . '&tab=sitemap' ); ?>" class="nav-tab <?php echo $current_tab === 'sitemap' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Sitemap', 'mini' ); ?></a>
             <a href="<?php echo esc_url( $page_url . '&tab=robots' ); ?>" class="nav-tab <?php echo $current_tab === 'robots' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Robots.txt', 'mini' ); ?></a>
+            <a href="<?php echo esc_url( $page_url . '&tab=author' ); ?>" class="nav-tab <?php echo $current_tab === 'author' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Author Defaults', 'mini' ); ?></a>
         </nav>
 
-        <?php if ( $current_tab === 'general' || $current_tab === 'features' || $current_tab === 'sitemap' || $current_tab === 'robots' ) : ?>
+        <?php if ( $current_tab === 'general' || $current_tab === 'features' || $current_tab === 'sitemap' || $current_tab === 'robots' || $current_tab === 'author' ) : ?>
 
             <form action="options.php" method="post">
                 <?php
@@ -515,6 +600,7 @@ function mini_seo_meta_box_callback($post) {
             <a href="#facebook" class="nav-tab mini-seo-tab <?php echo $active_tab == 'facebook' ? 'nav-tab-active' : ''; ?>"><?php _e('Facebook', 'mini'); ?></a>
             <a href="#twitter" class="nav-tab mini-seo-tab <?php echo $active_tab == 'twitter' ? 'nav-tab-active' : ''; ?>"><?php _e('X (Twitter)', 'mini'); ?></a>
             <a href="#advanced" class="nav-tab mini-seo-tab <?php echo $active_tab == 'advanced' ? 'nav-tab-active' : ''; ?>"><?php _e('Advanced', 'mini'); ?></a>
+            <a href="#author" class="nav-tab mini-seo-tab <?php echo $active_tab == 'author' ? 'nav-tab-active' : ''; ?>"><?php _e('Author', 'mini'); ?></a>
         </h2>
         
         <div id="seo" class="mini-seo-tab-content" style="display: <?php echo $active_tab == 'seo' ? 'block' : 'none'; ?>;">
@@ -717,6 +803,38 @@ function mini_seo_meta_box_callback($post) {
                 </div>
             </div>
         </div>
+        
+        <div id="author" class="mini-seo-tab-content" style="display: <?php echo $active_tab == 'author' ? 'block' : 'none'; ?>;">
+            <div class="boxes">
+                <div class="box-66">
+                    <h5><?php _e('Author Details for E-E-A-T', 'mini'); ?></h5>
+                    <div class="space-2"></div>
+                    <label for="mini_author_name" class="bold"><?php _e('Author Name', 'mini'); ?></label>
+                    <input type="text" id="mini_author_name" name="mini_author_name" value="<?php echo esc_attr(get_post_meta($post->ID, '_mini_author_name', true)); ?>" style="width: 100%;">
+                    <p class="desc XS"><?php _e('Override the author name for this content. Leave empty to use the post author\'s name.', 'mini'); ?></p>
+                    <div class="space-2"></div>
+                    <label for="mini_author_bio" class="bold"><?php _e('Author Bio', 'mini'); ?></label>
+                    <textarea id="mini_author_bio" name="mini_author_bio" rows="3" style="width: 100%;"><?php echo esc_textarea(get_post_meta($post->ID, '_mini_author_bio', true)); ?></textarea>
+                    <p class="desc XS"><?php _e('Brief description of the author\'s expertise. Leave empty to use user profile bio.', 'mini'); ?></p>
+                    <div class="space-2"></div>
+                    <label for="mini_author_job_title" class="bold"><?php _e('Job Title', 'mini'); ?></label>
+                    <input type="text" id="mini_author_job_title" name="mini_author_job_title" value="<?php echo esc_attr(get_post_meta($post->ID, '_mini_author_job_title', true)); ?>" style="width: 100%;">
+                    <p class="desc XS"><?php _e('Author\'s professional title. Leave empty to use default or user meta.', 'mini'); ?></p>
+                    <div class="space-2"></div>
+                    <label for="mini_author_website" class="bold"><?php _e('Author Website', 'mini'); ?></label>
+                    <input type="url" id="mini_author_website" name="mini_author_website" value="<?php echo esc_url(get_post_meta($post->ID, '_mini_author_website', true)); ?>" style="width: 100%;">
+                    <p class="desc XS"><?php _e('Author\'s personal or professional website. Leave empty to use user profile website.', 'mini'); ?></p>
+                    <div class="space-2"></div>
+                    <label for="mini_author_twitter" class="bold"><?php _e('Twitter Handle', 'mini'); ?></label>
+                    <input type="text" id="mini_author_twitter" name="mini_author_twitter" value="<?php echo esc_attr(get_post_meta($post->ID, '_mini_author_twitter', true)); ?>" style="width: 100%;" placeholder="@username">
+                    <p class="desc XS"><?php _e('Twitter username without @. Leave empty to skip.', 'mini'); ?></p>
+                    <div class="space-2"></div>
+                    <label for="mini_author_linkedin" class="bold"><?php _e('LinkedIn URL', 'mini'); ?></label>
+                    <input type="url" id="mini_author_linkedin" name="mini_author_linkedin" value="<?php echo esc_url(get_post_meta($post->ID, '_mini_author_linkedin', true)); ?>" style="width: 100%;">
+                    <p class="desc XS"><?php _e('Full LinkedIn profile URL. Leave empty to skip.', 'mini'); ?></p>
+                </div>
+            </div>
+        </div>
     </div>
     <?php
 }
@@ -757,6 +875,12 @@ function mini_save_seo_meta_box($post_id) {
         'mini_seo_twitter_description',
         'mini_seo_image',
         'mini_seo_canonical',
+        'mini_author_name',
+        'mini_author_bio',
+        'mini_author_job_title',
+        'mini_author_website',
+        'mini_author_twitter',
+        'mini_author_linkedin',
     ];
     
     // Keep stored robots index meta backwards-compatible while using a noindex checkbox in UI.
@@ -771,7 +895,7 @@ function mini_save_seo_meta_box($post_id) {
         if (isset($_POST[$field])) {
             $value = wp_unslash($_POST[$field]);
 
-            if (in_array($field, ['mini_seo_og_image', 'mini_seo_image', 'mini_seo_canonical'], true)) {
+            if (in_array($field, ['mini_seo_og_image', 'mini_seo_image', 'mini_seo_canonical', 'mini_author_website', 'mini_author_linkedin'], true)) {
                 $sanitized = esc_url_raw($value);
             } elseif ($field === 'mini_seo_twitter_card') {
                 $allowed_cards = ['', 'summary', 'summary_large_image'];
@@ -804,10 +928,44 @@ function mini_output_seo_meta_tags() {
         return;
     }
     
-    global $post;
-    
-    // Only output on singular pages
-    if (!is_singular()) {
+    $post = get_queried_object();
+    if (!$post || !is_object($post) || empty($post->ID)) {
+        // Output meta tags for archives or home page
+        $seo_description = '';
+        $seo_keywords = '';
+        if (is_archive() || is_front_page() || is_home()) {
+            $seo_description = get_variable('mini_seo_settings', 'default_description');
+            $seo_keywords = get_variable('mini_seo_settings', 'default_keywords');
+        }
+        if (!empty($seo_description)) {
+            echo '<meta name="description" content="' . esc_attr($seo_description) . '">' . "\n";
+        }
+        if (!empty($seo_keywords)) {
+            echo '<meta name="keywords" content="' . esc_attr($seo_keywords) . '">' . "\n";
+        }
+        // Output meta author for home page if no post object
+        if (is_front_page() || is_home()) {
+            $author_name = get_variable('mini_seo_settings', 'default_author_name');
+            if (!empty($author_name)) {
+                echo '<meta name="author" content="' . esc_attr($author_name) . '">' . "\n";
+            }
+        }
+        
+        // Output JSON-LD for archives
+        if (is_archive()) {
+            $archive_title = get_the_archive_title();
+            $archive_description = get_variable('mini_seo_settings', 'default_description');
+            $archive_url = home_url(add_query_arg(null, null));
+            $schema = [
+                '@context' => 'https://schema.org',
+                '@type' => 'CollectionPage',
+                'name' => $archive_title,
+                'description' => $archive_description,
+                'url' => $archive_url,
+            ];
+            echo '<script type="application/ld+json">' . wp_json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>' . "\n";
+        }
+        
         return;
     }
     
@@ -846,6 +1004,18 @@ function mini_output_seo_meta_tags() {
     // Output meta keywords
     if (!empty($seo_keywords)) {
         echo '<meta name="keywords" content="' . esc_attr($seo_keywords) . '">' . "\n";
+    }
+    
+    // Output meta author
+    $author_name = get_post_meta($post->ID, '_mini_author_name', true);
+    if (empty($author_name) && get_post_type($post) === 'post') {
+        $author_name = get_the_author_meta('display_name', $post->post_author);
+    }
+    if (empty($author_name)) {
+        $author_name = get_variable('mini_seo_settings', 'default_author_name');
+    }
+    if (!empty($author_name)) {
+        echo '<meta name="author" content="' . esc_attr($author_name) . '">' . "\n";
     }
     
     // Output robots meta
@@ -1020,10 +1190,6 @@ function mini_output_schema_markup($post, $canonical_url, $seo_title, $seo_descr
 
     if ($schema_type === 'Article') {
         $schema['datePublished'] = get_the_date('c', $post);
-        $schema['author'] = [
-            '@type' => 'Person',
-            'name' => get_the_author_meta('display_name', $post->post_author),
-        ];
 
         $publisher = [
             '@type' => 'Organization',
@@ -1044,6 +1210,50 @@ function mini_output_schema_markup($post, $canonical_url, $seo_title, $seo_descr
         $schema['publisher'] = $publisher;
     }
 
+    // Enhanced author schema for E-E-A-T on all content types
+    $author_id = $post->post_author;
+    $author_name = get_post_meta($post->ID, '_mini_author_name', true);
+    if (empty($author_name) && get_post_type($post) === 'post') {
+        $author_name = get_the_author_meta('display_name', $author_id);
+    }
+    if (empty($author_name)) {
+        $author_name = get_variable('mini_seo_settings', 'default_author_name');
+    }
+    $author_data = [
+        '@type' => 'Person',
+        'name' => $author_name,
+    ];
+    
+    $author_description = get_post_meta($post->ID, '_mini_author_bio', true) ?: get_the_author_meta('description', $author_id) ?: get_variable('mini_seo_settings', 'default_author_bio');
+    if (!empty($author_description)) {
+        $author_data['description'] = $author_description;
+    }
+    
+    $author_url = get_post_meta($post->ID, '_mini_author_website', true) ?: get_the_author_meta('user_url', $author_id) ?: get_variable('mini_seo_settings', 'default_author_website');
+    if (!empty($author_url)) {
+        $author_data['url'] = esc_url_raw($author_url);
+    }
+    
+    // Add jobTitle with fallback
+    $author_job_title = get_post_meta($post->ID, '_mini_author_job_title', true) ?: (get_the_author_meta('job_title', $author_id) ?: get_variable('mini_seo_settings', 'default_author_job_title') ?: 'Content Creator');
+    $author_data['jobTitle'] = $author_job_title;
+    
+    // Add social profiles if available (extend as needed)
+    $social_profiles = [];
+    $twitter = get_post_meta($post->ID, '_mini_author_twitter', true) ?: get_the_author_meta('twitter', $author_id) ?: get_variable('mini_seo_settings', 'default_author_twitter');
+    if (!empty($twitter)) {
+        $social_profiles[] = 'https://twitter.com/' . ltrim($twitter, '@');
+    }
+    $linkedin = get_post_meta($post->ID, '_mini_author_linkedin', true) ?: get_the_author_meta('linkedin', $author_id) ?: get_variable('mini_seo_settings', 'default_author_linkedin');
+    if (!empty($linkedin)) {
+        $social_profiles[] = esc_url_raw($linkedin);
+    }
+    if (!empty($social_profiles)) {
+        $author_data['sameAs'] = $social_profiles;
+    }
+    
+    $schema['author'] = $author_data;
+
     $schema = array_filter($schema, function($value) {
         return $value !== '' && $value !== null;
     });
@@ -1056,11 +1266,11 @@ function mini_override_document_title($title) {
         return $title;
     }
     
-    if (!is_singular()) {
+    $post = get_queried_object();
+    if (!$post || !is_object($post) || empty($post->ID)) {
         return $title;
     }
     
-    global $post;
     $seo_title = get_post_meta($post->ID, '_mini_seo_title', true);
     
     if (!empty($seo_title)) {

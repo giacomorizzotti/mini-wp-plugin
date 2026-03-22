@@ -70,7 +70,7 @@ function mini_render_date_time_box($post_id, $cols=1, $wrapper_class = 'my-0', $
         $output .= '
                     <div class="time-box">
                         <p class="m-0">
-                            <span class="'.$second_box_color_class.' wh-text px-15 XL bold"><i class="iconoir-clock S"></i> '.$event_time.'</span>
+                            <span class="'.$second_box_color_class.' py-05 L bold"><i class="iconoir-clock S"></i> '.$event_time.'</span>
                         </p>
                     </div>';
     }
@@ -373,7 +373,7 @@ function get_next_event_callback($num = 1, $cols=3) {
             <div class="'.$box_class.'">';
                 if (get_the_post_thumbnail(get_the_ID())!=false):
                 $event_list .= '
-                <div class="box-100 hh" style="background-image: url(\''.get_the_post_thumbnail_url(get_the_ID()).'\'); background-position: center; background-size: cover; background-repeat: no-repeat; height: 200px;">
+                <div class="box-100 hh" style="background-image: url(\''.get_the_post_thumbnail_url(get_the_ID()).'\'); background-position: center; background-size: cover; background-repeat: no-repeat;">
                     <div class="boxes align-content-start align-items-start">';
                 else:
                 $event_list .= '
@@ -397,7 +397,7 @@ function get_next_event_callback($num = 1, $cols=3) {
                     get_the_excerpt(get_the_ID()) != null ) {
                     $event_list .= '
                             <div class="box-100 my-0 white-bg">
-                                <p>'.get_the_excerpt(get_the_ID()).'</p>
+                                <p class="S">'.get_the_excerpt(get_the_ID()).'</p>
                             </div>
                             <div class="box-100 p-0">
                                 <p class="m-0">
