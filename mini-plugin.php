@@ -46,7 +46,8 @@ function get_italian_date_formatters() {
 }
 
 function mini_allow_af_upload_mime_type($mime_types) {
-    $mime_types['af'] = 'application/octet-stream';
+    $mime_types['af']  = 'application/octet-stream';
+    $mime_types['svg'] = 'image/svg+xml';
 
     return $mime_types;
 }
@@ -239,6 +240,7 @@ function mini_content_page_html() {
         <nav class="nav-tab-wrapper">
             <a href="<?php echo esc_url( $page_url . '&tab=blogging' ); ?>" class="nav-tab <?php echo $current_tab === 'blogging' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Blogging', 'mini' ); ?></a>
             <a href="<?php echo esc_url( $page_url . '&tab=content-types' ); ?>" class="nav-tab <?php echo $current_tab === 'content-types' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Content types', 'mini' ); ?></a>
+            <a href="<?php echo esc_url( $page_url . '&tab=editor' ); ?>" class="nav-tab <?php echo $current_tab === 'editor' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Editor settings', 'mini' ); ?></a>
         </nav>
 
         <?php if ( $current_tab === 'blogging' ) : ?>
@@ -251,12 +253,22 @@ function mini_content_page_html() {
                 ?>
             </form>
 
-        <?php else : /* content-types tab */ ?>
+        <?php elseif ( $current_tab === 'content-types' ) : ?>
 
             <form action="options.php" method="post">
                 <?php
                 settings_fields( 'mini_content' );
                 do_settings_sections( 'mini-content' );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+
+        <?php elseif ( $current_tab === 'editor' ) : ?>
+
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_editor' );
+                do_settings_sections( 'mini-editor' );
                 submit_button( 'Save Settings' );
                 ?>
             </form>
@@ -300,11 +312,29 @@ function mini_plugin_settings_pages() {
     );
     add_submenu_page(
         'mini',
-        'mini plugin - Email',
-        'Email',
+        'mini plugin - Settings',
+        'Settings',
         'manage_options',
         'mini-email',
         'mini_email_page_html',
+        9
+    );
+    add_submenu_page(
+        'mini',
+        'mini plugin - Security',
+        'Security',
+        'manage_options',
+        'mini-security',
+        'mini_security_page_html',
+        9
+    );
+    add_submenu_page(
+        'mini',
+        'mini plugin - Backoffice',
+        'Backoffice',
+        'manage_options',
+        'mini-backoffice',
+        'mini_backoffice_page_html',
         9
     );
 }
@@ -866,7 +896,7 @@ function mini_plugin_main_page_html() {
 }
 /* END - mini settings*/
 
-/* START - Email settings */
+/* START - Settings page */
 function mini_email_page_html() {
     if ( ! current_user_can( 'manage_options' ) ) {
         return;
@@ -877,7 +907,7 @@ function mini_email_page_html() {
     }
     settings_errors( 'mini_messages' );
 
-    $current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'smtp';
+    $current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'login';
     $page_url    = admin_url( 'admin.php?page=mini-email' );
 
     ?>
@@ -885,6 +915,7 @@ function mini_email_page_html() {
         <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
 
         <nav class="nav-tab-wrapper">
+            <a href="<?php echo esc_url( $page_url . '&tab=login' ); ?>" class="nav-tab <?php echo $current_tab === 'login' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Login settings', 'mini' ); ?></a>
             <a href="<?php echo esc_url( $page_url . '&tab=smtp' ); ?>" class="nav-tab <?php echo $current_tab === 'smtp' ? 'nav-tab-active' : ''; ?>"><?php _e( 'SMTP settings', 'mini' ); ?></a>
         </nav>
 
@@ -898,12 +929,74 @@ function mini_email_page_html() {
                 ?>
             </form>
 
+        <?php elseif ( $current_tab === 'login' ) : ?>
+
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_login' );
+                do_settings_sections( 'mini-login' );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+
         <?php endif; ?>
 
     </div>
     <?php
 }
-/* END - Email settings */
+/* END - Settings page */
+
+/* START - Security page */
+function mini_security_page_html() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    if ( isset( $_GET['settings-updated'] ) ) {
+        add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
+    }
+    settings_errors( 'mini_messages' );
+    ?>
+    <div class="wrap">
+        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+
+        <form action="options.php" method="post">
+            <?php
+            settings_fields( 'mini_security' );
+            do_settings_sections( 'mini-security' );
+            submit_button( 'Save Settings' );
+            ?>
+        </form>
+    </div>
+    <?php
+}
+/* END - Security page */
+
+/* START - Backoffice page */
+function mini_backoffice_page_html() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    if ( isset( $_GET['settings-updated'] ) ) {
+        add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
+    }
+    settings_errors( 'mini_messages' );
+    ?>
+    <div class="wrap">
+        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+
+        <form action="options.php" method="post">
+            <?php
+            settings_fields( 'mini_backoffice' );
+            do_settings_sections( 'mini-backoffice' );
+            submit_button( 'Save Settings' );
+            ?>
+        </form>
+    </div>
+    <?php
+}
+/* END - Backoffice page */
 
 /* START - Content types module include */
 require_once plugin_dir_path(__FILE__) . 'inc/content-types.php';
@@ -1496,4 +1589,16 @@ require_once plugin_dir_path(__FILE__) . 'inc/dashboard.php';
 /* START - SMTP module include */
 require_once plugin_dir_path(__FILE__) . 'inc/smtp.php';
 /* END - SMTP module include */
+
+/* START - Login module include */
+require_once plugin_dir_path(__FILE__) . 'inc/login.php';
+/* END - Login module include */
+
+/* START - Security module include */
+require_once plugin_dir_path(__FILE__) . 'inc/security.php';
+/* END - Security module include */
+
+/* START - Backoffice module include */
+require_once plugin_dir_path(__FILE__) . 'inc/backoffice.php';
+/* END - Backoffice module include */
 
