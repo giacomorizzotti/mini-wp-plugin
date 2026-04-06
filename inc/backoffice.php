@@ -24,14 +24,14 @@ function mini_backoffice_section_callback( $args ) {
     $opts             = get_option( 'mini_backoffice_settings', [] );
     $hide_update_nags = ! empty( $opts['mini_hide_update_nags'] );
     ?>
-    <p id="<?php echo esc_attr( $args['id'] ); ?>">
+    <p id="<?php echo esc_attr( $args['id'] ); ?>" class="grey-text">
         <?php esc_html_e( 'Customize the WordPress admin experience for your clients and editors.', 'mini' ); ?>
     </p>
     <div class="boxes">
 
         <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'Hide update nags for non-administrators', 'mini' ); ?></h4>
-            <label for="mini_hide_update_nags" class="bold bk-text">
+            <h4 class=""><?php esc_html_e( 'Hide update nags for non-administrators', 'mini' ); ?></h4>
+            <label for="mini_hide_update_nags" class="black-text">
                 <input type="checkbox" id="mini_hide_update_nags" name="mini_backoffice_settings[mini_hide_update_nags]" value="1" <?php checked( $hide_update_nags ); ?> class="me-1">
                 <?php esc_html_e( 'Hide WordPress core, plugin, and theme update notices for all roles except Administrator.', 'mini' ); ?>
             </label>
@@ -112,8 +112,9 @@ function mini_editor_section_callback( $args ) {
     </p>
     <div class="boxes">
         <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'Disable Gutenberg per post type', 'mini' ); ?></h4>
-            <p class="grey-text"><?php esc_html_e( 'Checked post types will use the Classic Editor instead of Gutenberg.', 'mini' ); ?></p>
+            <h4 class="m-0"><?php esc_html_e( 'Disable Gutenberg per post type', 'mini' ); ?></h4>
+            <p class="m-0 grey-text"><?php esc_html_e( 'Checked post types will use the Classic Editor instead of Gutenberg.', 'mini' ); ?></p>
+            <div class="space-2"></div>
             <div class="boxes">
                 <?php foreach ( $post_types as $pt ) :
                     $checked = ! empty( $disabled[ $pt->name ] );

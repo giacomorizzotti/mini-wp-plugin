@@ -32,14 +32,14 @@ function mini_security_section_callback( $args ) {
     $max_attempts   = absint( $opts['mini_limit_login_attempts'] ?? 5 );
     $lockout_mins   = absint( $opts['mini_limit_login_lockout'] ?? 15 );
     ?>
-    <p id="<?php echo esc_attr( $args['id'] ); ?>">
+    <p id="<?php echo esc_attr( $args['id'] ); ?>" class="grey-text">
         <?php esc_html_e( 'Harden your WordPress installation against common attack vectors.', 'mini' ); ?>
     </p>
     <div class="boxes">
 
         <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'Disable REST API for non-logged-in users', 'mini' ); ?></h4>
-            <label for="mini_disable_rest_api" class="bold bk-text">
+            <h4 class=""><?php esc_html_e( 'Disable REST API for non-logged-in users', 'mini' ); ?></h4>
+            <label for="mini_disable_rest_api" class="black-text">
                 <input type="checkbox" id="mini_disable_rest_api" name="mini_security_settings[mini_disable_rest_api]" value="1" <?php checked( $disable_rest ); ?> class="me-1">
                 <?php esc_html_e( 'Return a 401 error for all REST API requests made by unauthenticated visitors.', 'mini' ); ?>
             </label>
@@ -47,8 +47,8 @@ function mini_security_section_callback( $args ) {
         </div>
 
         <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'Disable XML-RPC', 'mini' ); ?></h4>
-            <label for="mini_disable_xmlrpc" class="bold bk-text">
+            <h4 class=""><?php esc_html_e( 'Disable XML-RPC', 'mini' ); ?></h4>
+            <label for="mini_disable_xmlrpc" class="black-text">
                 <input type="checkbox" id="mini_disable_xmlrpc" name="mini_security_settings[mini_disable_xmlrpc]" value="1" <?php checked( $disable_xmlrpc ); ?> class="me-1">
                 <?php esc_html_e( 'Disable the XML-RPC endpoint and remove its advertised header.', 'mini' ); ?>
             </label>
@@ -56,21 +56,27 @@ function mini_security_section_callback( $args ) {
         </div>
 
         <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'Limit login attempts', 'mini' ); ?></h4>
-            <label for="mini_limit_login_enabled" class="bold bk-text">
-                <input type="checkbox" id="mini_limit_login_enabled" name="mini_security_settings[mini_limit_login_enabled]" value="1" <?php checked( $limit_enabled ); ?> class="me-1">
-                <?php esc_html_e( 'Lock out an IP address after too many failed login attempts.', 'mini' ); ?>
-            </label>
-            <div style="display:flex;gap:24px;margin-top:12px;flex-wrap:wrap;">
-                <label class="grey-text">
-                    <?php esc_html_e( 'Max attempts', 'mini' ); ?><br>
-                    <input type="number" min="1" id="mini_limit_login_attempts" name="mini_security_settings[mini_limit_login_attempts]" value="<?php echo esc_attr( $max_attempts ); ?>" class="small-text" style="margin-top:4px;">
-                </label>
-                <label class="grey-text">
-                    <?php esc_html_e( 'Lockout duration (minutes)', 'mini' ); ?><br>
-                    <input type="number" min="1" id="mini_limit_login_lockout" name="mini_security_settings[mini_limit_login_lockout]" value="<?php echo esc_attr( $lockout_mins ); ?>" class="small-text" style="margin-top:4px;">
-                </label>
-            </div>
+            <h4 class=""><?php esc_html_e( 'Limit login attempts', 'mini' ); ?></h4>
+                <div class="boxes">
+                    <div class="box-50 p-0">
+                        <label for="mini_limit_login_enabled" class="black-text">
+                            <input type="checkbox" id="mini_limit_login_enabled" name="mini_security_settings[mini_limit_login_enabled]" value="1" <?php checked( $limit_enabled ); ?> class="me-1">
+                            <?php esc_html_e( 'Lock out an IP address after too many failed login attempts.', 'mini' ); ?>
+                        </label>
+                    </div>
+                    <div class="box-25 p-0">
+                        <label class="grey-text">
+                            <?php esc_html_e( 'Max attempts', 'mini' ); ?><br>
+                            <input type="number" min="1" id="mini_limit_login_attempts" name="mini_security_settings[mini_limit_login_attempts]" value="<?php echo esc_attr( $max_attempts ); ?>" class="S">
+                        </label>
+                    </div>
+                    <div class="box-25 p-0">
+                        <label class="grey-text">
+                            <?php esc_html_e( 'Lockout duration (minutes)', 'mini' ); ?><br>
+                            <input type="number" min="1" id="mini_limit_login_lockout" name="mini_security_settings[mini_limit_login_lockout]" value="<?php echo esc_attr( $lockout_mins ); ?>" class="S">
+                        </label>
+                    </div>
+                </div>
             <p class="S grey-text"><?php esc_html_e( 'After the maximum number of failed attempts, the IP is blocked for the specified duration. The counter resets on a successful login.', 'mini' ); ?></p>
         </div>
 

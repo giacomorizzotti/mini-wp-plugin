@@ -14,17 +14,6 @@ function is_mini_option_enabled($option_group, $option) {
     return is_array($options) && !empty($options[$option]);
 }
 
-function mini_plugin_checkbox_option(string $option_group, string $option) {
-    $checked = is_mini_option_enabled($option_group, $option) ? ' checked="checked"' : '';
-    return sprintf(
-        '<input type="checkbox" id="%s" name="%s[%s]" value="1"%s>',
-        esc_attr($option),
-        esc_attr($option_group),
-        esc_attr($option),
-        $checked
-    );
-}
-
 if (!function_exists('get_variable')) {
     function get_variable($option_group, $option) {
         $options = get_option( $option_group );
@@ -142,9 +131,8 @@ function mini_content_section_callback( $args ) {
         <i>mini</i> allows you to manage many custom content types to extend WordPress features.
     </p>
     <div class="boxes">
-        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light" for="mini_match"><?php esc_html_e( 'Slides', 'mini' ); ?></h4>
-            <label for="mini_slide" class="bold bk-text">    
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+            <label for="mini_slide" class="h5 bold bk-text">    
                 <input
                     type="checkbox"
                     id="mini_slide"
@@ -153,14 +141,13 @@ function mini_content_section_callback( $args ) {
                     value="1"
                     <?php checked($slide_enabled, true); ?>
                 >
-                Enable the "Slide" content type to manage <u>slideshows</u> and <u>slides</u>.
+                <?php esc_html_e( 'Slides', 'mini' ); ?>
             </label>
-            <p class="S grey-text" for="mini_slide">It enables slides management (like posts or pages) and related admin menus.</p>
-            <p class="S grey-text" for="mini_slide">This option loads <i>mini</i> <b>slider.js</b> library.</p>
+            <p class="mb-0" for="mini_slide">Enable the "Slide" content type to manage <u>slideshows</u> and <u>slides</u>.</p>
+            <p class="S mt-0 grey-text" for="mini_slide">This option loads <i>mini</i> <b>slider.js</b> library.</p>
         </div>
-        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
-            <h4  class="grey-text light" for="mini_match"><?php esc_html_e( 'News', 'mini' ); ?></h4>
-            <label for="mini_news" class="bold bk-text">    
+        <div class="box-25 p-2 white-bg b-rad-5 box-shadow">
+            <label for="mini_news" class="h5 bold bk-text">    
                 <input
                     type="checkbox"
                     id="mini_news"
@@ -169,13 +156,12 @@ function mini_content_section_callback( $args ) {
                     value="1"
                     <?php checked($news_enabled, true); ?>
                 >
-                Enable the "News" content type to manage <u>news articles</u>.
+                <?php esc_html_e( 'News', 'mini' ); ?>
             </label>
-            <p class="S grey-text" for="mini_news">It enables news management (like posts or pages) and related admin menus.</p>
+            <p class="" for="mini_news">Enable the "News" content type to manage <u>news articles</u>.</p>
         </div>
-        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light" for="mini_match"><?php esc_html_e( 'Events', 'mini' ); ?></h4>
-            <label for="mini_event" class="bold bk-text">    
+        <div class="box-25 p-2 white-bg b-rad-5 box-shadow">
+            <label for="mini_event" class="h5 bold bk-text">    
                 <input
                     type="checkbox"
                     id="mini_event"
@@ -184,28 +170,12 @@ function mini_content_section_callback( $args ) {
                     value="1"
                     <?php checked($event_enabled, true); ?>
                 >
-                Enable the "Event" content type to manage <u>events</u>.
+                <?php esc_html_e( 'Events', 'mini' ); ?>
             </label>
-            <p class="S grey-text" for="mini_event">It enables events management (like posts or pages) and related admin menus.</p>
+            <p class="" for="mini_event">Enable the "Event" content type to manage <u>events</u>.</p>
         </div>
-        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light" for="mini_match"><?php esc_html_e( 'Matches', 'mini' ); ?></h4>
-            <label for="mini_match" class="bold bk-text">    
-                <input
-                    type="checkbox"
-                    id="mini_match"
-                    name="mini_content_settings[mini_match]"
-                    class="me-1"
-                    value="1"
-                    <?php checked($match_enabled, true); ?>
-                >
-                Enable "Match" content type to manage sport <u>events</u>.
-            </label>
-            <p class="S grey-text" for="mini_match">It enables matches management (like posts or pages) and related admin menus.</p>
-        </div>
-        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light" for="mini_course"><?php esc_html_e( 'Courses', 'mini' ); ?></h4>
-            <label for="mini_course" class="bold bk-text">    
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+            <label for="mini_course" class="h5 bold bk-text">    
                 <input
                     type="checkbox"
                     id="mini_course"
@@ -214,9 +184,24 @@ function mini_content_section_callback( $args ) {
                     value="1"
                     <?php checked($course_enabled, true); ?>
                 >
-                Enable "Course" content type to manage <u>courses</u> and <u>lessons</u>.
+                <?php esc_html_e( 'Courses', 'mini' ); ?>
+                
             </label>
-            <p class="S grey-text" for="mini_course">It enables courses management with dates, locations, and lesson organization.</p>
+            <p class="" for="mini_course">Enable "Course" content type to manage <u>courses</u> and <u>lessons</u>.</p>
+        </div>
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+            <label for="mini_match" class="h5 bold bk-text">    
+                <input
+                    type="checkbox"
+                    id="mini_match"
+                    name="mini_content_settings[mini_match]"
+                    class="me-1"
+                    value="1"
+                    <?php checked($match_enabled, true); ?>
+                >
+                <?php esc_html_e( 'Matches', 'mini' ); ?>
+            </label>
+            <p class="" for="mini_match">Enable "Match" content type to manage sport <u>events</u>.</p>
         </div>
     </div>
     <?php
@@ -335,6 +320,15 @@ function mini_plugin_settings_pages() {
         'manage_options',
         'mini-backoffice',
         'mini_backoffice_page_html',
+        9
+    );
+    add_submenu_page(
+        'mini',
+        'mini plugin - GDPR',
+        'GDPR',
+        'manage_options',
+        'mini-gdpr',
+        'mini_gdpr_page_html',
         9
     );
 }
@@ -998,6 +992,44 @@ function mini_backoffice_page_html() {
 }
 /* END - Backoffice page */
 
+/* START - GDPR page */
+function mini_gdpr_page_html() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    if ( isset( $_GET['settings-updated'] ) ) {
+        add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
+    }
+    settings_errors( 'mini_messages' );
+
+    $current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'privacy';
+    $page_url    = admin_url( 'admin.php?page=mini-gdpr' );
+    ?>
+    <div class="wrap">
+        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+
+        <nav class="nav-tab-wrapper">
+            <a href="<?php echo esc_url( $page_url . '&tab=privacy' ); ?>" class="nav-tab <?php echo $current_tab === 'privacy' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Privacy', 'mini' ); ?></a>
+        </nav>
+
+        <?php if ( $current_tab === 'privacy' ) : ?>
+
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_gdpr_privacy' );
+                do_settings_sections( 'mini-gdpr-privacy' );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+
+        <?php endif; ?>
+
+    </div>
+    <?php
+}
+/* END - GDPR page */
+
 /* START - Content types module include */
 require_once plugin_dir_path(__FILE__) . 'inc/content-types.php';
 /* END - Content types module include */
@@ -1514,13 +1546,17 @@ function mini_blogging_section_callback( $args ) {
     <div class="space"></div>
     <div class="boxes">
         <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="" for="mini_disable_blogging"><?php esc_html_e( 'Disable blogging', 'mini' ); ?></h4>
-            <?= mini_plugin_checkbox_option('mini_blogging_settings','mini_disable_blogging'); ?>
-            <p class="">This option will <u>disable blogging features</u> including posts, blog archive pages and related admin menus.</p>
+            <label for="mini_disable_blogging" class="h5 black-text bold">
+                <input type="checkbox" id="mini_disable_blogging" name="mini_blogging_settings[mini_disable_blogging]" value="1"<?php echo is_mini_option_enabled('mini_blogging_settings', 'mini_disable_blogging') ? ' checked="checked"' : ''; ?>>
+                <?php esc_html_e( 'Disable blogging', 'mini' ); ?>
+            </label>
+            <p class="">This option will <u>disable blogging features</u> including <b>posts</b>, <b>blog archive pages</b> and related admin menus.</p>
         </div>
         <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class=""><?php esc_html_e( 'Disable comments', 'mini' ); ?></h4>
-            <?= mini_plugin_checkbox_option('mini_comment_settings','mini_disable_comment'); ?>
+            <label for="mini_disable_comment" class="h5 black-text bold">
+                <input type="checkbox" id="mini_disable_comment" name="mini_comment_settings[mini_disable_comment]" value="1"<?php echo is_mini_option_enabled('mini_comment_settings', 'mini_disable_comment') ? ' checked="checked"' : ''; ?>>
+                <?php esc_html_e( 'Disable comments', 'mini' ); ?>
+            </label>
             <p class="">This option will disable comment features and related admin menus.</p>
         </div>
     </div>
@@ -1601,4 +1637,8 @@ require_once plugin_dir_path(__FILE__) . 'inc/security.php';
 /* START - Backoffice module include */
 require_once plugin_dir_path(__FILE__) . 'inc/backoffice.php';
 /* END - Backoffice module include */
+
+/* START - GDPR module include */
+require_once plugin_dir_path(__FILE__) . 'inc/gdpr.php';
+/* END - GDPR module include */
 

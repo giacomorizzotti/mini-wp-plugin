@@ -44,33 +44,33 @@ function mini_smtp_section_callback( $args ) {
     $from_email = esc_attr( $opts['mini_smtp_from_email'] ?? '' );
     $from_name  = esc_attr( $opts['mini_smtp_from_name'] ?? '' );
     ?>
-    <p id="<?php echo esc_attr( $args['id'] ); ?>">
+    <p id="<?php echo esc_attr( $args['id'] ); ?>" class="grey-text">
         Configure WordPress to send all emails (including Contact Form 7 and other plugins) through an external SMTP server.
     </p>
 
     <div class="boxes">
-        <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'Enable SMTP', 'mini' ); ?></h4>
-            <label for="mini_smtp_enabled" class="bold bk-text">
+        <div class="box-100 p-2 white-bg b-rad-5 box-shadow color-bg">
+            <h4 class="white-text"><?php esc_html_e( 'Enable SMTP', 'mini' ); ?></h4>
+            <label for="mini_smtp_enabled" class="bold white-text">
                 <input type="checkbox" id="mini_smtp_enabled" name="mini_smtp_settings[mini_smtp_enabled]" value="1" <?php checked( $enabled ); ?> class="me-1">
                 <?php esc_html_e( 'Send emails via SMTP instead of the default PHP mail function.', 'mini' ); ?>
             </label>
         </div>
 
         <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'SMTP Host', 'mini' ); ?></h4>
+            <h4 class=""><?php esc_html_e( 'SMTP Host', 'mini' ); ?></h4>
             <input type="text" id="mini_smtp_host" name="mini_smtp_settings[mini_smtp_host]" value="<?php echo $host; ?>" placeholder="smtp.example.com" class="regular-text">
             <p class="S grey-text"><?php esc_html_e( 'The hostname of your SMTP server.', 'mini' ); ?></p>
         </div>
 
         <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'SMTP Port', 'mini' ); ?></h4>
+            <h4 class=""><?php esc_html_e( 'SMTP Port', 'mini' ); ?></h4>
             <input type="number" id="mini_smtp_port" name="mini_smtp_settings[mini_smtp_port]" value="<?php echo $port; ?>" placeholder="587" class="small-text">
             <p class="S grey-text"><?php esc_html_e( 'Common ports: 25 (no encryption), 465 (SSL), 587 (TLS/STARTTLS).', 'mini' ); ?></p>
         </div>
 
         <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'Encryption', 'mini' ); ?></h4>
+            <h4 class=""><?php esc_html_e( 'Encryption', 'mini' ); ?></h4>
             <select id="mini_smtp_encryption" name="mini_smtp_settings[mini_smtp_encryption]">
                 <option value="tls"  <?php selected( $encryption, 'tls' );  ?>>TLS / STARTTLS (recommended)</option>
                 <option value="ssl"  <?php selected( $encryption, 'ssl' );  ?>>SSL</option>
@@ -80,33 +80,33 @@ function mini_smtp_section_callback( $args ) {
         </div>
 
         <div class="box-20 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'Authentication', 'mini' ); ?></h4>
-            <label for="mini_smtp_auth" class="bold bk-text">
+            <h4 class=""><?php esc_html_e( 'Authentication', 'mini' ); ?></h4>
+            <label for="mini_smtp_auth" class="black-text">
                 <input type="checkbox" id="mini_smtp_auth" name="mini_smtp_settings[mini_smtp_auth]" value="1" <?php checked( $auth ); ?> class="me-1">
                 <?php esc_html_e( 'Enable SMTP authentication (username & password).', 'mini' ); ?>
             </label>
         </div>
 
         <div class="box-40 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'Username', 'mini' ); ?></h4>
+            <h4 class=""><?php esc_html_e( 'Username', 'mini' ); ?></h4>
             <input type="text" id="mini_smtp_username" name="mini_smtp_settings[mini_smtp_username]" value="<?php echo $username; ?>" placeholder="user@example.com" class="regular-text" autocomplete="off">
             <p class="S grey-text"><?php esc_html_e( 'SMTP account username (usually your email address).', 'mini' ); ?></p>
         </div>
 
         <div class="box-40 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'Password', 'mini' ); ?></h4>
+            <h4 class=""><?php esc_html_e( 'Password', 'mini' ); ?></h4>
             <input type="password" id="mini_smtp_password" name="mini_smtp_settings[mini_smtp_password]" value="" placeholder="Leave blank to keep current password" class="regular-text" autocomplete="new-password">
             <p class="S grey-text"><?php esc_html_e( 'SMTP account password. Leave blank to keep the existing value.', 'mini' ); ?></p>
         </div>
 
         <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'From Email', 'mini' ); ?></h4>
+            <h4 class=""><?php esc_html_e( 'From Email', 'mini' ); ?></h4>
             <input type="email" id="mini_smtp_from_email" name="mini_smtp_settings[mini_smtp_from_email]" value="<?php echo $from_email; ?>" placeholder="noreply@example.com" class="regular-text">
             <p class="S grey-text"><?php esc_html_e( 'The email address that will appear in the From field.', 'mini' ); ?></p>
         </div>
 
         <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'From Name', 'mini' ); ?></h4>
+            <h4 class=""><?php esc_html_e( 'From Name', 'mini' ); ?></h4>
             <input type="text" id="mini_smtp_from_name" name="mini_smtp_settings[mini_smtp_from_name]" value="<?php echo $from_name; ?>" placeholder="My Website" class="regular-text">
             <p class="S grey-text"><?php esc_html_e( 'The name that will appear in the From field.', 'mini' ); ?></p>
         </div>

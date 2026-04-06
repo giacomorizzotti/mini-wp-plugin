@@ -27,21 +27,21 @@ function mini_login_section_callback( $args ) {
     $enabled = ! empty( $opts['mini_login_enabled'] );
     $slug    = esc_attr( $opts['mini_login_slug'] ?? 'login' );
     ?>
-    <p id="<?php echo esc_attr( $args['id'] ); ?>">
+    <p id="<?php echo esc_attr( $args['id'] ); ?>" class="grey-text">
         <?php esc_html_e( 'Customize the WordPress login URL to improve security by hiding the default wp-login.php path.', 'mini' ); ?>
     </p>
     <div class="boxes">
 
-        <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'Enable custom login URL', 'mini' ); ?></h4>
-            <label for="mini_login_enabled" class="bold bk-text">
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+            <h4 class=""><?php esc_html_e( 'Enable custom login URL', 'mini' ); ?></h4>
+            <label for="mini_login_enabled" class="black-text">
                 <input type="checkbox" id="mini_login_enabled" name="mini_login_settings[mini_login_enabled]" value="1" <?php checked( $enabled ); ?> class="me-1">
                 <?php esc_html_e( 'Disable the default wp-login.php path and redirect it to the home page.', 'mini' ); ?>
             </label>
         </div>
 
         <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class="grey-text light"><?php esc_html_e( 'Custom login path', 'mini' ); ?></h4>
+            <h4 class=""><?php esc_html_e( 'Custom login path', 'mini' ); ?></h4>
             <div style="display:flex;align-items:center;gap:6px;">
                 <span class="grey-text"><?php echo esc_html( trailingslashit( home_url() ) ); ?></span>
                 <input type="text" id="mini_login_slug" name="mini_login_settings[mini_login_slug]" value="<?php echo $slug; ?>" placeholder="login" class="regular-text">

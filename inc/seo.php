@@ -130,7 +130,7 @@ function mini_seo_render_tab_content( $current_tab ) {
         <div class="boxes align-items-start">
             <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
                 <h4><?php esc_html_e('Default Settings', 'mini'); ?></h4>
-                <label for="mini_seo_image" class="bold"><?php _e('Default Meta Description', 'mini'); ?>:</label>
+                <label for="mini_seo_image"><?php _e('Default Meta Description', 'mini'); ?>:</label>
                 <textarea
                     name="mini_seo_settings[default_description]"
                     rows="3"
@@ -140,7 +140,7 @@ function mini_seo_render_tab_content( $current_tab ) {
                 ><?php echo esc_attr(get_variable('mini_seo_settings', 'default_description')); ?></textarea>
                 <p class="S grey-text mt-05"><?php esc_html_e("This will be used when individual pages don't have their own description.", 'mini'); ?></p>
                 <div class="sep my-2 light-grey-border"></div>
-                <label for="mini_default_keywords" class="bold"><?php _e('Default Website Keywords', 'mini'); ?>:</label>
+                <label for="mini_default_keywords"><?php _e('Default Website Keywords', 'mini'); ?>:</label>
                 <textarea
                     id="mini_default_keywords"
                     name="mini_seo_settings[default_keywords]"
@@ -150,7 +150,7 @@ function mini_seo_render_tab_content( $current_tab ) {
                 ><?php echo esc_textarea(get_variable('mini_seo_settings', 'default_keywords')); ?></textarea>
                 <p class="S grey-text mt-05"><?php esc_html_e('Used as fallback meta keywords when a page/post has no custom keywords.', 'mini'); ?></p>
                 <div class="sep my-2 light-grey-border"></div>
-                <label for="mini_seo_image" class="bold"><?php _e('Default SEO Image', 'mini'); ?>:</label>
+                <label for="mini_seo_image"><?php _e('Default SEO Image', 'mini'); ?>:</label>
                 <div class="flex mb-1">
                     <button type="button" class="btn my-0 me-1" id="mini_seo_default_image_button" style="width: 120px;">Select Image</button>
                     <input
@@ -185,7 +185,7 @@ function mini_seo_render_tab_content( $current_tab ) {
         <div class="boxes align-items-start">
             <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
                 <h4><?php esc_html_e('Enable SEO in contents', 'mini'); ?></h4>
-                <label for="mini_enable_seo">
+                <label for="mini_enable_seo" class="black-text">
                     <input
                         type="checkbox"
                         id="mini_enable_seo"
@@ -205,7 +205,7 @@ function mini_seo_render_tab_content( $current_tab ) {
         <div class="boxes align-items-start">
             <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
                 <h4><?php esc_html_e('Sitemap', 'mini'); ?></h4>
-                <label for="mini_enable_sitemap">
+                <label for="mini_enable_sitemap" class="black-text">
                     <input
                         type="checkbox"
                         id="mini_enable_sitemap"
@@ -217,8 +217,8 @@ function mini_seo_render_tab_content( $current_tab ) {
                     <?php esc_html_e('Enable mini XML sitemap', 'mini'); ?>
                 </label>
                 <p class="S grey-text"><?php esc_html_e('Generates custom sitemap endpoints like', 'mini'); ?> <code><?php echo esc_html(home_url('/sitemap.xml')); ?></code>.</p>
-                <div class="space"></div>
-                <label for="mini_sitemap_include_empty">
+                <div class="space-15"></div>
+                <label for="mini_sitemap_include_empty" class="black-text">
                     <input
                         type="checkbox"
                         id="mini_sitemap_include_empty"
@@ -247,7 +247,7 @@ function mini_seo_render_tab_content( $current_tab ) {
         <div class="boxes align-items-start">
             <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
                 <h4><?php esc_html_e('Robots.txt', 'mini'); ?></h4>
-                <label for="mini_robots_preview" class="bold"><?php _e('Robots.txt Rules', 'mini'); ?></label>
+                <label for="mini_robots_preview"><?php _e('Robots.txt Rules', 'mini'); ?></label>
                 <textarea id="mini_robots_preview" name="mini_seo_settings[robots_custom_rules]" rows="10" style="width: 100%; font-family: monospace;"><?php echo esc_textarea($robots_preview); ?></textarea>
                 <p class="S grey-text"><?php esc_html_e('Edit robots.txt directives directly here. When sitemap is enabled, the sitemap line is automatically enforced.', 'mini'); ?></p>
                 <button type="submit" class="btn second-color-btn-invert" form="mini-reset-robots-form" onclick="return confirm('Reset robots.txt rules to default?');">
@@ -263,7 +263,7 @@ function mini_seo_render_tab_content( $current_tab ) {
                 <h4><?php esc_html_e('Default Author Information', 'mini'); ?></h4>
                 <p class="S grey-text"><?php esc_html_e('These defaults are used when no specific author data is available for posts.', 'mini'); ?></p>
                 <div class="sep my-2 light-grey-border"></div>
-                <label for="mini_default_author_name" class="bold"><?php _e('Default Author Name', 'mini'); ?>:</label>
+                <label for="mini_default_author_name"><?php _e('Default Author Name', 'mini'); ?>:</label>
                 <input
                     type="text"
                     name="mini_seo_settings[default_author_name]"
@@ -273,7 +273,7 @@ function mini_seo_render_tab_content( $current_tab ) {
                 >
                 <p class="S grey-text mt-05"><?php esc_html_e("Used as fallback for author name in JSON-LD and meta tags.", 'mini'); ?></p>
                 <div class="sep my-2 light-grey-border"></div>
-                <label for="mini_default_author_bio" class="bold"><?php _e('Default Author Bio', 'mini'); ?>:</label>
+                <label for="mini_default_author_bio"><?php _e('Default Author Bio', 'mini'); ?>:</label>
                 <textarea
                     name="mini_seo_settings[default_author_bio]"
                     rows="3"
@@ -282,7 +282,7 @@ function mini_seo_render_tab_content( $current_tab ) {
                 ><?php echo esc_textarea(get_variable('mini_seo_settings', 'default_author_bio')); ?></textarea>
                 <p class="S grey-text mt-05"><?php esc_html_e("Used as fallback for author bio in JSON-LD.", 'mini'); ?></p>
                 <div class="sep my-2 light-grey-border"></div>
-                <label for="mini_default_author_job_title" class="bold"><?php _e('Default Job Title', 'mini'); ?>:</label>
+                <label for="mini_default_author_job_title"><?php _e('Default Job Title', 'mini'); ?>:</label>
                 <input
                     type="text"
                     name="mini_seo_settings[default_author_job_title]"
@@ -292,7 +292,7 @@ function mini_seo_render_tab_content( $current_tab ) {
                 >
                 <p class="S grey-text mt-05"><?php esc_html_e("Used as fallback for author job title in JSON-LD.", 'mini'); ?></p>
                 <div class="sep my-2 light-grey-border"></div>
-                <label for="mini_default_author_website" class="bold"><?php _e('Default Author Website', 'mini'); ?>:</label>
+                <label for="mini_default_author_website"><?php _e('Default Author Website', 'mini'); ?>:</label>
                 <input
                     type="url"
                     name="mini_seo_settings[default_author_website]"
@@ -302,7 +302,7 @@ function mini_seo_render_tab_content( $current_tab ) {
                 >
                 <p class="S grey-text mt-05"><?php esc_html_e("Used as fallback for author website in JSON-LD.", 'mini'); ?></p>
                 <div class="sep my-2 light-grey-border"></div>
-                <label for="mini_default_author_twitter" class="bold"><?php _e('Default Twitter Handle', 'mini'); ?>:</label>
+                <label for="mini_default_author_twitter"><?php _e('Default Twitter Handle', 'mini'); ?>:</label>
                 <input
                     type="text"
                     name="mini_seo_settings[default_author_twitter]"
@@ -312,7 +312,7 @@ function mini_seo_render_tab_content( $current_tab ) {
                 >
                 <p class="S grey-text mt-05"><?php esc_html_e("Used as fallback for author Twitter in JSON-LD.", 'mini'); ?></p>
                 <div class="sep my-2 light-grey-border"></div>
-                <label for="mini_default_author_linkedin" class="bold"><?php _e('Default LinkedIn URL', 'mini'); ?>:</label>
+                <label for="mini_default_author_linkedin"><?php _e('Default LinkedIn URL', 'mini'); ?>:</label>
                 <input
                     type="url"
                     name="mini_seo_settings[default_author_linkedin]"
