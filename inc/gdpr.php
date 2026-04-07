@@ -34,6 +34,27 @@ function mini_gdpr_privacy_sanitize_settings( $input ) {
     $sanitized['mini_gdpr_dpo']              = sanitize_text_field( $input['mini_gdpr_dpo'] ?? '' );
     $sanitized['mini_gdpr_dpo_email']        = sanitize_email( $input['mini_gdpr_dpo_email'] ?? '' );
 
+    // If the feature was just disabled, trash the previously created page
+    if ( ! $sanitized['mini_gdpr_privacy_enabled'] ) {
+        // Try our stored page ID first, then fall back to WP's designated privacy page
+        $page_id = absint( $prev['mini_gdpr_privacy_page_id'] ?? 0 );
+        if ( ! $page_id ) {
+            $page_id = (int) get_option( 'wp_page_for_privacy_policy' );
+        }
+        if ( $page_id && get_post( $page_id ) ) {
+            wp_trash_post( $page_id );
+            // Clear WP's official privacy page designation too
+            update_option( 'wp_page_for_privacy_policy', 0 );
+        }
+        $sanitized['mini_gdpr_privacy_page_id'] = 0;
+    } else {
+        // Create or refresh the page on save whenever the feature is enabled
+        $page_id = mini_gdpr_create_privacy_page( $sanitized );
+        if ( $page_id ) {
+            $sanitized['mini_gdpr_privacy_page_id'] = $page_id;
+        }
+    }
+
     return $sanitized;
 }
 
@@ -138,6 +159,7 @@ function mini_gdpr_create_privacy_page( $opts ) {
             'ID'           => $wp_privacy_page_id,
             'post_content' => $content,
             'post_title'   => $title,
+            'post_name'    => 'privacy-policy',
             'post_status'  => 'publish',
         ] );
         return $wp_privacy_page_id;
@@ -145,6 +167,7 @@ function mini_gdpr_create_privacy_page( $opts ) {
 
     $new_id = wp_insert_post( [
         'post_title'   => $title,
+        'post_name'    => 'privacy-policy',
         'post_content' => $content,
         'post_status'  => 'publish',
         'post_type'    => 'page',
@@ -187,9 +210,9 @@ function mini_gdpr_privacy_section_callback( $args ) {
                     <a href="<?php echo esc_url( get_permalink( $page_id ) ); ?>" target="_blank" class="btn white-text S" id="mini-gdpr-view-link"><?php echo esc_html( get_the_title( $page_id ) ); ?></a>
                     <a href="<?php echo esc_url( get_edit_post_link( $page_id ) ); ?>" target="_blank" class="btn warning-btn white-text S" id="mini-gdpr-edit-link"><?php esc_html_e( 'Edit', 'mini' ); ?></a>
                 </span>
-            <?php endif; ?>
                 <button type="button" id="mini-gdpr-fetch-privacy" class="btn third-color-btn-invert S"><?php esc_html_e( 'Fetch from API', 'mini' ); ?></button>
                 <span id="mini-gdpr-fetch-privacy-status"></span>
+            <?php endif; ?>
             </p>
             <script>
             (function(){
@@ -330,6 +353,21 @@ function mini_gdpr_cookie_sanitize_settings( $input ) {
             $purpose  = sanitize_text_field( $cookie['purpose'] ?? '' );
             $duration = sanitize_text_field( $cookie['duration'] ?? '' );
             $sanitized['mini_gdpr_cookies'][] = compact( 'name', 'type', 'provider', 'purpose', 'duration' );
+        }
+    }
+
+    // If the feature was just disabled, trash the previously created page
+    if ( ! $sanitized['mini_gdpr_cookie_enabled'] ) {
+        $page_id = absint( $prev['mini_gdpr_cookie_page_id'] ?? 0 );
+        if ( $page_id && get_post( $page_id ) ) {
+            wp_trash_post( $page_id );
+        }
+        $sanitized['mini_gdpr_cookie_page_id'] = 0;
+    } else {
+        // Create or refresh the page on save whenever the feature is enabled
+        $page_id = mini_gdpr_create_cookie_page( $sanitized );
+        if ( $page_id ) {
+            $sanitized['mini_gdpr_cookie_page_id'] = $page_id;
         }
     }
 
@@ -486,6 +524,7 @@ function mini_gdpr_create_cookie_page( $opts ) {
             'ID'           => $page_id,
             'post_content' => $content,
             'post_title'   => $title,
+            'post_name'    => 'cookie-policy',
             'post_status'  => 'publish',
         ] );
         return $page_id;
@@ -493,6 +532,7 @@ function mini_gdpr_create_cookie_page( $opts ) {
 
     $new_id = wp_insert_post( [
         'post_title'   => $title,
+        'post_name'    => 'cookie-policy',
         'post_content' => $content,
         'post_status'  => 'publish',
         'post_type'    => 'page',
@@ -629,9 +669,9 @@ function mini_gdpr_cookie_section_callback( $args ) {
                     <a href="<?php echo esc_url( get_permalink( $page_id ) ); ?>" target="_blank" class="btn white-text S" id="mini-gdpr-cookie-view-link"><?php echo esc_html( get_the_title( $page_id ) ); ?></a>
                     <a href="<?php echo esc_url( get_edit_post_link( $page_id ) ); ?>" class="btn warning-btn white-text S" id="mini-gdpr-cookie-edit-link"><?php esc_html_e( 'Edit', 'mini' ); ?></a>
                 </span>
-            <?php endif; ?>
                 <button type="button" id="mini-gdpr-fetch-cookie" class="btn third-color-btn-invert S"><?php esc_html_e( 'Fetch from API', 'mini' ); ?></button>
                 <span id="mini-gdpr-fetch-cookie-status" style="margin-left:10px;vertical-align:middle;"></span>
+            <?php endif; ?>
             </p>
             <script>
             (function(){
