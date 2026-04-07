@@ -1,6 +1,47 @@
 <?php
 /* START - GDPR settings */
 
+/**
+ * Add or remove a page from the Footer Menu by slug.
+ * Adds the item if $add = true, removes any existing item matching the page ID or URL if $add = false.
+ */
+/**
+ * Set the standard page layout meta (show title, space top, space bottom)
+ * on a page created by the GDPR module.
+ */
+function mini_gdpr_set_page_meta( $page_id ) {
+    update_post_meta( $page_id, 'title_presence', '1' );
+    update_post_meta( $page_id, 'space_top',      '0' );
+    update_post_meta( $page_id, 'space_bot',      '0' );
+}
+
+function mini_gdpr_sync_footer_menu_item( $page_id, $add = true ) {
+    $menu = wp_get_nav_menu_object( 'Footer Menu' );
+    if ( ! $menu ) {
+        return;
+    }
+
+    $menu_id   = $menu->term_id;
+    $menu_items = wp_get_nav_menu_items( $menu_id ) ?: [];
+
+    // Remove any existing item pointing to this page
+    foreach ( $menu_items as $item ) {
+        if ( (int) $item->object_id === (int) $page_id && $item->object === 'page' ) {
+            wp_delete_post( $item->ID, true );
+        }
+    }
+
+    if ( $add && $page_id ) {
+        wp_update_nav_menu_item( $menu_id, 0, [
+            'menu-item-title'     => get_the_title( $page_id ),
+            'menu-item-object'    => 'page',
+            'menu-item-object-id' => $page_id,
+            'menu-item-type'      => 'post_type',
+            'menu-item-status'    => 'publish',
+        ] );
+    }
+}
+
 function mini_gdpr_settings_init() {
     register_setting( 'mini_gdpr_privacy', 'mini_gdpr_privacy_settings', [
         'sanitize_callback' => 'mini_gdpr_privacy_sanitize_settings',
@@ -43,6 +84,7 @@ function mini_gdpr_privacy_sanitize_settings( $input ) {
         }
         if ( $page_id && get_post( $page_id ) ) {
             wp_trash_post( $page_id );
+            mini_gdpr_sync_footer_menu_item( $page_id, false );
             // Clear WP's official privacy page designation too
             update_option( 'wp_page_for_privacy_policy', 0 );
         }
@@ -52,6 +94,7 @@ function mini_gdpr_privacy_sanitize_settings( $input ) {
         $page_id = mini_gdpr_create_privacy_page( $sanitized );
         if ( $page_id ) {
             $sanitized['mini_gdpr_privacy_page_id'] = $page_id;
+            mini_gdpr_sync_footer_menu_item( $page_id, true );
         }
     }
 
@@ -71,6 +114,7 @@ function mini_gdpr_ajax_fetch_privacy_page() {
         // Persist the page id
         $opts['mini_gdpr_privacy_page_id'] = $page_id;
         update_option( 'mini_gdpr_privacy_settings', $opts );
+        mini_gdpr_sync_footer_menu_item( $page_id, true );
         wp_send_json_success( [
             'message'   => __( 'Privacy Policy page updated.', 'mini' ),
             'page_id'   => $page_id,
@@ -149,6 +193,7 @@ function mini_gdpr_create_privacy_page( $opts ) {
             'post_title'   => $title,
             'post_status'  => 'publish',
         ] );
+        mini_gdpr_set_page_meta( $page_id );
         return $page_id;
     }
 
@@ -162,6 +207,7 @@ function mini_gdpr_create_privacy_page( $opts ) {
             'post_name'    => 'privacy-policy',
             'post_status'  => 'publish',
         ] );
+        mini_gdpr_set_page_meta( $wp_privacy_page_id );
         return $wp_privacy_page_id;
     }
 
@@ -176,6 +222,7 @@ function mini_gdpr_create_privacy_page( $opts ) {
     if ( $new_id && ! is_wp_error( $new_id ) ) {
         // Register it as WordPress's official privacy policy page
         update_option( 'wp_page_for_privacy_policy', $new_id );
+        mini_gdpr_set_page_meta( $new_id );
         return $new_id;
     }
 
@@ -361,6 +408,7 @@ function mini_gdpr_cookie_sanitize_settings( $input ) {
         $page_id = absint( $prev['mini_gdpr_cookie_page_id'] ?? 0 );
         if ( $page_id && get_post( $page_id ) ) {
             wp_trash_post( $page_id );
+            mini_gdpr_sync_footer_menu_item( $page_id, false );
         }
         $sanitized['mini_gdpr_cookie_page_id'] = 0;
     } else {
@@ -368,6 +416,7 @@ function mini_gdpr_cookie_sanitize_settings( $input ) {
         $page_id = mini_gdpr_create_cookie_page( $sanitized );
         if ( $page_id ) {
             $sanitized['mini_gdpr_cookie_page_id'] = $page_id;
+            mini_gdpr_sync_footer_menu_item( $page_id, true );
         }
     }
 
@@ -386,6 +435,7 @@ function mini_gdpr_ajax_fetch_cookie_page() {
     if ( $page_id ) {
         $opts['mini_gdpr_cookie_page_id'] = $page_id;
         update_option( 'mini_gdpr_cookie_settings', $opts );
+        mini_gdpr_sync_footer_menu_item( $page_id, true );
         wp_send_json_success( [
             'message'  => __( 'Cookie Policy page updated.', 'mini' ),
             'page_id'  => $page_id,
@@ -527,6 +577,7 @@ function mini_gdpr_create_cookie_page( $opts ) {
             'post_name'    => 'cookie-policy',
             'post_status'  => 'publish',
         ] );
+        mini_gdpr_set_page_meta( $page_id );
         return $page_id;
     }
 
@@ -538,7 +589,11 @@ function mini_gdpr_create_cookie_page( $opts ) {
         'post_type'    => 'page',
     ] );
 
-    return ( $new_id && ! is_wp_error( $new_id ) ) ? $new_id : 0;
+    if ( $new_id && ! is_wp_error( $new_id ) ) {
+        mini_gdpr_set_page_meta( $new_id );
+        return $new_id;
+    }
+    return 0;
 }
 
 function mini_gdpr_known_cookies() {
