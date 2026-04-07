@@ -7,7 +7,7 @@ function mini_gdpr_settings_init() {
     ] );
     add_settings_section(
         'mini_gdpr_privacy_section',
-        __( 'Privacy page', 'mini' ),
+        __( 'Privacy Policy page', 'mini' ),
         'mini_gdpr_privacy_section_callback',
         'mini-gdpr-privacy'
     );
@@ -34,16 +34,34 @@ function mini_gdpr_privacy_sanitize_settings( $input ) {
     $sanitized['mini_gdpr_dpo']              = sanitize_text_field( $input['mini_gdpr_dpo'] ?? '' );
     $sanitized['mini_gdpr_dpo_email']        = sanitize_email( $input['mini_gdpr_dpo_email'] ?? '' );
 
-    // Refresh page content whenever the feature is enabled
-    if ( $sanitized['mini_gdpr_privacy_enabled'] ) {
-        $page_id = mini_gdpr_create_privacy_page( $sanitized );
-        if ( $page_id ) {
-            $sanitized['mini_gdpr_privacy_page_id'] = $page_id;
-        }
-    }
-
     return $sanitized;
 }
+
+function mini_gdpr_ajax_fetch_privacy_page() {
+    check_ajax_referer( 'mini_gdpr_fetch_privacy', 'nonce' );
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_send_json_error( [ 'message' => __( 'Permission denied.', 'mini' ) ] );
+    }
+
+    $opts    = get_option( 'mini_gdpr_privacy_settings', [] );
+    $page_id = mini_gdpr_create_privacy_page( $opts );
+
+    if ( $page_id ) {
+        // Persist the page id
+        $opts['mini_gdpr_privacy_page_id'] = $page_id;
+        update_option( 'mini_gdpr_privacy_settings', $opts );
+        wp_send_json_success( [
+            'message'   => __( 'Privacy Policy page updated.', 'mini' ),
+            'page_id'   => $page_id,
+            'view_url'  => get_permalink( $page_id ),
+            'edit_url'  => get_edit_post_link( $page_id ),
+            'title'     => get_the_title( $page_id ),
+        ] );
+    } else {
+        wp_send_json_error( [ 'message' => __( 'Could not fetch the privacy policy content from the API. Please try again.', 'mini' ) ] );
+    }
+}
+add_action( 'wp_ajax_mini_gdpr_fetch_privacy_page', 'mini_gdpr_ajax_fetch_privacy_page' );
 
 function mini_gdpr_create_privacy_page( $opts ) {
     $params = [];
@@ -72,6 +90,12 @@ function mini_gdpr_create_privacy_page( $opts ) {
     }
     if ( ! empty( $opts['mini_gdpr_owner_pec'] ) ) {
         $params['owner_pec'] = $opts['mini_gdpr_owner_pec'];
+    }
+    if ( ! empty( $opts['mini_gdpr_dpo'] ) ) {
+        $params['dpo'] = $opts['mini_gdpr_dpo'];
+    }
+    if ( ! empty( $opts['mini_gdpr_dpo_email'] ) ) {
+        $params['dpo_email'] = $opts['mini_gdpr_dpo_email'];
     }
 
     $url = add_query_arg( $params, 'https://api.uwa.agency/privacy-policy/' );
@@ -155,13 +179,58 @@ function mini_gdpr_privacy_section_callback( $args ) {
                 <input type="checkbox" id="mini_gdpr_privacy_enabled" name="mini_gdpr_privacy_settings[mini_gdpr_privacy_enabled]" value="1" <?php checked( $enabled ); ?> class="me-1">
                 <?php esc_html_e( 'Create and populate a Privacy Policy page using the default UWA template.', 'mini' ); ?>
             </label>
-            <p class="S grey-text"><?php esc_html_e( 'The page is created (or updated) every time you save with this option enabled. Changing any field below and saving will refresh the content.', 'mini' ); ?></p>
-            <?php if ( $enabled && $page_id ) : ?>
-            <p class="S">
-                <a href="<?php echo esc_url( get_permalink( $page_id ) ); ?>" target="_blank" class="btn white-text S"><?php echo esc_html( get_the_title( $page_id ) ); ?></a>
-                <a href="<?php echo esc_url( get_edit_post_link( $page_id ) ); ?>" class="btn warning-btn white-text S"><?php esc_html_e( 'Edit', 'mini' ); ?></a>
+            <p class="S grey-text"><?php esc_html_e( 'Save your settings first, then click "Fetch from API" to create or refresh the page content.', 'mini' ); ?></p>
+            <p>
+
             </p>
+            <p class="S">
+            <?php if ( $enabled && $page_id ) : ?>
+                <span id="mini-gdpr-privacy-page-links">
+                    <a href="<?php echo esc_url( get_permalink( $page_id ) ); ?>" target="_blank" class="btn white-text S" id="mini-gdpr-view-link"><?php echo esc_html( get_the_title( $page_id ) ); ?></a>
+                    <a href="<?php echo esc_url( get_edit_post_link( $page_id ) ); ?>" target="_blank" class="btn warning-btn white-text S" id="mini-gdpr-edit-link"><?php esc_html_e( 'Edit', 'mini' ); ?></a>
+                </span>
+                <button type="button" id="mini-gdpr-fetch-privacy" class="btn third-color-btn-invert S"><?php esc_html_e( 'Fetch from API', 'mini' ); ?></button>
+                <span id="mini-gdpr-fetch-privacy-status"></span>
             <?php endif; ?>
+            </p>
+            <script>
+            (function(){
+                document.getElementById('mini-gdpr-fetch-privacy').addEventListener('click', function() {
+                    var btn    = this;
+                    var status = document.getElementById('mini-gdpr-fetch-privacy-status');
+                    btn.disabled = true;
+                    status.textContent = '<?php echo esc_js( __( 'Fetching…', 'mini' ) ); ?>';
+                    status.style.color = '';
+
+                    var fd = new FormData();
+                    fd.append('action', 'mini_gdpr_fetch_privacy_page');
+                    fd.append('nonce',  '<?php echo esc_js( wp_create_nonce( 'mini_gdpr_fetch_privacy' ) ); ?>');
+
+                    fetch('<?php echo esc_js( admin_url( 'admin-ajax.php' ) ); ?>', { method: 'POST', body: fd })
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            btn.disabled = false;
+                            if (data.success) {
+                                status.style.color = 'green';
+                                status.textContent = data.data.message;
+                                // Update page links dynamically
+                                var links = document.getElementById('mini-gdpr-privacy-page-links');
+                                links.innerHTML =
+                                    '<a href="' + data.data.view_url + '" target="_blank" class="btn white-text S" id="mini-gdpr-view-link">' + data.data.title + '</a> ' +
+                                    '<a href="' + data.data.edit_url + '" class="btn warning-btn white-text S" id="mini-gdpr-edit-link"><?php echo esc_js( __( 'Edit', 'mini' ) ); ?></a>';
+                            } else {
+                                status.style.color = 'red';
+                                status.textContent = data.data.message;
+                            }
+                        })
+                        .catch(function() {
+                            btn.disabled = false;
+                            status.style.color = 'red';
+                            status.textContent = '<?php echo esc_js( __( 'Request failed. Please try again.', 'mini' ) ); ?>';
+                        });
+                });
+            })();
+            </script>
         </div>
 
         <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
@@ -266,15 +335,33 @@ function mini_gdpr_cookie_sanitize_settings( $input ) {
         }
     }
 
-    if ( $sanitized['mini_gdpr_cookie_enabled'] ) {
-        $page_id = mini_gdpr_create_cookie_page( $sanitized );
-        if ( $page_id ) {
-            $sanitized['mini_gdpr_cookie_page_id'] = $page_id;
-        }
-    }
-
     return $sanitized;
 }
+
+function mini_gdpr_ajax_fetch_cookie_page() {
+    check_ajax_referer( 'mini_gdpr_fetch_cookie', 'nonce' );
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_send_json_error( [ 'message' => __( 'Permission denied.', 'mini' ) ] );
+    }
+
+    $opts    = get_option( 'mini_gdpr_cookie_settings', [] );
+    $page_id = mini_gdpr_create_cookie_page( $opts );
+
+    if ( $page_id ) {
+        $opts['mini_gdpr_cookie_page_id'] = $page_id;
+        update_option( 'mini_gdpr_cookie_settings', $opts );
+        wp_send_json_success( [
+            'message'  => __( 'Cookie Policy page updated.', 'mini' ),
+            'page_id'  => $page_id,
+            'view_url' => get_permalink( $page_id ),
+            'edit_url' => get_edit_post_link( $page_id ),
+            'title'    => get_the_title( $page_id ),
+        ] );
+    } else {
+        wp_send_json_error( [ 'message' => __( 'Could not fetch the cookie policy content from the API. Please try again.', 'mini' ) ] );
+    }
+}
+add_action( 'wp_ajax_mini_gdpr_fetch_cookie_page', 'mini_gdpr_ajax_fetch_cookie_page' );
 
 function mini_gdpr_create_cookie_page( $opts ) {
     $cookies = $opts['mini_gdpr_cookies'] ?? [];
@@ -537,13 +624,54 @@ function mini_gdpr_cookie_section_callback( $args ) {
                 <input type="checkbox" id="mini_gdpr_cookie_enabled" name="mini_gdpr_cookie_settings[mini_gdpr_cookie_enabled]" value="1" <?php checked( $enabled ); ?> class="me-1">
                 <?php esc_html_e( 'Create and populate a Cookie Policy page from the list below.', 'mini' ); ?>
             </label>
-            <p class="S grey-text"><?php esc_html_e( 'The page is created (or updated) every time you save with this option enabled.', 'mini' ); ?></p>
+            <p class="S grey-text"><?php esc_html_e( 'Save your settings first, then click "Fetch from API" to create or refresh the page content.', 'mini' ); ?></p>
+            <p class="S" >
             <?php if ( $enabled && $page_id ) : ?>
-            <p class="S">
-                <a href="<?php echo esc_url( get_permalink( $page_id ) ); ?>" target="_blank" class="btn white-text S"><?php echo esc_html( get_the_title( $page_id ) ); ?></a>
-                <a href="<?php echo esc_url( get_edit_post_link( $page_id ) ); ?>" class="btn warning-btn white-text S"><?php esc_html_e( 'Edit', 'mini' ); ?></a>
-            </p>
+                <span id="mini-gdpr-cookie-page-links">
+                    <a href="<?php echo esc_url( get_permalink( $page_id ) ); ?>" target="_blank" class="btn white-text S" id="mini-gdpr-cookie-view-link"><?php echo esc_html( get_the_title( $page_id ) ); ?></a>
+                    <a href="<?php echo esc_url( get_edit_post_link( $page_id ) ); ?>" class="btn warning-btn white-text S" id="mini-gdpr-cookie-edit-link"><?php esc_html_e( 'Edit', 'mini' ); ?></a>
+                </span>
+                <button type="button" id="mini-gdpr-fetch-cookie" class="btn third-color-btn-invert S"><?php esc_html_e( 'Fetch from API', 'mini' ); ?></button>
+                <span id="mini-gdpr-fetch-cookie-status" style="margin-left:10px;vertical-align:middle;"></span>
             <?php endif; ?>
+            </p>
+            <script>
+            (function(){
+                document.getElementById('mini-gdpr-fetch-cookie').addEventListener('click', function() {
+                    var btn    = this;
+                    var status = document.getElementById('mini-gdpr-fetch-cookie-status');
+                    btn.disabled = true;
+                    status.textContent = '<?php echo esc_js( __( 'Fetching…', 'mini' ) ); ?>';
+                    status.style.color = '';
+
+                    var fd = new FormData();
+                    fd.append('action', 'mini_gdpr_fetch_cookie_page');
+                    fd.append('nonce',  '<?php echo esc_js( wp_create_nonce( 'mini_gdpr_fetch_cookie' ) ); ?>');
+
+                    fetch('<?php echo esc_js( admin_url( 'admin-ajax.php' ) ); ?>', { method: 'POST', body: fd })
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            btn.disabled = false;
+                            if (data.success) {
+                                status.style.color = 'green';
+                                status.textContent = data.data.message;
+                                var links = document.getElementById('mini-gdpr-cookie-page-links');
+                                links.innerHTML =
+                                    '<a href="' + data.data.view_url + '" target="_blank" class="btn white-text S">' + data.data.title + '</a> ' +
+                                    '<a href="' + data.data.edit_url + '" class="btn warning-btn white-text S"><?php echo esc_js( __( 'Edit', 'mini' ) ); ?></a>';
+                            } else {
+                                status.style.color = 'red';
+                                status.textContent = data.data.message;
+                            }
+                        })
+                        .catch(function() {
+                            btn.disabled = false;
+                            status.style.color = 'red';
+                            status.textContent = '<?php echo esc_js( __( 'Request failed. Please try again.', 'mini' ) ); ?>';
+                        });
+                });
+            })();
+            </script>
         </div>
 
         <?php if ( ! empty( $detected ) ) : ?>
