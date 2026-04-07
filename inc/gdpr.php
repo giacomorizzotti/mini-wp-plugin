@@ -350,31 +350,34 @@ function mini_gdpr_create_cookie_page( $opts ) {
     $content  = wp_kses_post( $api_body );
 
     $types = [
-        'necessary'  => __( 'Necessary', 'mini' ),
-        'functional' => __( 'Functional', 'mini' ),
-        'analytics'  => __( 'Analytics', 'mini' ),
-        'marketing'  => __( 'Marketing', 'mini' ),
+        'necessary'  => 'Necessari',
+        'functional' => 'Funzionali',
+        'analytics'  => 'Analitici',
+        'marketing'  => 'Marketing',
     ];
 
     $type_descriptions = [
-        'necessary'  => __( 'Necessary cookies are essential for the website to function properly. They cannot be disabled.', 'mini' ),
-        'functional' => __( 'Functional cookies enable enhanced functionality and personalisation. They may be set by us or by third-party providers.', 'mini' ),
-        'analytics'  => __( 'Analytics cookies help us understand how visitors interact with our website by collecting and reporting information anonymously.', 'mini' ),
-        'marketing'  => __( 'Marketing cookies are used to track visitors across websites so that advertisers can deliver more relevant and targeted ads.', 'mini' ),
+        'necessary'  => 'I cookie necessari sono indispensabili per il corretto funzionamento del sito web e non possono essere disabilitati.',
+        'functional' => 'I cookie funzionali migliorano le funzionalità e la personalizzazione del sito. Possono essere impostati da noi o da fornitori terzi.',
+        'analytics'  => 'I cookie analitici ci aiutano a capire come i visitatori interagiscono con il sito, raccogliendo informazioni in forma anonima.',
+        'marketing'  => 'I cookie di marketing vengono utilizzati per tracciare i visitatori sui siti web al fine di mostrare annunci pubblicitari pertinenti e mirati.',
     ];
 
+    $content .= '<h2 class="">I cookie presenti sul sito</h2>';
+    $content .= '<div class="space-2"></div>';
+    
     foreach ( $types as $key => $label ) {
         $group = array_values( array_filter( $cookies, fn( $c ) => ( $c['type'] ?? '' ) === $key ) );
         if ( empty( $group ) ) continue;
 
-        $content .= '<h2>' . esc_html( $label ) . '</h2>';
+        $content .= '<h3>' . esc_html( $label ) . '</h3>';
         $content .= '<p>' . esc_html( $type_descriptions[ $key ] ) . '</p>';
         $content .= '<table style="width:100%;border-collapse:collapse;">';
         $content .= '<thead><tr>';
-        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">' . esc_html__( 'Name', 'mini' ) . '</th>';
-        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">' . esc_html__( 'Provider', 'mini' ) . '</th>';
-        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">' . esc_html__( 'Purpose', 'mini' ) . '</th>';
-        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">' . esc_html__( 'Duration', 'mini' ) . '</th>';
+        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">Nome</th>';
+        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">Fornitore</th>';
+        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">Finalità</th>';
+        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">Durata</th>';
         $content .= '</tr></thead><tbody>';
 
         foreach ( $group as $i => $cookie ) {
@@ -387,6 +390,7 @@ function mini_gdpr_create_cookie_page( $opts ) {
             $content .= '</tr>';
         }
         $content .= '</tbody></table>';
+        $content .= '<div class="space-5"></div>';
     }
 
     $title   = __( 'Cookie Policy', 'mini' );
