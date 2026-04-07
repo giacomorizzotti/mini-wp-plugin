@@ -4,6 +4,10 @@
 function mini_login_settings_init() {
     register_setting( 'mini_login', 'mini_login_settings', [
         'sanitize_callback' => 'mini_login_sanitize_settings',
+        'default'           => [
+            'mini_login_enabled' => 0,
+            'mini_login_slug'    => 'login',
+        ],
     ] );
     add_settings_section(
         'mini_login_section',

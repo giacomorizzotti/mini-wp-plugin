@@ -88,6 +88,17 @@ function mini_security_section_callback( $args ) {
 
 /* START - REST API restriction */
 
+// Remove the REST-API blocker for ALTCHA before authentication runs.
+// rest_api_init fires inside rest_get_server(), before check_authentication().
+add_action( 'rest_api_init', 'mini_altcha_rest_api_init', 1 );
+function mini_altcha_rest_api_init() {
+    $uri   = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    $route = isset( $_GET['rest_route'] )     ? wp_unslash( $_GET['rest_route'] )     : '';
+    if ( false !== strpos( $uri, '/altcha/v1/' ) || false !== strpos( $route, '/altcha/v1/' ) ) {
+        remove_filter( 'rest_authentication_errors', 'mini_restrict_rest_api' );
+    }
+}
+
 add_filter( 'rest_authentication_errors', 'mini_restrict_rest_api' );
 function mini_restrict_rest_api( $result ) {
     // If another plugin already set an error or granted access, respect it

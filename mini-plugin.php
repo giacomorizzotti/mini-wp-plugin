@@ -1011,6 +1011,7 @@ function mini_gdpr_page_html() {
 
         <nav class="nav-tab-wrapper">
             <a href="<?php echo esc_url( $page_url . '&tab=privacy' ); ?>" class="nav-tab <?php echo $current_tab === 'privacy' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Privacy', 'mini' ); ?></a>
+            <a href="<?php echo esc_url( $page_url . '&tab=cookie' ); ?>" class="nav-tab <?php echo $current_tab === 'cookie' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Cookie policy', 'mini' ); ?></a>
         </nav>
 
         <?php if ( $current_tab === 'privacy' ) : ?>
@@ -1019,6 +1020,16 @@ function mini_gdpr_page_html() {
                 <?php
                 settings_fields( 'mini_gdpr_privacy' );
                 do_settings_sections( 'mini-gdpr-privacy' );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+
+        <?php elseif ( $current_tab === 'cookie' ) : ?>
+
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_gdpr_cookie' );
+                do_settings_sections( 'mini-gdpr-cookie' );
                 submit_button( 'Save Settings' );
                 ?>
             </form>
