@@ -141,10 +141,10 @@ function mini_content_section_callback( $args ) {
                     value="1"
                     <?php checked($slide_enabled, true); ?>
                 >
-                <?php esc_html_e( 'Slides', 'mini' ); ?>
+                <?php esc_html_e( 'Slideshows', 'mini' ); ?>
             </label>
-            <p class="mb-0" for="mini_slide">Enable the "Slide" content type to manage <u>slideshows</u> and <u>slides</u>.</p>
-            <p class="S mt-0 grey-text" for="mini_slide">This option loads <i>mini</i> <b>slider.js</b> library.</p>
+            <p class="mb-0" for="mini_slide">Enable the "Slideshow" content type to manage <u>slideshows</u> and <u>slides</u>.</p>
+            <p class="S mt-0 grey-text" for="mini_slide">Use <code class="XS">[slideshow slideshow="slug"]</code> to embed. This option loads <i>mini</i> <b>slider.js</b> library.</p>
         </div>
         <div class="box-25 p-2 white-bg b-rad-5 box-shadow">
             <label for="mini_news" class="h5 bold bk-text">    

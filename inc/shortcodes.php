@@ -226,16 +226,44 @@ function mini_posts_shortcode( $atts ) {
 }
 add_shortcode( 'posts', 'mini_posts_shortcode' );
 
-/* SLIDE Shortcodes */
-function get_slides_callback($number=3) {
+/* SLIDESHOW Shortcodes */
+function get_slides_callback($atts = []) {
+    // Support both direct calls (legacy: first arg is a number) and shortcode attributes
+    if (is_array($atts)) {
+        $atts = shortcode_atts([
+            'slideshow' => '',
+            'number'    => -1,
+        ], $atts, 'slider');
+        $slideshow_ref = sanitize_text_field($atts['slideshow']);
+        $number        = intval($atts['number']);
+    } else {
+        // Legacy direct call: get_slides_callback(3)
+        $number        = absint($atts) ?: -1;
+        $slideshow_ref = '';
+    }
+
     $args = array(
-        'posts_per_page' => absint($number),
-        'orderby' => 'post_date',
-        'order' => 'DESC',
-        'post_type' => 'slide',
-        'post_status' => 'publish',
-        'no_found_rows' => true,
+        'posts_per_page' => $number > 0 ? $number : -1,
+        'orderby'        => 'menu_order',
+        'order'          => 'ASC',
+        'post_type'      => 'slide',
+        'post_status'    => 'publish',
+        'no_found_rows'  => true,
     );
+
+    // Filter by parent slideshow if provided (accepts ID or slug)
+    if (!empty($slideshow_ref)) {
+        if (is_numeric($slideshow_ref)) {
+            $args['post_parent'] = absint($slideshow_ref);
+        } else {
+            $parent = get_page_by_path($slideshow_ref, OBJECT, 'slideshow');
+            if ($parent) {
+                $args['post_parent'] = $parent->ID;
+            } else {
+                return '';
+            }
+        }
+    }
     $query = new WP_Query($args);
     if ($query->have_posts()) :
         $show_controls = $query->post_count > 1;
@@ -283,8 +311,11 @@ function get_slides_callback($number=3) {
             $slide_title = esc_html(get_the_title($post_id));
             $slide_content = apply_filters('the_content', get_the_content(null, false, $post_id));
 
+            $header_top    = esc_attr((string) get_post_meta($post_id, 'header_styling_top', true));
+            $header_scroll = esc_attr((string) get_post_meta($post_id, 'header_styling_scroll', true));
+
             $slider .= '
-                <li class="slide">
+                <li class="slide" data-header-top="'.$header_top.'" data-header-scroll="'.$header_scroll.'">
             ';
             if (get_the_post_thumbnail($post_id)!=false) {
             $slider .= '
@@ -323,12 +354,51 @@ function get_slides_callback($number=3) {
 </div>
         ';
         wp_reset_postdata();
+
+        // Inline script: update #header classes based on the active slide.
+        // Uses IntersectionObserver (root = slider) so only the slide that is
+        // ≥60% visible within the slider viewport triggers the header update.
+        // A MutationObserver re-observes clone slides added by slider.js.
+        $slider .= '
+<script>
+(function(){
+    var sl  = document.querySelector(".slider");
+    var hd  = document.getElementById("header");
+    if (!sl || !hd) return;
+    var topCls  = ["top-wh","top-bk","top-col","top-inv"];
+    var scrCls  = ["scroll-wh","scroll-bk","scroll-col","scroll-inv"];
+    var all     = topCls.concat(scrCls);
+    function apply(t, s) {
+        all.forEach(function(c){ hd.classList.remove(c); });
+        if (t) hd.classList.add(t);
+        if (s) hd.classList.add(s);
+    }
+    var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+            if (e.intersectionRatio >= 0.6) {
+                apply(
+                    e.target.dataset.headerTop    || "",
+                    e.target.dataset.headerScroll || ""
+                );
+            }
+        });
+    }, { root: sl, threshold: 0.6 });
+    function obs(){
+        sl.querySelectorAll("li.slide").forEach(function(s){ io.observe(s); });
+    }
+    new MutationObserver(obs).observe(sl, { childList: true });
+    obs();
+})();
+</script>
+        ';
+
         return $slider;
     endif;
     
     return '';
 }
 add_shortcode('slider', 'get_slides_callback');
+add_shortcode('slideshow', 'get_slides_callback');
 
 /* EVENT Shortcodes */
 function get_next_event_callback($num = 1, $cols=3) {
