@@ -86,7 +86,7 @@ function mini_pwa_section_callback( $args ) {
             <p class="S grey-text"><?php esc_html_e( 'Abbreviated name shown under the home screen icon (keep under 12 characters).', 'mini' ); ?></p>
         </div>
 
-        <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
             <h4><?php esc_html_e( 'Description', 'mini' ); ?></h4>
             <input type="text" id="mini_pwa_description" name="mini_pwa_settings[mini_pwa_description]" value="<?php echo esc_attr( $description ); ?>" class="large-text">
             <p class="S grey-text"><?php esc_html_e( 'Brief description of the app, used in install prompts.', 'mini' ); ?></p>
@@ -100,7 +100,7 @@ function mini_pwa_section_callback( $args ) {
         </div>
 
         <!-- Display mode -->
-        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
             <h4><?php esc_html_e( 'Display mode', 'mini' ); ?></h4>
             <select id="mini_pwa_display" name="mini_pwa_settings[mini_pwa_display]">
                 <?php foreach ( $display_modes as $value => $label ) : ?>
@@ -112,15 +112,15 @@ function mini_pwa_section_callback( $args ) {
         </div>
 
         <!-- Colors -->
-        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
             <h4><?php esc_html_e( 'Theme color', 'mini' ); ?></h4>
-            <input type="color" id="mini_pwa_theme_color" name="mini_pwa_settings[mini_pwa_theme_color]" value="<?php echo esc_attr( $theme_color ); ?>">
+            <input type="color" id="mini_pwa_theme_color" name="mini_pwa_settings[mini_pwa_theme_color]" value="<?php echo esc_attr( $theme_color ); ?>" style="width:3rem; height:3rem; padding: calc(var(--padding) * 0.25); cursor:pointer;background: var(--false-white); border: 1px solid var(--light-grey);">
             <p class="S grey-text"><?php esc_html_e( 'Controls the browser toolbar color and the task switcher color on Android.', 'mini' ); ?></p>
         </div>
 
-        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
             <h4><?php esc_html_e( 'Background color', 'mini' ); ?></h4>
-            <input type="color" id="mini_pwa_bg_color" name="mini_pwa_settings[mini_pwa_bg_color]" value="<?php echo esc_attr( $bg_color ); ?>">
+            <input type="color" id="mini_pwa_bg_color" name="mini_pwa_settings[mini_pwa_bg_color]" value="<?php echo esc_attr( $bg_color ); ?>" style="width:3rem; height:3rem; padding: calc(var(--padding) * 0.25); cursor:pointer;background: var(--false-white); border: 1px solid var(--light-grey);">
             <p class="S grey-text"><?php esc_html_e( 'Splash screen background color shown before the app\'s CSS is loaded.', 'mini' ); ?></p>
         </div>
 

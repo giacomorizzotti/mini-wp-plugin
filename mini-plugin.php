@@ -891,87 +891,87 @@ function mini_plugin_main_page_html() {
                 </p>
             </div>
             <div class="sep mb-2 light-grey-border"></div>
-            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0">Contents</h2>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0"><i class="iconoir-cube third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;Contents</h2>
                 <p class="mt-0">Manage content types and related features.</p>
                 <p class="">
                     <a href="/wp-admin/admin.php?page=mini-content" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Contents', 'mini' ); ?></a>
                 </p>
             </div>
-            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0">SEO</h2>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0"><i class="iconoir-search third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;SEO</h2>
                 <p class="mt-0">Manage SEO settings.</p>
                 <p class="">
                     <a href="/wp-admin/admin.php?page=mini-seo" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'SEO', 'mini' ); ?></a>
                 </p>
             </div>
-            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0">General settings</h2>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0"><i class="iconoir-settings third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;General settings</h2>
                 <p class="mt-0">Manage general settings.</p>
                 <p class="">
                     <a href="/wp-admin/admin.php?page=mini-general" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'General', 'mini' ); ?></a>
                 </p>
             </div>
-            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0">Security settings</h2>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0"><i class="iconoir-shield third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;Security settings</h2>
                 <p class="mt-0">Manage security settings.</p>
                 <p class="">
                     <a href="/wp-admin/admin.php?page=mini-security" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Security', 'mini' ); ?></a>
                 </p>
             </div>
-            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0">Backoffice settings</h2>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0"><i class="iconoir-task-list third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;Backoffice settings</h2>
                 <p class="mt-0">Manage backoffice settings.</p>
                 <p class="">
                     <a href="/wp-admin/admin.php?page=mini-backoffice" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Backoffice', 'mini' ); ?></a>
                 </p>
             </div>
-            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0">GDPR settings</h2>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0"><i class="iconoir-half-cookie third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;GDPR settings</h2>
                 <p class="mt-0">Manage GDPR settings.</p>
                 <p class="">
                     <a href="/wp-admin/admin.php?page=mini-gdpr" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'GDPR', 'mini' ); ?></a>
                 </p>
             </div>
-            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0">PWA settings</h2>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0"><i class="iconoir-window-check third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;PWA settings</h2>
                 <p class="mt-0">Manage PWA (Progressive Web App) settings.</p>
                 <p class="">
                     <a href="/wp-admin/admin.php?page=mini-pwa" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'PWA', 'mini' ); ?></a>
                 </p>
             </div>
-            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0">Fonts settings</h2>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0"><i class="iconoir-text third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;Fonts settings</h2>
                 <p class="mt-0">Manage fonts settings.</p>
                 <p class="">
                     <a href="/wp-admin/admin.php?page=mini-fonts" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Fonts', 'mini' ); ?></a>
                 </p>
             </div>
-            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0">Analytics settings</h2>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0"><i class="iconoir-stats-report third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;Analytics settings</h2>
                 <p class="mt-0">Manage analytics settings.</p>
                 <p class="">
                     <a href="/wp-admin/admin.php?page=mini-analytics" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Analytics', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="sep mb-2 light-grey-border"></div>
-            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h3 class="mb-0">External libraries</h3>
+            <div class="box-20 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h3 class="mb-0"><i class="iconoir-favourite-book third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;External libraries</h3>
                 <p class="mt-0">Manage external libraries settings.</p>
                 <p class="">
                     <a href="/wp-admin/admin.php?page=mini-ext-lib" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'External Libraries', 'mini' ); ?></a>
                 </p>
             </div>
-            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h3 class="mb-0">Credits</h3>
+            <div class="box-20 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h3 class="mb-0"><i class="iconoir-spock-hand-gesture third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;Credits</h3>
                 <p class="mt-0">Manage credits settings.</p>
                 <p class="">
                     <a href="/wp-admin/admin.php?page=mini-credits" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Credits', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="sep mb-2 light-grey-border"></div>
-            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0">Company settings</h2>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0"><i class="iconoir-building third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;Company settings</h2>
                 <p class="mt-0">Manage company settings.</p>
                 <p class="">
                     <a href="/wp-admin/admin.php?page=mini-company" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Company', 'mini' ); ?></a>
@@ -1534,11 +1534,16 @@ function teams_box_html( $post, $meta ){
 
 function media_upload_scripts() {
     $screen = get_current_screen();
-    if (!$screen || !in_array($screen->post_type, ['match', 'event'])) {
+    if ( ! $screen ) {
         return;
     }
-    
-    wp_enqueue_media();
+
+    if (
+        in_array( $screen->post_type, [ 'match', 'event' ], true ) ||
+        strpos( $screen->id, 'mini' ) !== false
+    ) {
+        wp_enqueue_media();
+    }
 }
 add_action('admin_enqueue_scripts', 'media_upload_scripts');
 
@@ -1586,6 +1591,7 @@ function load_mini_css_in_mini_plugin_admin_pages() {
         }
         
         wp_enqueue_style('mini-css', $css_url, array(), $version);
+        wp_enqueue_style('mini-iconoir', 'https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/css/iconoir.css', array(), null);
     }
 }
 add_action('admin_enqueue_scripts', 'load_mini_css_in_mini_plugin_admin_pages');
