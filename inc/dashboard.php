@@ -93,11 +93,17 @@ function mini_content_stats_widget() {
     }
 
     if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
+        $slideshow_count = wp_count_posts('slideshow');
         $slide_count = wp_count_posts('slide');
+        $stats['slideshow'] = array(
+            'label' => __('Slideshows', 'mini'),
+            'count' => $slideshow_count->publish,
+            'icon' => 'dashicons-images-alt2'
+        );
         $stats['slide'] = array(
             'label' => __('Slides', 'mini'),
             'count' => $slide_count->publish,
-            'icon' => 'dashicons-images-alt2'
+            'icon' => 'dashicons-slides'
         );
     }
 
@@ -160,6 +166,7 @@ function mini_recent_content_widget() {
         $post_types[] = 'lesson';
     }
     if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
+        $post_types[] = 'slideshow';
         $post_types[] = 'slide';
     }
 
