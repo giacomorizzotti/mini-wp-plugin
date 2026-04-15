@@ -331,6 +331,15 @@ function mini_plugin_settings_pages() {
         'mini_gdpr_page_html',
         9
     );
+    add_submenu_page(
+        'mini',
+        'mini plugin - PWA',
+        'PWA',
+        'manage_options',
+        'mini-pwa',
+        'mini_pwa_page_html',
+        9
+    );
 }
 add_action( 'admin_menu', 'mini_plugin_settings_pages' );
 /* END - mini menu */
@@ -881,6 +890,93 @@ function mini_plugin_main_page_html() {
                     <a href="https://mini.uwa.agency/" target="_blank" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Visit mini website', 'mini' ); ?></a>
                 </p>
             </div>
+            <div class="sep mb-2 light-grey-border"></div>
+            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0">Contents</h2>
+                <p class="mt-0">Manage content types and related features.</p>
+                <p class="">
+                    <a href="/wp-admin/admin.php?page=mini-content" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Contents', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0">SEO</h2>
+                <p class="mt-0">Manage SEO settings.</p>
+                <p class="">
+                    <a href="/wp-admin/admin.php?page=mini-seo" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'SEO', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0">General settings</h2>
+                <p class="mt-0">Manage general settings.</p>
+                <p class="">
+                    <a href="/wp-admin/admin.php?page=mini-general" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'General', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0">Security settings</h2>
+                <p class="mt-0">Manage security settings.</p>
+                <p class="">
+                    <a href="/wp-admin/admin.php?page=mini-security" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Security', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0">Backoffice settings</h2>
+                <p class="mt-0">Manage backoffice settings.</p>
+                <p class="">
+                    <a href="/wp-admin/admin.php?page=mini-backoffice" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Backoffice', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0">GDPR settings</h2>
+                <p class="mt-0">Manage GDPR settings.</p>
+                <p class="">
+                    <a href="/wp-admin/admin.php?page=mini-gdpr" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'GDPR', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0">PWA settings</h2>
+                <p class="mt-0">Manage PWA (Progressive Web App) settings.</p>
+                <p class="">
+                    <a href="/wp-admin/admin.php?page=mini-pwa" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'PWA', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0">Fonts settings</h2>
+                <p class="mt-0">Manage fonts settings.</p>
+                <p class="">
+                    <a href="/wp-admin/admin.php?page=mini-fonts" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Fonts', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0">Analytics settings</h2>
+                <p class="mt-0">Manage analytics settings.</p>
+                <p class="">
+                    <a href="/wp-admin/admin.php?page=mini-analytics" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Analytics', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="sep mb-2 light-grey-border"></div>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h3 class="mb-0">External libraries</h3>
+                <p class="mt-0">Manage external libraries settings.</p>
+                <p class="">
+                    <a href="/wp-admin/admin.php?page=mini-ext-lib" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'External Libraries', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h3 class="mb-0">Credits</h3>
+                <p class="mt-0">Manage credits settings.</p>
+                <p class="">
+                    <a href="/wp-admin/admin.php?page=mini-credits" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Credits', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="sep mb-2 light-grey-border"></div>
+            <div class="box-33 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0">Company settings</h2>
+                <p class="mt-0">Manage company settings.</p>
+                <p class="">
+                    <a href="/wp-admin/admin.php?page=mini-company" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Company', 'mini' ); ?></a>
+                </p>
+            </div>
         </div>
 
     <?php endif; ?>
@@ -991,6 +1087,32 @@ function mini_backoffice_page_html() {
     <?php
 }
 /* END - Backoffice page */
+
+/* START - PWA page */
+function mini_pwa_page_html() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    if ( isset( $_GET['settings-updated'] ) ) {
+        add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
+    }
+    settings_errors( 'mini_messages' );
+    ?>
+    <div class="wrap">
+        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+
+        <form action="options.php" method="post">
+            <?php
+            settings_fields( 'mini_pwa' );
+            do_settings_sections( 'mini-pwa' );
+            submit_button( 'Save Settings' );
+            ?>
+        </form>
+    </div>
+    <?php
+}
+/* END - PWA page */
 
 /* START - GDPR page */
 function mini_gdpr_page_html() {
@@ -1652,4 +1774,10 @@ require_once plugin_dir_path(__FILE__) . 'inc/backoffice.php';
 /* START - GDPR module include */
 require_once plugin_dir_path(__FILE__) . 'inc/gdpr.php';
 /* END - GDPR module include */
+
+/* START - PWA module include */
+require_once plugin_dir_path(__FILE__) . 'inc/pwa.php';
+register_activation_hook( __FILE__, 'mini_pwa_activation_setup' );
+register_deactivation_hook( __FILE__, 'mini_pwa_deactivation_teardown' );
+/* END - PWA module include */
 
