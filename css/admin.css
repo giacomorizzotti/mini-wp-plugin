@@ -1,0 +1,66 @@
+/* mini-plugin admin styles */
+.sorting-indicators {
+    margin-left: calc(var(--margin)*1);
+}
+.sorting-indicator {
+    margin: 0;
+}
+.sorting-indicator:before {
+    top: 0px;
+}
+.sorting-indicator.desc {
+    margin: calc(var(--baseline) / 3) 0;
+}td.page-title {
+    background: transparent;
+}
+tr.type-slide td { padding-left: 1rem; background: var(--main-color-transp); }
+tr.type-slide .row-title::before { content: "˪ "; color: var(--grey); }
+.wp-list-table {
+    position: relative;
+}
+.wp-core-ui .button-link {
+    text-decoration: none;
+    font-size: calc(var(--p) * 0.875);
+    line-height: calc(var(--p) * 1);
+    width: auto;
+    padding: calc(var(--padding) * .25) calc(var(--padding) * .5);
+    display: inline-block;
+    margin: 0;
+    border: 1px solid;
+    transition: color ease-out .15s, background-color ease-out .15s, border-color ease-out .15s, box-shadow ease-out .15s;
+    cursor: pointer;
+    vertical-align: middle;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    color: var(--button-text-color);
+    background: var(--button-background-color);
+    border-color: var(--button-border-color);
+}
+.bulkactions, .actions {
+    display: flex;
+}
+.search-box {
+    flex-wrap: nowrap!important;
+}
+
+/* Meta box field layout */
+.mini-meta-row { display: flex; flex-flow: row wrap; margin-bottom: 1rem; }
+.mini-meta-row:last-child { margin-bottom: 0; }
+.mini-meta-field { flex: 1; margin-bottom: 0.5rem; }
+.mini-meta-field label { display: block; margin-bottom: 0.5rem; }
+.mini-meta-field select,
+.mini-meta-field input[type="number"],
+.mini-meta-field input[type="text"] { width: 100%; }
+
+/* Slideshow list: thumbnail column */
+.manage-column.column-mini_thumb { width: 70px; }
+td.column-mini_thumb { vertical-align: middle; padding-top: 6px; padding-bottom: 6px; }
+td.column-mini_thumb img { display: block; width: 60px; height: 40px; object-fit: cover; border-radius: 3px; }
+.mini-no-thumb { display: flex; align-items: center; justify-content: center; width: 60px; height: 40px; background: var(--light-grey); border-radius: 3px; color: var(--grey); }
+
+/* Drag & drop slide reordering */
+tr.type-slide .mini-drag-handle { cursor: grab; margin-right: 0.4rem; vertical-align: middle; color: var(--dark-grey); opacity: 0.3; transition: opacity .15s; }
+tr.type-slide:hover .mini-drag-handle { opacity: 1; }
+tr.type-slide.mini-dragging { opacity: 0.35; }
+tr.type-slide.mini-drag-over td { box-shadow: inset 0 -2px 0 var(--link-color); }

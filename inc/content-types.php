@@ -1,6 +1,6 @@
 <?php
 /* START - Custom post types - Consolidated */
-function register_mini_post_type($type, $singular, $plural, $icon, $has_archive = true, $hierarchical = false, $page_attributes = true) {
+function register_mini_post_type($type, $singular, $plural, $icon, $has_archive = true, $hierarchical = false, $page_attributes = true, $show_in_menu = true) {
     $supports = ['title', 'editor', 'thumbnail', 'excerpt', 'panels'];
 
     // Add page-attributes support for hierarchical post types (enables parent dropdown and menu_order)
@@ -28,6 +28,7 @@ function register_mini_post_type($type, $singular, $plural, $icon, $has_archive 
         'hierarchical' => $hierarchical,
         'has_archive' => $has_archive,
         'menu_icon' => $icon,
+        'show_in_menu' => $show_in_menu,
         'rewrite' => ['slug' => $type],
         'show_in_rest' => true,
         'supports' => $supports
@@ -47,7 +48,193 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
 
         // Slide is hierarchical for post_parent storage, but uses a custom parent meta box
         // (page_attributes=false) so we control the parent dropdown ourselves
-        register_mini_post_type('slide', 'Slide', 'Slides', 'dashicons-slides', false, true, false);
+        // show_in_menu=false hides the top-level entry; it's nested under Slideshows instead
+        register_mini_post_type('slide', 'Slide', 'Slides', 'dashicons-slides', false, true, false, false);
+    });
+
+    // Remove "Add New Slideshow" from the submenu; slides appear embedded in the list
+    add_action('admin_menu', function() {
+        remove_submenu_page('edit.php?post_type=slideshow', 'post-new.php?post_type=slideshow');
+    });
+
+    // Inject slides under each slideshow in the native WP list table
+    add_filter('the_posts', function($posts, $query) {
+        if ( ! is_admin() || ! $query->is_main_query() ) return $posts;
+        $screen = get_current_screen();
+        if ( ! $screen || $screen->base !== 'edit' || $screen->post_type !== 'slideshow' ) return $posts;
+
+        static $running = false;
+        if ( $running ) return $posts;
+        $running = true;
+
+        $result = [];
+        foreach ( $posts as $slideshow ) {
+            $result[] = $slideshow;
+            $slides = get_posts([
+                'post_type'      => 'slide',
+                'posts_per_page' => -1,
+                'post_parent'    => $slideshow->ID,
+                'post_status'    => ['publish', 'draft', 'pending', 'private'],
+                'orderby'        => 'menu_order',
+                'order'          => 'ASC',
+            ]);
+            foreach ( $slides as $slide ) {
+                $result[] = $slide;
+            }
+        }
+
+        $running = false;
+        return $result;
+    }, 10, 2);
+
+    // After saving a slide, redirect to the slideshow list instead of the slide list
+    add_filter('redirect_post_location', function($location, $post_id) {
+        if ( get_post_type($post_id) === 'slide' ) {
+            $location = admin_url('edit.php?post_type=slideshow');
+        }
+        return $location;
+    }, 10, 2);
+
+    // Redirect edit.php?post_type=slide → edit.php?post_type=slideshow
+    add_action('load-edit.php', function() {
+        if ( isset($_GET['post_type']) && $_GET['post_type'] === 'slide' ) {
+            wp_redirect( admin_url('edit.php?post_type=slideshow'), 301 );
+            exit;
+        }
+    });
+
+    // Add slide-parent-{ID} class to slide rows so JS can group them for drag/drop
+    add_filter('post_class', function($classes, $class, $post_id) {
+        if ( ! is_admin() ) return $classes;
+        $screen = get_current_screen();
+        if ( ! $screen || $screen->base !== 'edit' || $screen->post_type !== 'slideshow' ) return $classes;
+        if ( get_post_type($post_id) === 'slide' ) {
+            $classes[] = 'slide-parent-' . (int) get_post_field('post_parent', $post_id);
+        }
+        return $classes;
+    }, 10, 3);
+
+    // AJAX: persist slide order after drag/drop
+    add_action('wp_ajax_mini_save_slide_order', function() {
+        check_ajax_referer('mini_slide_order', 'nonce');
+        if ( ! current_user_can('edit_posts') ) wp_send_json_error('Unauthorized', 403);
+        $order = isset($_POST['order']) ? array_map('absint', (array) $_POST['order']) : [];
+        foreach ( $order as $menu_order => $post_id ) {
+            if ( $post_id ) {
+                wp_update_post(['ID' => $post_id, 'menu_order' => $menu_order]);
+            }
+        }
+        wp_send_json_success();
+    });
+
+    // "Add New Slide" button + drag/drop reordering on the slideshow list
+    add_action('admin_head-edit.php', function() {
+        $screen = get_current_screen();
+        if ( ! $screen || $screen->post_type !== 'slideshow' ) return;
+        $new_slide_url = esc_url( admin_url('post-new.php?post_type=slide') );
+        $nonce = wp_create_nonce('mini_slide_order');
+        ?>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // "Add New Slide" button next to "Add New Slideshow"
+            var existing = document.querySelector('.page-title-action');
+            if ( existing ) {
+                var btn = document.createElement('a');
+                btn.href = '<?php echo $new_slide_url; ?>';
+                btn.className = 'page-title-action';
+                btn.textContent = '<?php echo esc_js(__('Add New Slide', 'mini')); ?>';
+                existing.after(btn);
+            }
+
+            // Drag & drop slide reordering
+            var dragging = null;
+            var sourceGroup = null;
+
+            function getGroup(row) {
+                return Array.from(row.classList).find(function(c) {
+                    return c.indexOf('slide-parent-') === 0;
+                }) || null;
+            }
+
+            function saveOrder(group) {
+                var order = [];
+                document.querySelectorAll('tr.' + group).forEach(function(row) {
+                    var id = row.id.replace('post-', '');
+                    if ( id ) order.push(id);
+                });
+                var params = new URLSearchParams({
+                    action: 'mini_save_slide_order',
+                    nonce: '<?php echo esc_js($nonce); ?>'
+                });
+                order.forEach(function(id) { params.append('order[]', id); });
+                fetch(ajaxurl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params
+                });
+            }
+
+            document.querySelectorAll('tr.type-slide').forEach(function(row) {
+                // Insert drag handle at the start of the title cell
+                var td = row.querySelector('td.column-title, td:first-child');
+                if ( td ) {
+                    var handle = document.createElement('span');
+                    handle.className = 'mini-drag-handle dashicons dashicons-menu';
+                    td.insertBefore(handle, td.firstChild);
+                }
+
+                row.setAttribute('draggable', 'true');
+
+                row.addEventListener('dragstart', function(e) {
+                    dragging = row;
+                    sourceGroup = getGroup(row);
+                    setTimeout(function() { row.classList.add('mini-dragging'); }, 0);
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', row.id);
+                });
+
+                row.addEventListener('dragend', function() {
+                    row.classList.remove('mini-dragging');
+                    document.querySelectorAll('.mini-drag-over').forEach(function(r) {
+                        r.classList.remove('mini-drag-over');
+                    });
+                    if ( sourceGroup ) saveOrder(sourceGroup);
+                    dragging = null;
+                    sourceGroup = null;
+                });
+
+                row.addEventListener('dragover', function(e) {
+                    if ( !dragging || dragging === row || getGroup(row) !== sourceGroup ) return;
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    document.querySelectorAll('.mini-drag-over').forEach(function(r) {
+                        r.classList.remove('mini-drag-over');
+                    });
+                    row.classList.add('mini-drag-over');
+                });
+
+                row.addEventListener('dragleave', function(e) {
+                    if ( !row.contains(e.relatedTarget) ) row.classList.remove('mini-drag-over');
+                });
+
+                row.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    row.classList.remove('mini-drag-over');
+                    if ( !dragging || dragging === row || getGroup(row) !== sourceGroup ) return;
+                    var tbody = row.parentNode;
+                    var rows = Array.from(tbody.children);
+                    var dragIdx = rows.indexOf(dragging);
+                    var targetIdx = rows.indexOf(row);
+                    if ( dragIdx < targetIdx ) {
+                        tbody.insertBefore(dragging, row.nextSibling);
+                    } else {
+                        tbody.insertBefore(dragging, row);
+                    }
+                });
+            });
+        });
+        </script>
+        <?php
     });
 }
 /* END - Custom post type - SLIDESHOW */
@@ -99,6 +286,22 @@ add_action('add_meta_boxes', function() {
             'side',
             'high'
         );
+        add_meta_box(
+            'mini_page_slideshow',
+            __('Slideshow', 'mini'),
+            'mini_page_slideshow_meta_box',
+            'page',
+            'side',
+            'default'
+        );
+        add_meta_box(
+            'mini_slideshow_layout',
+            __('Layout', 'mini'),
+            'mini_slideshow_layout_meta_box',
+            'slideshow',
+            'side',
+            'default'
+        );
     }
     if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
         add_meta_box(
@@ -121,23 +324,29 @@ function mini_slide_parent_meta_box($post) {
         'order'          => 'ASC',
     ]);
     ?>
-    <div style="display:flex;flex-flow:row wrap;margin-bottom:1rem;">
-        <div style="flex:1;">
-            <label for="mini_slide_parent" style="margin-bottom:0.5rem;display:block;"><?php esc_html_e('Parent Slideshow', 'mini'); ?>:</label>
-            <select name="parent_id" id="mini_slide_parent" style="width:100%;">
+    <div class="mini-meta-row">
+        <div class="mini-meta-field">
+            <label for="mini_slide_parent"><?php esc_html_e('Parent Slideshow', 'mini'); ?>:</label>
+            <?php
+            $preselected = $post->post_parent;
+            if ( ! $preselected && isset($_GET['slideshow']) ) {
+                $preselected = absint($_GET['slideshow']);
+            }
+            ?>
+            <select name="parent_id" id="mini_slide_parent_select">
                 <option value="0"><?php esc_html_e('— No slideshow —', 'mini'); ?></option>
                 <?php foreach ($slideshows as $sw) : ?>
-                <option value="<?php echo esc_attr($sw->ID); ?>"<?php selected($post->post_parent, $sw->ID); ?>>
+                <option value="<?php echo esc_attr($sw->ID); ?>"<?php selected($preselected, $sw->ID); ?>>
                     <?php echo esc_html($sw->post_title); ?>
                 </option>
                 <?php endforeach; ?>
             </select>
         </div>
     </div>
-    <div style="display:flex;flex-flow:row wrap;">
-        <div style="flex:1;">
-            <label for="mini_slide_order" style="margin-bottom:0.5rem;display:block;"><?php esc_html_e('Order', 'mini'); ?>:</label>
-            <input type="number" name="menu_order" id="mini_slide_order" value="<?php echo esc_attr($post->menu_order); ?>" style="width:100%;" min="0" />
+    <div class="mini-meta-row">
+        <div class="mini-meta-field">
+            <label for="mini_slide_order"><?php esc_html_e('Order', 'mini'); ?>:</label>
+            <input type="number" name="menu_order" id="mini_slide_order" value="<?php echo esc_attr($post->menu_order); ?>" min="0" />
         </div>
     </div>
     <?php
@@ -152,10 +361,10 @@ function mini_lesson_parent_meta_box($post) {
         'order'          => 'ASC',
     ]);
     ?>
-    <div style="display:flex;flex-flow:row wrap;margin-bottom:1rem;">
-        <div style="flex:1;">
-            <label for="mini_lesson_parent" style="margin-bottom:0.5rem;display:block;"><?php esc_html_e('Parent Course', 'mini'); ?>:</label>
-            <select name="parent_id" id="mini_lesson_parent" style="width:100%;">
+    <div class="mini-meta-row">
+        <div class="mini-meta-field">
+            <label for="mini_lesson_parent"><?php esc_html_e('Parent Course', 'mini'); ?>:</label>
+            <select name="parent_id" id="mini_lesson_parent">
                 <option value="0"><?php esc_html_e('— No course —', 'mini'); ?></option>
                 <?php foreach ($courses as $course) : ?>
                 <option value="<?php echo esc_attr($course->ID); ?>"<?php selected($post->post_parent, $course->ID); ?>>
@@ -165,11 +374,98 @@ function mini_lesson_parent_meta_box($post) {
             </select>
         </div>
     </div>
-    <div style="display:flex;flex-flow:row wrap;">
-        <div style="flex:1;">
-            <label for="mini_lesson_order" style="margin-bottom:0.5rem;display:block;"><?php esc_html_e('Order', 'mini'); ?>:</label>
-            <input type="number" name="menu_order" id="mini_lesson_order" value="<?php echo esc_attr($post->menu_order); ?>" style="width:100%;" min="0" />
+    <div class="mini-meta-row">
+        <div class="mini-meta-field">
+            <label for="mini_lesson_order"><?php esc_html_e('Order', 'mini'); ?>:</label>
+            <input type="number" name="menu_order" id="mini_lesson_order" value="<?php echo esc_attr($post->menu_order); ?>" min="0" />
         </div>
     </div>
     <?php
 }
+
+function mini_page_slideshow_meta_box($post) {
+    $slideshows = get_posts([
+        'post_type'      => 'slideshow',
+        'posts_per_page' => -1,
+        'post_status'    => ['publish', 'draft'],
+        'orderby'        => 'title',
+        'order'          => 'ASC',
+    ]);
+    $current = get_post_meta($post->ID, '_mini_page_slideshow', true);
+    wp_nonce_field('mini_page_slideshow_save', 'mini_page_slideshow_nonce');
+    ?>
+    <div class="mini-meta-row">
+        <div class="mini-meta-field">
+            <label for="mini_page_slideshow_select"><?php esc_html_e('Slideshow', 'mini'); ?>:</label>
+            <select name="mini_page_slideshow" id="mini_page_slideshow_select">
+                <option value=""><?php esc_html_e('— None —', 'mini'); ?></option>
+                <?php foreach ($slideshows as $sw) : ?>
+                <option value="<?php echo esc_attr($sw->ID); ?>"<?php selected($current, $sw->ID); ?>>
+                    <?php echo esc_html($sw->post_title); ?>
+                </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+    </div>
+    <?php
+}
+
+function mini_slideshow_layout_meta_box($post) {
+    $container = get_post_meta($post->ID, 'page_container', true);
+    $content_width = get_post_meta($post->ID, 'content_width', true);
+    wp_nonce_field('mini_slideshow_layout_save', 'mini_slideshow_layout_nonce');
+    ?>
+    <div class="mini-meta-row">
+        <div class="mini-meta-field">
+            <label for="mini_slideshow_container"><?php esc_html_e('Container', 'mini'); ?>:</label>
+            <select name="page_container" id="mini_slideshow_container">
+                <option value="fw"<?php selected($container, 'fw'); ?>><?php esc_html_e('Full width', 'mini'); ?></option>
+                <option value=""<?php selected($container, ''); ?>><?php esc_html_e('Standard', 'mini'); ?></option>
+                <option value="wide"<?php selected($container, 'wide'); ?>><?php esc_html_e('Wide', 'mini'); ?></option>
+                <option value="thin"<?php selected($container, 'thin'); ?>><?php esc_html_e('Thin', 'mini'); ?></option>
+            </select>
+        </div>
+    </div>
+    <div class="mini-meta-row">
+        <div class="mini-meta-field">
+            <label for="mini_slideshow_content_width"><?php esc_html_e('Content width', 'mini'); ?>:</label>
+            <select name="content_width" id="mini_slideshow_content_width">
+                <option value="box-100"<?php selected($content_width !== 'box-66', true); ?>><?php esc_html_e('Full', 'mini'); ?></option>
+                <option value="box-66"<?php selected($content_width, 'box-66'); ?>><?php esc_html_e('2/3', 'mini'); ?></option>
+            </select>
+        </div>
+    </div>
+    <?php
+}
+
+add_action('save_post_slideshow', function($post_id) {
+    if ( ! isset($_POST['mini_slideshow_layout_nonce']) ) return;
+    if ( ! wp_verify_nonce($_POST['mini_slideshow_layout_nonce'], 'mini_slideshow_layout_save') ) return;
+    if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return;
+    if ( ! current_user_can('edit_post', $post_id) ) return;
+
+    $allowed_containers = ['fw', '', 'wide', 'thin'];
+    $container = isset($_POST['page_container']) ? sanitize_text_field($_POST['page_container']) : '';
+    if ( in_array($container, $allowed_containers, true) ) {
+        update_post_meta($post_id, 'page_container', $container);
+    }
+
+    $allowed_widths = ['box-100', 'box-66'];
+    $content_width = isset($_POST['content_width']) ? sanitize_text_field($_POST['content_width']) : 'box-100';
+    if ( in_array($content_width, $allowed_widths, true) ) {
+        update_post_meta($post_id, 'content_width', $content_width);
+    }
+});
+
+add_action('save_post_page', function($post_id) {
+    if ( ! isset($_POST['mini_page_slideshow_nonce']) ) return;
+    if ( ! wp_verify_nonce($_POST['mini_page_slideshow_nonce'], 'mini_page_slideshow_save') ) return;
+    if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return;
+    if ( ! current_user_can('edit_post', $post_id) ) return;
+
+    if ( ! empty($_POST['mini_page_slideshow']) ) {
+        update_post_meta($post_id, '_mini_page_slideshow', absint($_POST['mini_page_slideshow']));
+    } else {
+        delete_post_meta($post_id, '_mini_page_slideshow');
+    }
+});

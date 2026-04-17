@@ -533,9 +533,7 @@ function mini_add_seo_meta_boxes() {
     if (is_mini_option_enabled('mini_content_settings', 'mini_match')) {
         $post_types[] = 'match';
     }
-    if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
-        $post_types[] = 'slide';
-    }
+    // slideshow and slide are presentation-only CPTs; SEO meta is not relevant for them
     if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
         $post_types[] = 'course';
         $post_types[] = 'lesson';
