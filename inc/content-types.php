@@ -435,6 +435,59 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
         register_mini_taxonomy('event_category', 'Category', 'Categories', 'event');
         register_mini_tag_taxonomy('event_tag', 'event');
     });
+
+    // Add "Date" and "Location" columns to the event list table
+    add_filter('manage_event_posts_columns', function($columns) {
+        $new = [];
+        foreach ( $columns as $key => $label ) {
+            $new[$key] = $label;
+            if ( $key === 'title' ) {
+                $new['event_date']     = __('Event date', 'mini');
+                $new['event_location'] = __('Location', 'mini');
+            }
+        }
+        return $new;
+    });
+
+    add_action('manage_event_posts_custom_column', function($column, $post_id) {
+        if ( $column === 'event_date' ) {
+            $date = get_post_meta($post_id, 'event_date', true);
+            if ( $date ) {
+                $timestamp = strtotime($date);
+                echo $timestamp ? esc_html( date_i18n( get_option('date_format'), $timestamp ) ) : esc_html($date);
+            } else {
+                echo '—';
+            }
+        }
+        if ( $column === 'event_location' ) {
+            $name    = get_post_meta($post_id, 'location_name', true);
+            $address = get_post_meta($post_id, 'location_address', true);
+            if ( $name || $address ) {
+                echo implode('<br/>', array_filter([$name, $address]) );
+            } else {
+                echo '—';
+            }
+        }
+    }, 10, 2);
+
+    add_filter('manage_edit-event_sortable_columns', function($columns) {
+        $columns['event_date'] = 'event_date';
+        return $columns;
+    });
+
+    add_action('pre_get_posts', function($query) {
+        if ( ! is_admin() || ! $query->is_main_query() ) return;
+        if ( $query->get('post_type') !== 'event' ) return;
+        if ( $query->get('orderby') === 'event_date' ) {
+            $query->set('meta_key', 'event_date');
+            $query->set('orderby', 'meta_value');
+        } elseif ( ! $query->get('orderby') ) {
+            // Default order: by event date ascending
+            $query->set('meta_key', 'event_date');
+            $query->set('orderby', 'meta_value');
+            $query->set('order', 'DESC');
+        }
+    });
 }
 
 /* START - Custom post type - MATCH */
@@ -457,6 +510,62 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
 
         register_mini_taxonomy('course_category', 'Category', 'Categories', ['course', 'lesson']);
         register_mini_tag_taxonomy('course_tag', ['course', 'lesson']);
+    });
+
+    // Shared callback: render date + location columns for course and lesson
+    $mini_course_columns_cb = function($columns) {
+        $new = [];
+        foreach ( $columns as $key => $label ) {
+            $new[$key] = $label;
+            if ( $key === 'title' ) {
+                $new['event_date']     = __('Date', 'mini');
+                $new['event_location'] = __('Location', 'mini');
+            }
+        }
+        return $new;
+    };
+    add_filter('manage_course_posts_columns', $mini_course_columns_cb);
+    add_filter('manage_lesson_posts_columns', $mini_course_columns_cb);
+
+    $mini_course_column_content_cb = function($column, $post_id) {
+        if ( $column === 'event_date' ) {
+            $date = get_post_meta($post_id, 'event_date', true);
+            if ( $date ) {
+                $timestamp = strtotime($date);
+                echo $timestamp ? esc_html( date_i18n( get_option('date_format'), $timestamp ) ) : esc_html($date);
+            } else {
+                echo '—';
+            }
+        }
+        if ( $column === 'event_location' ) {
+            $name    = get_post_meta($post_id, 'location_name', true);
+            $address = get_post_meta($post_id, 'location_address', true);
+            if ( $name || $address ) {
+                echo esc_html( implode(', ', array_filter([$name, $address])) );
+            } else {
+                echo '—';
+            }
+        }
+    };
+    add_action('manage_course_posts_custom_column', $mini_course_column_content_cb, 10, 2);
+    add_action('manage_lesson_posts_custom_column', $mini_course_column_content_cb, 10, 2);
+
+    $mini_course_sortable_cb = function($columns) {
+        $columns['event_date'] = 'event_date';
+        return $columns;
+    };
+    add_filter('manage_edit-course_sortable_columns', $mini_course_sortable_cb);
+    add_filter('manage_edit-lesson_sortable_columns', $mini_course_sortable_cb);
+
+    add_action('pre_get_posts', function($query) {
+        if ( ! is_admin() || ! $query->is_main_query() ) return;
+        $pt = $query->get('post_type');
+        if ( ! in_array($pt, ['course', 'lesson'], true) ) return;
+        if ( $query->get('orderby') === 'event_date' || ! $query->get('orderby') ) {
+            $query->set('meta_key', 'event_date');
+            $query->set('orderby', 'meta_value');
+            if ( ! $query->get('order') ) $query->set('order', 'ASC');
+        }
     });
 }
 /* END - Custom post type - COURSE */
