@@ -35,9 +35,62 @@ function register_mini_post_type($type, $singular, $plural, $icon, $has_archive 
     ]);
 }
 
+/**
+ * Register a hierarchical taxonomy with mini defaults
+ */
+function register_mini_taxonomy($slug, $singular, $plural, $post_types) {
+    register_taxonomy($slug, (array) $post_types, [
+        'labels' => [
+            'name'              => __($plural, 'mini'),
+            'singular_name'     => __($singular, 'mini'),
+            'search_items'      => __('Search ' . $plural, 'mini'),
+            'all_items'         => __('All ' . $plural, 'mini'),
+            'parent_item'       => __('Parent ' . $singular, 'mini'),
+            'parent_item_colon' => __('Parent ' . $singular . ':', 'mini'),
+            'edit_item'         => __('Edit ' . $singular, 'mini'),
+            'update_item'       => __('Update ' . $singular, 'mini'),
+            'add_new_item'      => __('Add New ' . $singular, 'mini'),
+            'new_item_name'     => __('New ' . $singular . ' Name', 'mini'),
+            'menu_name'         => __($plural, 'mini'),
+        ],
+        'hierarchical'      => true,
+        'show_ui'           => true,
+        'show_in_rest'      => true,
+        'show_admin_column' => true,
+        'rewrite'           => ['slug' => $slug],
+    ]);
+}
+
+function register_mini_tag_taxonomy($slug, $post_types) {
+    register_taxonomy($slug, (array) $post_types, [
+        'labels' => [
+            'name'                       => __('Tags', 'mini'),
+            'singular_name'              => __('Tag', 'mini'),
+            'search_items'               => __('Search Tags', 'mini'),
+            'popular_items'              => __('Popular Tags', 'mini'),
+            'all_items'                  => __('All Tags', 'mini'),
+            'edit_item'                  => __('Edit Tag', 'mini'),
+            'update_item'                => __('Update Tag', 'mini'),
+            'add_new_item'               => __('Add New Tag', 'mini'),
+            'new_item_name'              => __('New Tag Name', 'mini'),
+            'separate_items_with_commas' => __('Separate tags with commas', 'mini'),
+            'add_or_remove_items'        => __('Add or remove tags', 'mini'),
+            'choose_from_most_used'      => __('Choose from the most used tags', 'mini'),
+            'menu_name'                  => __('Tags', 'mini'),
+        ],
+        'hierarchical'      => false,
+        'show_ui'           => true,
+        'show_in_rest'      => true,
+        'show_admin_column' => true,
+        'rewrite'           => ['slug' => $slug],
+    ]);
+}
+
 if (is_mini_option_enabled('mini_content_settings', 'mini_news')) {
     add_action('init', function() {
         register_mini_post_type('news', 'News', 'News', 'dashicons-text-page');
+        register_mini_taxonomy('news_category', 'Category', 'Categories', 'news');
+        register_mini_tag_taxonomy('news_tag', 'news');
     });
 }
 
@@ -81,6 +134,19 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
             foreach ( $slides as $slide ) {
                 $result[] = $slide;
             }
+        }
+
+        // Append slides with no parent at the end
+        $orphan_slides = get_posts([
+            'post_type'      => 'slide',
+            'posts_per_page' => -1,
+            'post_parent'    => 0,
+            'post_status'    => ['publish', 'draft', 'pending', 'private'],
+            'orderby'        => 'menu_order',
+            'order'          => 'ASC',
+        ]);
+        foreach ( $orphan_slides as $slide ) {
+            $result[] = $slide;
         }
 
         $running = false;
@@ -127,6 +193,18 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
         wp_send_json_success();
     });
 
+    // AJAX: assign a slide to a slideshow (set post_parent)
+    add_action('wp_ajax_mini_assign_slide_parent', function() {
+        check_ajax_referer('mini_slide_order', 'nonce');
+        if ( ! current_user_can('edit_posts') ) wp_send_json_error('Unauthorized', 403);
+        $slide_id     = isset($_POST['slide_id'])     ? absint($_POST['slide_id'])     : 0;
+        $slideshow_id = isset($_POST['slideshow_id']) ? absint($_POST['slideshow_id']) : 0;
+        if ( ! $slide_id || get_post_type($slide_id) !== 'slide' ) wp_send_json_error('Invalid slide', 400);
+        if ( $slideshow_id && get_post_type($slideshow_id) !== 'slideshow' ) wp_send_json_error('Invalid slideshow', 400);
+        wp_update_post(['ID' => $slide_id, 'post_parent' => $slideshow_id]);
+        wp_send_json_success();
+    });
+
     // "Add New Slide" button + drag/drop reordering on the slideshow list
     add_action('admin_head-edit.php', function() {
         $screen = get_current_screen();
@@ -146,7 +224,7 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
                 existing.after(btn);
             }
 
-            // Drag & drop slide reordering
+            // Drag & drop slide reordering + orphan → slideshow assignment
             var dragging = null;
             var sourceGroup = null;
 
@@ -154,6 +232,10 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
                 return Array.from(row.classList).find(function(c) {
                     return c.indexOf('slide-parent-') === 0;
                 }) || null;
+            }
+
+            function isOrphan(row) {
+                return row.classList.contains('slide-parent-0');
             }
 
             function saveOrder(group) {
@@ -173,6 +255,112 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
                     body: params
                 });
             }
+
+            function assignParent(slideRow, slideshowId, insertBeforeRow) {
+                var slideId = parseInt(slideRow.id.replace('post-', ''), 10);
+                // Update class
+                Array.from(slideRow.classList).forEach(function(c) {
+                    if ( c.indexOf('slide-parent-') === 0 ) slideRow.classList.remove(c);
+                });
+                slideRow.classList.add('slide-parent-' + slideshowId);
+                // For orphans (parent 0), always insert right after the separator
+                if ( slideshowId === 0 ) {
+                    var sep = document.querySelector('tr.mini-orphan-separator');
+                    insertBeforeRow = sep ? sep.nextSibling : insertBeforeRow;
+                }
+                // Move row visually
+                if ( insertBeforeRow ) {
+                    insertBeforeRow.parentNode.insertBefore(slideRow, insertBeforeRow);
+                } else {
+                    var tbl = document.querySelector('#the-list') || document.querySelector('table.wp-list-table tbody');
+                    if ( tbl ) tbl.appendChild(slideRow);
+                }
+                // Persist via AJAX
+                var params = new URLSearchParams({
+                    action: 'mini_assign_slide_parent',
+                    nonce: '<?php echo esc_js($nonce); ?>',
+                    slide_id: slideId,
+                    slideshow_id: slideshowId
+                });
+                fetch(ajaxurl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params
+                });
+            }
+
+            // Always show separator for orphan slides (also acts as a drop target)
+            var tbody = document.querySelector('#the-list') || document.querySelector('table.wp-list-table tbody');
+            if ( tbody ) {
+                var anyRow = tbody.querySelector('tr');
+                var colspan = anyRow ? anyRow.querySelectorAll('td,th').length : 2;
+                var sep = document.createElement('tr');
+                sep.className = 'mini-orphan-separator';
+                sep.innerHTML = '<td colspan="' + colspan + '" style="padding:6px 10px;background:#f0f0f0;border-top:2px solid #c3c4c7;color:#50575e;font-style:italic;cursor:default;"><?php echo esc_js(__('Slides without a parent slideshow', 'mini')); ?></td>';
+                // Insert before the first orphan, or append at the end
+                var firstOrphan = tbody.querySelector('tr.slide-parent-0');
+                if ( firstOrphan ) {
+                    tbody.insertBefore(sep, firstOrphan);
+                } else {
+                    tbody.appendChild(sep);
+                }
+                // Drop target: drop any slide onto the separator to unassign it
+                sep.addEventListener('dragover', function(e) {
+                    if ( !dragging || !dragging.classList.contains('type-slide') ) return;
+                    if ( isOrphan(dragging) ) return; // already orphan
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    sep.querySelector('td').style.background = '#dde';
+                });
+                sep.addEventListener('dragleave', function() {
+                    sep.querySelector('td').style.background = '#f0f0f0';
+                });
+                sep.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    sep.querySelector('td').style.background = '#f0f0f0';
+                    if ( !dragging || !dragging.classList.contains('type-slide') || isOrphan(dragging) ) return;
+                    assignParent(dragging, 0, sep.nextSibling || null);
+                    dragging = null;
+                    sourceGroup = null;
+                });
+            }
+
+            // Allow dropping any slide onto a slideshow row to assign/reassign its parent
+            document.querySelectorAll('tr.type-slideshow').forEach(function(swRow) {
+                swRow.addEventListener('dragover', function(e) {
+                    if ( !dragging || !dragging.classList.contains('type-slide') ) return;
+                    var slideshowId = parseInt(swRow.id.replace('post-', ''), 10);
+                    // Don't allow dropping onto the slide's current parent
+                    if ( dragging.classList.contains('slide-parent-' + slideshowId) ) return;
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    swRow.classList.add('mini-drag-over');
+                });
+                swRow.addEventListener('dragleave', function(e) {
+                    if ( !swRow.contains(e.relatedTarget) ) swRow.classList.remove('mini-drag-over');
+                });
+                swRow.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    swRow.classList.remove('mini-drag-over');
+                    if ( !dragging || !dragging.classList.contains('type-slide') ) return;
+                    var slideshowId = parseInt(swRow.id.replace('post-', ''), 10);
+                    if ( dragging.classList.contains('slide-parent-' + slideshowId) ) return;
+                    // Insert after the last slide already belonging to this slideshow
+                    var siblings = Array.from(swRow.parentNode.children);
+                    var insertBefore = null;
+                    var swIdx = siblings.indexOf(swRow);
+                    for ( var i = swIdx + 1; i < siblings.length; i++ ) {
+                        if ( !siblings[i].classList.contains('slide-parent-' + slideshowId) ) {
+                            insertBefore = siblings[i];
+                            break;
+                        }
+                    }
+                    if ( !insertBefore ) insertBefore = swRow.nextSibling;
+                    assignParent(dragging, slideshowId, insertBefore);
+                    dragging = null;
+                    sourceGroup = null;
+                });
+            });
 
             document.querySelectorAll('tr.type-slide').forEach(function(row) {
                 // Insert drag handle at the start of the title cell
@@ -198,7 +386,8 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
                     document.querySelectorAll('.mini-drag-over').forEach(function(r) {
                         r.classList.remove('mini-drag-over');
                     });
-                    if ( sourceGroup ) saveOrder(sourceGroup);
+                    // Only save order if the drop stayed within the same group (not a parent reassignment)
+                    if ( dragging && sourceGroup ) saveOrder(sourceGroup);
                     dragging = null;
                     sourceGroup = null;
                 });
@@ -243,6 +432,8 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
 if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
     add_action('init', function() {
         register_mini_post_type('event', 'Event', 'Events', 'dashicons-calendar');
+        register_mini_taxonomy('event_category', 'Category', 'Categories', 'event');
+        register_mini_tag_taxonomy('event_tag', 'event');
     });
 }
 
@@ -250,6 +441,8 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
 if (is_mini_option_enabled('mini_content_settings', 'mini_match')) {
     add_action('init', function() {
         register_mini_post_type('match', 'Match', 'Matches', 'dashicons-superhero');
+        register_mini_taxonomy('match_category', 'Category', 'Categories', 'match');
+        register_mini_tag_taxonomy('match_tag', 'match');
     });
 }
 
@@ -261,6 +454,9 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
         // Lesson is hierarchical for post_parent storage, but uses a custom parent meta box
         // (page_attributes=false) so we control the parent dropdown ourselves
         register_mini_post_type('lesson', 'Lesson', 'Lessons', 'dashicons-book', false, true, false);
+
+        register_mini_taxonomy('course_category', 'Category', 'Categories', ['course', 'lesson']);
+        register_mini_tag_taxonomy('course_tag', ['course', 'lesson']);
     });
 }
 /* END - Custom post type - COURSE */
@@ -363,8 +559,8 @@ function mini_lesson_parent_meta_box($post) {
     ?>
     <div class="mini-meta-row">
         <div class="mini-meta-field">
-            <label for="mini_lesson_parent"><?php esc_html_e('Parent Course', 'mini'); ?>:</label>
-            <select name="parent_id" id="mini_lesson_parent">
+            <label for="mini_lesson_parent_select"><?php esc_html_e('Parent Course', 'mini'); ?>:</label>
+            <select name="parent_id" id="mini_lesson_parent_select">
                 <option value="0"><?php esc_html_e('— No course —', 'mini'); ?></option>
                 <?php foreach ($courses as $course) : ?>
                 <option value="<?php echo esc_attr($course->ID); ?>"<?php selected($post->post_parent, $course->ID); ?>>
