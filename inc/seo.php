@@ -183,9 +183,9 @@ function mini_seo_render_tab_content( $current_tab ) {
 
     <div id="features" class="mini-seo-tab-content" style="display: <?php echo $current_tab === 'features' ? 'block' : 'none'; ?>;">
         <div class="boxes align-items-start">
-            <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-                <h4><?php esc_html_e('Enable SEO in contents', 'mini'); ?></h4>
-                <label for="mini_enable_seo" class="black-text">
+            <div class="box-100 p-2 grad-3-to-4 b-rad-5 box-shadow">
+                <h4 class="white-text"><?php esc_html_e('Enable SEO content features', 'mini'); ?></h4>
+                <label for="mini_enable_seo" class="white-text">
                     <input
                         type="checkbox"
                         id="mini_enable_seo"
@@ -196,7 +196,7 @@ function mini_seo_render_tab_content( $current_tab ) {
                     >
                     <?php esc_html_e('Enable SEO meta tags for pages, posts and custom content types.', 'mini'); ?>
                 </label>
-                <p class="S grey-text"><?php esc_html_e("When enabled, you'll be able to customize title, description, keywords, robots directives, and social media tags for each page/post.", 'mini'); ?></p>
+                <p class="S false-white-text"><?php esc_html_e("When enabled, you'll be able to customize title, description, keywords, robots directives, and social media tags for each page/post.", 'mini'); ?></p>
             </div>
         </div>
     </div>
@@ -233,7 +233,7 @@ function mini_seo_render_tab_content( $current_tab ) {
                 <div class="space"></div>
                 <div class="line"></div>
                 <div class="space-2"></div>
-                <button type="submit" class="btn second-color-btn" form="mini-refresh-sitemap-form">
+                <button type="submit" class="btn third-color-btn" form="mini-refresh-sitemap-form">
                     <?php esc_html_e('Update Sitemap Now', 'mini'); ?>
                 </button>
                 <p class="description">
@@ -250,7 +250,7 @@ function mini_seo_render_tab_content( $current_tab ) {
                 <label for="mini_robots_preview"><?php _e('Robots.txt Rules', 'mini'); ?></label>
                 <textarea id="mini_robots_preview" name="mini_seo_settings[robots_custom_rules]" rows="10" style="width: 100%; font-family: monospace;"><?php echo esc_textarea($robots_preview); ?></textarea>
                 <p class="S grey-text"><?php esc_html_e('Edit robots.txt directives directly here. When sitemap is enabled, the sitemap line is automatically enforced.', 'mini'); ?></p>
-                <button type="submit" class="btn second-color-btn-invert" form="mini-reset-robots-form" onclick="return confirm('Reset robots.txt rules to default?');">
+                <button type="submit" class="btn third-color-btn-invert" form="mini-reset-robots-form" onclick="return confirm('Reset robots.txt rules to default?');">
                     <?php esc_html_e('Reset robots.txt to default', 'mini'); ?>
                 </button>
             </div>

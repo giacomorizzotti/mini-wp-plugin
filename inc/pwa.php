@@ -64,13 +64,13 @@ function mini_pwa_section_callback( $args ) {
     <div class="boxes">
 
         <!-- Enable toggle -->
-        <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-            <h4><?php esc_html_e( 'Enable PWA', 'mini' ); ?></h4>
-            <label for="mini_pwa_enabled" class="black-text">
+        <div class="box-100 p-2 grad-3-to-4 b-rad-5 box-shadow">
+            <h4 class="white-text"><?php esc_html_e( 'Enable PWA', 'mini' ); ?></h4>
+            <label for="mini_pwa_enabled" class="white-text">
                 <input type="checkbox" id="mini_pwa_enabled" name="mini_pwa_settings[mini_pwa_enabled]" value="1" <?php checked( $enabled ); ?> class="me-1">
                 <?php esc_html_e( 'Activate the Progressive Web App features for this site.', 'mini' ); ?>
             </label>
-            <p class="S grey-text"><?php esc_html_e( 'When enabled, a manifest.json is served and a service worker is registered on all front-end pages. Requires HTTPS in production.', 'mini' ); ?></p>
+            <p class="S false-white-text"><?php esc_html_e( 'When enabled, a manifest.json is served and a service worker is registered on all front-end pages. Requires HTTPS in production.', 'mini' ); ?></p>
         </div>
 
         <!-- App identity -->

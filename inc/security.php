@@ -37,7 +37,7 @@ function mini_security_section_callback( $args ) {
     </p>
     <div class="boxes">
 
-        <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
             <h4 class=""><?php esc_html_e( 'Disable REST API for non-logged-in users', 'mini' ); ?></h4>
             <label for="mini_disable_rest_api" class="black-text">
                 <input type="checkbox" id="mini_disable_rest_api" name="mini_security_settings[mini_disable_rest_api]" value="1" <?php checked( $disable_rest ); ?> class="me-1">
@@ -46,7 +46,7 @@ function mini_security_section_callback( $args ) {
             <p class="S grey-text"><?php esc_html_e( 'Prevents user enumeration via /wp-json/wp/v2/users and reduces the exposed attack surface. Does not affect logged-in users or internal WordPress requests.', 'mini' ); ?></p>
         </div>
 
-        <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
+        <div class="box-50 p-2 white-bg b-rad-5 box-shadow">
             <h4 class=""><?php esc_html_e( 'Disable XML-RPC', 'mini' ); ?></h4>
             <label for="mini_disable_xmlrpc" class="black-text">
                 <input type="checkbox" id="mini_disable_xmlrpc" name="mini_security_settings[mini_disable_xmlrpc]" value="1" <?php checked( $disable_xmlrpc ); ?> class="me-1">

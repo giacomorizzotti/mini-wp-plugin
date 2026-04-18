@@ -243,13 +243,13 @@ function mini_gdpr_privacy_section_callback( $args ) {
     </p>
     <div class="boxes">
 
-        <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-            <h4 class=""><?php esc_html_e( 'Enable default Privacy Policy page', 'mini' ); ?></h4>
-            <label for="mini_gdpr_privacy_enabled" class="black-text">
+        <div class="box-100 p-2 blue-bg b-rad-5 box-shadow">
+            <h4 class="white-text"><?php esc_html_e( 'Enable Privacy Policy page', 'mini' ); ?></h4>
+            <label for="mini_gdpr_privacy_enabled" class="white-text">
                 <input type="checkbox" id="mini_gdpr_privacy_enabled" name="mini_gdpr_privacy_settings[mini_gdpr_privacy_enabled]" value="1" <?php checked( $enabled ); ?> class="me-1">
                 <?php esc_html_e( 'Create and populate a Privacy Policy page using the default UWA template.', 'mini' ); ?>
             </label>
-            <p class="S grey-text"><?php esc_html_e( 'Save your settings first, then click "Fetch from API" to create or refresh the page content.', 'mini' ); ?></p>
+            <p class="S false-white-text"><?php esc_html_e( 'Save your settings first, then click "Fetch from API" to create or refresh the page content.', 'mini' ); ?></p>
 
             <p class="S">
             <?php if ( $enabled && $page_id ) : ?>
@@ -257,7 +257,7 @@ function mini_gdpr_privacy_section_callback( $args ) {
                     <a href="<?php echo esc_url( get_permalink( $page_id ) ); ?>" target="_blank" class="btn white-text S" id="mini-gdpr-view-link"><?php echo esc_html( get_the_title( $page_id ) ); ?></a>
                     <a href="<?php echo esc_url( get_edit_post_link( $page_id ) ); ?>" target="_blank" class="btn warning-btn white-text S" id="mini-gdpr-edit-link"><?php esc_html_e( 'Edit', 'mini' ); ?></a>
                 </span>
-                <button type="button" id="mini-gdpr-fetch-privacy" class="btn third-color-btn-invert S"><?php esc_html_e( 'Fetch from API', 'mini' ); ?></button>
+                <button type="button" id="mini-gdpr-fetch-privacy" class="btn third-color-btn S"><?php esc_html_e( 'Fetch from API', 'mini' ); ?></button>
                 <span id="mini-gdpr-fetch-privacy-status"></span>
             <?php endif; ?>
             </p>
@@ -711,20 +711,20 @@ function mini_gdpr_cookie_section_callback( $args ) {
     </p>
     <div class="boxes">
 
-        <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
-            <h4><?php esc_html_e( 'Enable Cookie Policy page', 'mini' ); ?></h4>
-            <label for="mini_gdpr_cookie_enabled" class="black-text">
+        <div class="box-100 p-2 blue-bg b-rad-5 box-shadow">
+            <h4 class="white-text"><?php esc_html_e( 'Enable Cookie Policy page', 'mini' ); ?></h4>
+            <label for="mini_gdpr_cookie_enabled" class="white-text">
                 <input type="checkbox" id="mini_gdpr_cookie_enabled" name="mini_gdpr_cookie_settings[mini_gdpr_cookie_enabled]" value="1" <?php checked( $enabled ); ?> class="me-1">
                 <?php esc_html_e( 'Create and populate a Cookie Policy page from the list below.', 'mini' ); ?>
             </label>
-            <p class="S grey-text"><?php esc_html_e( 'Save your settings first, then click "Fetch from API" to create or refresh the page content.', 'mini' ); ?></p>
+            <p class="S false-white-text"><?php esc_html_e( 'Save your settings first, then click "Fetch from API" to create or refresh the page content.', 'mini' ); ?></p>
             <p class="S" >
             <?php if ( $enabled && $page_id ) : ?>
                 <span id="mini-gdpr-cookie-page-links">
                     <a href="<?php echo esc_url( get_permalink( $page_id ) ); ?>" target="_blank" class="btn white-text S" id="mini-gdpr-cookie-view-link"><?php echo esc_html( get_the_title( $page_id ) ); ?></a>
                     <a href="<?php echo esc_url( get_edit_post_link( $page_id ) ); ?>" class="btn warning-btn white-text S" id="mini-gdpr-cookie-edit-link"><?php esc_html_e( 'Edit', 'mini' ); ?></a>
                 </span>
-                <button type="button" id="mini-gdpr-fetch-cookie" class="btn third-color-btn-invert S"><?php esc_html_e( 'Fetch from API', 'mini' ); ?></button>
+                <button type="button" id="mini-gdpr-fetch-cookie" class="btn third-color-btn S"><?php esc_html_e( 'Fetch from API', 'mini' ); ?></button>
                 <span id="mini-gdpr-fetch-cookie-status" style="margin-left:10px;vertical-align:middle;"></span>
             <?php endif; ?>
             </p>

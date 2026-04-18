@@ -862,15 +862,15 @@ function mini_plugin_main_page_html() {
                         <div class="space-15"></div>
                         <?php if ($is_active) : ?>
                             <button class="btn S <?php echo esc_attr($button_class); ?>" <?php echo $button_disabled; ?>>
-                                <span class="iconoir-check-circle"></span> <?php echo esc_html($button_text); ?>
+                                <span class="iconoir-check" width="14px" height="14px" style="vertical-align: text-bottom;"></span> <?php echo esc_html($button_text); ?>
                             </button>
                         <?php elseif ($is_installed) : ?>
                             <a href="<?php echo esc_url($activate_url); ?>" class="btn S <?php echo esc_attr($button_class); ?>">
-                                <span class="iconoir-play-circle"></span> <?php echo esc_html($button_text); ?>
+                                <span class="iconoir-play" width="14px" height="14px" style="vertical-align: text-bottom;"></span> <?php echo esc_html($button_text); ?>
                             </a>
                         <?php else : ?>
                             <a href="<?php echo esc_url($install_url); ?>" class="btn S <?php echo esc_attr($button_class); ?>">
-                                <span class="iconoir-download-circle"></span> <?php echo esc_html($button_text); ?>
+                                <span class="iconoir-download" width="14px" height="14px" style="vertical-align: text-bottom;"></span> <?php echo esc_html($button_text); ?>
                             </a>
                         <?php endif; ?>
                     </div>
