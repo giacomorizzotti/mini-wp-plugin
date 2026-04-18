@@ -225,7 +225,7 @@ function mini_custom_welcome_panel() {
     $user_name = $current_user->display_name;
 
     ?>
-    <div class="boxes welcome-panel-content mini-second-grainy-grad b-rad-10 box-shadow">
+    <div class="boxes welcome-panel-content grad-3-to-4 b-rad-10 box-shadow">
         <div class="box-100 p-2 mini-welcome-panel">
             <h2 class="white-text regular mb-0 mini-welcome-header">
                 <?php
@@ -241,45 +241,65 @@ function mini_custom_welcome_panel() {
             </p>
             <div class="space-2"></div>
             <div class="mini-welcome-actions">
+
+                <a href="<?php echo esc_url(admin_url('post-new.php?post_type=page')); ?>" class="btn white-btn-invert transparent-bg white-text mini-welcome-button">
+                    &nbsp;<span class="dashicons dashicons-admin-page"></span>
+                    <?php _e('Add Page', 'mini'); ?>
+                </a>
+                
                 <?php
                 // Show buttons based on enabled post types
                 if (is_mini_option_enabled('mini_content_settings', 'mini_news')) {
                     echo '<a href="' . esc_url(admin_url('post-new.php?post_type=news')) . '" class="btn white-btn-invert transparent-bg white-text mini-welcome-button">';
-                    echo '<span class="dashicons dashicons-text-page"></span>';
+                    echo '<span class="dashicons dashicons-text-page"></span>&nbsp;';
                     echo __('Add News', 'mini');
                     echo '</a>';
                 }
 
                 if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
                     echo '<a href="' . esc_url(admin_url('post-new.php?post_type=event')) . '" class="btn white-btn-invert transparent-bg white-text mini-welcome-button">';
-                    echo '<span class="dashicons dashicons-calendar-alt"></span>';
+                    echo '<span class="dashicons dashicons-calendar-alt"></span>&nbsp;';
                     echo __('Add Event', 'mini');
                     echo '</a>';
                 }
 
                 if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
                     echo '<a href="' . esc_url(admin_url('post-new.php?post_type=course')) . '" class="btn white-btn-invert transparent-bg white-text mini-welcome-button">';
-                    echo '<span class="dashicons dashicons-welcome-learn-more"></span>';
+                    echo '<span class="dashicons dashicons-welcome-learn-more"></span>&nbsp;';
                     echo __('Add Course', 'mini');
+                    echo '</a>';
+                }
+                if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
+                    echo '<a href="' . esc_url(admin_url('post-new.php?post_type=lesson')) . '" class="btn white-btn-invert transparent-bg white-text mini-welcome-button">';
+                    echo '<span class="dashicons dashicons-welcome-learn-more"></span>&nbsp;';
+                    echo __('Add Lesson', 'mini');
+                    echo '</a>';
+                }
+
+                if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
+                    echo '<a href="' . esc_url(admin_url('post-new.php?post_type=slideshow')) . '" class="btn white-btn-invert transparent-bg white-text mini-welcome-button">';
+                    echo '<span class="dashicons dashicons-welcome-learn-more"></span>&nbsp;';
+                    echo __('Add Slideshow', 'mini');
+                    echo '</a>';
+                }
+                if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
+                    echo '<a href="' . esc_url(admin_url('post-new.php?post_type=slide')) . '" class="btn white-btn-invert transparent-bg white-text mini-welcome-button">';
+                    echo '<span class="dashicons dashicons-welcome-learn-more"></span>&nbsp;';
+                    echo __('Add Slide', 'mini');
                     echo '</a>';
                 }
 
                 // Show Add Post button only if blogging is not disabled
                 if (!is_mini_option_enabled('mini_blogging_settings', 'mini_disable_blogging')) {
                     echo '<a href="' . esc_url(admin_url('post-new.php')) . '" class="btn white-btn-invert transparent-bg white-text mini-welcome-button">';
-                    echo '<span class="dashicons dashicons-admin-post"></span>';
+                    echo '<span class="dashicons dashicons-admin-post"></span>&nbsp;';
                     echo __('Add Post', 'mini');
                     echo '</a>';
                 }
                 ?>
 
-                <a href="<?php echo esc_url(admin_url('post-new.php?post_type=page')); ?>" class="btn white-btn-invert transparent-bg white-text mini-welcome-button">
-                    <span class="dashicons dashicons-admin-page"></span>
-                    <?php _e('Add Page', 'mini'); ?>
-                </a>
-
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="btn white-btn-invert transparent-bg white-text mini-welcome-button" target="_blank">
-                    <span class="dashicons dashicons-visibility"></span>
+                <a href="<?php echo esc_url(home_url('/')); ?>" class="btn white-btn fourth-color-text mini-welcome-button" target="_blank">
+                    <span class="dashicons dashicons-visibility"></span>&nbsp;
                     <?php _e('View Site', 'mini'); ?>
                 </a>
 
