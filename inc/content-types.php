@@ -504,9 +504,8 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
     add_action('init', function() {
         register_mini_post_type('course', 'Course', 'Courses', 'dashicons-welcome-learn-more');
 
-        // Lesson is hierarchical for post_parent storage, but uses a custom parent meta box
-        // (page_attributes=false) so we control the parent dropdown ourselves
-        register_mini_post_type('lesson', 'Lesson', 'Lessons', 'dashicons-book', false, true, false);
+        // Lesson uses post_parent for course relationship (admin UI only), not for hierarchical URLs
+        register_mini_post_type('lesson', 'Lesson', 'Lessons', 'dashicons-book', false, false, false);
 
         register_mini_taxonomy('course_category', 'Category', 'Categories', ['course', 'lesson']);
         register_mini_tag_taxonomy('course_tag', ['course', 'lesson']);

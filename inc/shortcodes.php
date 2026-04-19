@@ -70,7 +70,7 @@ function mini_render_date_time_box($post_id, $cols=1, $wrapper_class = 'my-0', $
         $output .= '
                     <div class="time-box">
                         <p class="m-0">
-                            <span class="'.$second_box_color_class.' py-05 L bold"><i class="iconoir-clock S"></i> '.$event_time.'</span>
+                            <span class="'.$second_box_color_class.' py-05 L m-0 bold"><i class="iconoir-clock S"></i> '.$event_time.'</span>
                         </p>
                     </div>';
     }
@@ -401,32 +401,47 @@ add_shortcode('slider', 'get_slides_callback');
 add_shortcode('slideshow', 'get_slides_callback');
 
 /* EVENT Shortcodes */
-function get_next_event_callback($num = 1, $cols=3) {
+function get_next_event_callback($num = 1, $cols = 3, $opts = []) {
+    $upcoming_only = isset($opts['upcomingOnly']) ? (bool) $opts['upcomingOnly'] : true;
+    $category_id   = isset($opts['categoryId'])   ? absint($opts['categoryId'])  : 0;
+    $order         = isset($opts['order']) && strtoupper($opts['order']) === 'DESC' ? 'DESC' : 'ASC';
+    $show_location = isset($opts['showLocation'])  ? (bool) $opts['showLocation'] : true;
+
     $args = array(
         'posts_per_page' => absint($num),
-        'meta_key' => 'event_date',
-        'orderby' => 'meta_value',
-        'order' => 'DESC',
-        'post_type' => 'event',
-        'post_status' => 'publish',
-        'no_found_rows' => true,
+        'meta_key'       => 'event_date',
+        'orderby'        => 'meta_value',
+        'order'          => $order,
+        'post_type'      => 'event',
+        'post_status'    => 'publish',
+        'no_found_rows'  => true,
     );
+
+    if ($upcoming_only) {
+        $args['meta_query'] = [[
+            'key'     => 'event_date',
+            'value'   => date('Y-m-d'),
+            'compare' => '>=',
+            'type'    => 'DATE',
+        ]];
+    }
+
+    if ($category_id) {
+        $args['tax_query'] = [[
+            'taxonomy' => 'event_category',
+            'field'    => 'term_id',
+            'terms'    => $category_id,
+        ]];
+    }
+
     switch ($cols) {
-        case 1:
-            $box_class = 'box-100';
-            break;
-        case 2:
-            $box_class = 'box-50';
-            break;
-        case 3:
-            $box_class = 'box-33';
-            break;
-        case 4:
-            $box_class = 'box-25';
-            break;
-        default:
-            $box_class = 'box-33';
-            break;
+        case 1:  $box_class = 'box-100'; break;
+        case 2:  $box_class = 'box-50';  break;
+        case 3:  $box_class = 'box-33';  break;
+        case 4:  $box_class = 'box-25';  break;
+        case 5:  $box_class = 'box-20';  break;
+        case 6:  $box_class = 'box-16';  break;
+        default: $box_class = 'box-33';  break;
     }
     $query = new WP_Query($args);
     if ($query->have_posts()) :
@@ -436,9 +451,11 @@ function get_next_event_callback($num = 1, $cols=3) {
         <div class="boxes g-0">
         ';
         while ($query->have_posts()) : $query->the_post();
-            $to_come=false;
-            if ( get_post_meta(get_the_ID(), 'event_date') != null && get_post_meta(get_the_ID(), 'event_date')[0] >= date("Y-m-d H:i:s") ) { $to_come = True; }
-            if ( $n <= $num && $to_come == true ) {
+            $to_come = ! $upcoming_only || (
+                get_post_meta(get_the_ID(), 'event_date') != null &&
+                get_post_meta(get_the_ID(), 'event_date')[0] >= date('Y-m-d H:i:s')
+            );
+            if ( $n <= $num && $to_come ) {
                 $event_list .= '
             <div class="'.$box_class.'">';
                 if (get_the_post_thumbnail(get_the_ID())!=false):
@@ -461,7 +478,9 @@ function get_next_event_callback($num = 1, $cols=3) {
                     get_post_meta(get_the_ID(), 'event_date', true) != null ||
                     get_post_meta(get_the_ID(), 'event_time', true) != null) {
                     $event_list .= mini_render_date_time_box(get_the_ID(), 1, 'p-0', 'white-box', 'fw-box');
-                    $event_list .= mini_render_location_box(get_the_ID(), 1, 'p-0', 'white-box', 'fw-box');
+                    if ($show_location) {
+                        $event_list .= mini_render_location_box(get_the_ID(), 1, 'p-0', 'white-box', 'fw-box');
+                    }
                 }
                 if (
                     get_the_excerpt(get_the_ID()) != null ) {
@@ -476,17 +495,13 @@ function get_next_event_callback($num = 1, $cols=3) {
                             </div>
                     ';
                 }
-                if (get_the_post_thumbnail(get_the_ID())!=false):
                 $event_list .= '
                     </div>
                 </div>
-                ';
-                endif;
-                $event_list .= '
             </div>
                 ';
             }
-            if ($to_come == true) { $n++; }
+            if ($to_come) { $n++; }
         endwhile;
         wp_reset_postdata();
                 $event_list .= '
@@ -497,10 +512,192 @@ function get_next_event_callback($num = 1, $cols=3) {
     
     return '';
 }
-add_shortcode('next_event', function() { return get_next_event_callback(1, 1); });
-add_shortcode('next_events', function() { return get_next_event_callback(3, 3); });
+add_shortcode('next_event',    function() { return get_next_event_callback(1, 1); });
+add_shortcode('next_events',   function() { return get_next_event_callback(3, 3); });
 add_shortcode('next_3_events', function() { return get_next_event_callback(3, 3); });
 add_shortcode('next_4_events', function() { return get_next_event_callback(4, 2); });
+
+/* COURSE Shortcodes */
+
+/**
+ * Render a grid of course cards.
+ *
+ * @param int   $num  Number of courses to show.
+ * @param int   $cols Number of columns (1–3).
+ * @param array $opts {
+ *   showLocation bool  Show location box.      Default true.
+ *   showLessons  bool  List lessons in card.   Default false.
+ *   categoryId   int   Filter by taxonomy term. Default 0 (all).
+ *   order        string ASC|DESC by publish date. Default ASC.
+ * }
+ */
+function get_courses_callback( $num = 3, $cols = 3, $opts = [] ) {
+    $show_location = isset( $opts['showLocation'] ) ? (bool) $opts['showLocation'] : true;
+    $show_lessons  = isset( $opts['showLessons'] )  ? (bool) $opts['showLessons']  : false;
+    $category_id   = isset( $opts['categoryId'] )   ? absint( $opts['categoryId'] ) : 0;
+    $order         = isset( $opts['order'] ) && strtoupper( $opts['order'] ) === 'DESC' ? 'DESC' : 'ASC';
+
+    switch ( $cols ) {
+        case 1:  $box_class = 'box-100'; break;
+        case 2:  $box_class = 'box-50';  break;
+        case 3:  $box_class = 'box-33';  break;
+        default: $box_class = 'box-33';  break;
+    }
+
+    $args = [
+        'posts_per_page' => absint( $num ),
+        'orderby'        => 'date',
+        'order'          => $order,
+        'post_type'      => 'course',
+        'post_status'    => 'publish',
+        'no_found_rows'  => true,
+    ];
+
+    if ( $category_id ) {
+        $args['tax_query'] = [[
+            'taxonomy' => 'course_category',
+            'field'    => 'term_id',
+            'terms'    => $category_id,
+        ]];
+    }
+
+    $query = new WP_Query( $args );
+    if ( ! $query->have_posts() ) {
+        return '';
+    }
+
+    ob_start();
+    echo '<div class="boxes">';
+
+    while ( $query->have_posts() ) :
+        $query->the_post();
+        $post_id     = get_the_ID();
+        $has_thumb   = has_post_thumbnail();
+        $event_date  = get_post_meta( $post_id, 'event_date', true );
+        $event_end   = get_post_meta( $post_id, 'event_end_date', true );
+        $loc_name    = get_post_meta( $post_id, 'location_name', true );
+        $loc_address = get_post_meta( $post_id, 'location_address', true );
+        $has_meta    = $event_date || get_post_meta( $post_id, 'event_time', true ) || $loc_name || $loc_address;
+        ?>
+        <div class="<?php echo esc_attr( $box_class ); ?> my-0 p-0">
+            <div class="boxes justify-content-between">
+
+                <h2 class="box-100 entry-title m-0">
+                    <a href="<?php the_permalink(); ?>" rel="bookmark" class="black-text"><?php the_title(); ?></a>
+                </h2>
+
+                <?php if ( $has_meta ) : ?>
+                <div class="<?php echo $has_thumb ? 'box-60' : 'box-100'; ?> entry-content">
+
+                    <?php if ( $event_date ) :
+                        $formatters = get_italian_date_formatters();
+                        $ts = strtotime( $event_date );
+                    ?>
+                    <div class="date-box">
+                        <h3 class="m-0 label regular h6"><?php esc_html_e( 'Date', 'mini' ); ?></h3>
+                        <p class="L m-0">
+                            <span class="bold third-color-text">
+                                <?php echo esc_html( ucfirst( $formatters['day_name']->format( $ts ) ) ); ?>
+                            </span><br/>
+                            <span class="bold third-color-box b-rad-5">
+                                <?php echo esc_html( $formatters['day_number']->format( $ts ) ); ?>&nbsp;<?php echo esc_html( ucfirst( $formatters['month']->format( $ts ) ) ); ?>&nbsp;
+                                <span class="light false-white-text"><?php echo esc_html( $formatters['year']->format( $ts ) ); ?></span>
+                            </span>
+                        </p>
+                        <?php if ( $event_end ) :
+                            $ts_end = strtotime( $event_end );
+                        ?>
+                        <div class="space"></div>
+                        <h3 class="m-0 label regular h6"><?php esc_html_e( 'End date', 'mini' ); ?></h3>
+                        <p class="L m-0">
+                            <span class="bold third-color-text">
+                                <?php echo esc_html( ucfirst( $formatters['day_name']->format( $ts_end ) ) ); ?>
+                            </span><br/>
+                            <span class="bold third-color-box b-rad-5">
+                                <?php echo esc_html( $formatters['day_number']->format( $ts_end ) ); ?>&nbsp;<?php echo esc_html( ucfirst( $formatters['month']->format( $ts_end ) ) ); ?>&nbsp;
+                                <span class="light false-white-text"><?php echo esc_html( $formatters['year']->format( $ts_end ) ); ?></span></span>
+                        </p>
+                        <?php endif; ?>
+                    </div>
+                    <div class="space-2"></div>
+                    <?php endif; ?>
+
+                    <?php if ( $show_location && $loc_name ) : ?>
+                    <div class="location-box">
+                        <h3 class="m-0 label regular h6"><?php esc_html_e( 'Location', 'mini' ); ?></h3>
+                        <div class="space"></div>
+                        <p class="m-0 bold L"><?php echo esc_html( $loc_name ); ?></p>
+                        <?php if ( $loc_address ) : ?>
+                        <p class="m-0"><?php echo esc_html( $loc_address ); ?></p>
+                        <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if ( has_excerpt() ) : ?>
+                    <?php the_excerpt(); ?>
+                    <?php endif; ?>
+
+                    <p class="">
+                        <a href="<?php the_permalink(); ?>" class="btn fourth-color-btn"><?php esc_html_e( 'Read more', 'mini' ); ?></a>
+                    </p>
+
+                </div>
+                <?php endif; ?>
+
+                <?php if ( $has_thumb ) : ?>
+                <div class="box-40">
+                    <img src="<?php echo esc_url( get_the_post_thumbnail_url( $post_id ) ); ?>" class="img" />
+                </div>
+                <?php endif; ?>
+
+                <?php if ( $show_lessons ) :
+                    $lessons_q = new WP_Query( [
+                        'post_type'      => 'lesson',
+                        'meta_key'       => 'parent_course_id',
+                        'meta_value'     => $post_id,
+                        'orderby'        => 'date',
+                        'order'          => 'ASC',
+                        'posts_per_page' => -1,
+                        'post_status'    => 'publish',
+                        'no_found_rows'  => true,
+                    ] );
+                    if ( $lessons_q->have_posts() ) : ?>
+                <div class="box box-100 my-2">
+                    <h3 class="label regular"><?php esc_html_e( 'Lessons in this course', 'mini' ); ?></h3>
+                    <div class="space"></div>
+                    <div class="boxes">
+                    <?php while ( $lessons_q->have_posts() ) : $lessons_q->the_post();
+                        $l_date = get_post_meta( get_the_ID(), 'event_date', true );
+                    ?>
+                        <div class="box-20 box-shadow-light b-rad-5 p-15">
+                            <p class="bold L">
+                                <a href="<?php the_permalink(); ?>" class="fourth-color-text"><?php the_title(); ?></a>
+                            </p>
+                            <?php if ( $l_date ) : ?>
+                            <p class="S m-0 third-color-box"><?php echo esc_html( date_i18n( get_option( 'date_format' ), strtotime( $l_date ) ) ); ?></p>
+                            <?php endif; ?>
+                            <?php if ( has_excerpt() ) : ?>
+                            <p class="S"><?php the_excerpt(); ?></p>
+                            <?php endif; ?>
+                        </div>
+                    <?php endwhile; wp_reset_postdata(); ?>
+                    </div>
+                </div>
+                    <?php endif;
+                endif; ?>
+
+            </div>
+        </div>
+        <?php
+    endwhile;
+
+    wp_reset_postdata();
+    echo '</div>';
+    return ob_get_clean();
+}
+add_shortcode( 'courses',   function() { return get_courses_callback( 3, 3 ); } );
+add_shortcode( 'courses_2', function() { return get_courses_callback( 2, 2 ); } );
+add_shortcode( 'courses_4', function() { return get_courses_callback( 4, 2 ); } );
 
 /* MATCH Shortcodes */
 function get_next_match_callback($num = 1, $cols=3) {
@@ -628,3 +825,4 @@ add_shortcode('next_match', function() { return get_next_match_callback(1, 1); }
 add_shortcode('next_matches', function() { return get_next_match_callback(3, 3); });
 add_shortcode('next_3_matches', function() { return get_next_match_callback(3, 3); });
 add_shortcode('next_4_matches', function() { return get_next_match_callback(4, 2); });
+
