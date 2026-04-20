@@ -145,7 +145,7 @@ function mini_content_section_callback( $args ) {
             </label>
             <p class="mb-0" for="mini_slide">Enable the "Slideshow" content type to manage <u>slideshows</u> and <u>slides</u>.</p>
             <p class="mt-0">This option loads <i>mini</i> <b>slider.js</b> library.</p>
-            <p class="grey-text" for="mini_slide">Use <code class="XS">[slideshow slideshow="<span class="acid-green-text">slug</span>"]</code> shortcode to embed.</p>
+            <p class="grey-text" for="mini_slide">Use <code class="XS">[slideshow slideshow="<span class="acid-green-text">slug</span>"]</code> shortcode to embed or activate the slideshow <b>directly in page</b>.</p>
         </div>
         <div class="box-25 p-2 white-bg b-rad-5 box-shadow">
             <label for="mini_news" class="h5 bold bk-text">    
@@ -301,7 +301,7 @@ function mini_plugin_settings_pages() {
         'mini plugin - Settings',
         'Settings',
         'manage_options',
-        'mini-email',
+        'mini-general-settings',
         'mini_email_page_html',
         9
     );
@@ -884,98 +884,91 @@ function mini_plugin_main_page_html() {
         <div class="boxes">
             <div class="box-100 p-2 white-bg b-rad-5 box-shadow mb-2">
                 <div class="space"></div>
-                <img src="https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/img/brand/mini_logo_2.svg" alt="mini logo" style="max-width: 280px;" class="mb-2"/>
-                <h1 class="mb-0"><i>mini</i> is a frontend framework</h1>
-                <p class="mt-0">That allows you to build modern, responsive websites with ease.</p>
+                <img src="https://cdn.jsdelivr.net/gh/giacomorizzotti/mini/img/brand/mini_logo_2.svg" alt="mini logo" style="max-width: 220px;" class="mb-2"/>
+                <h1 class="mb-0"><i>mini</i> starts from a frontend framework...</h1>
+                <p class="mt-0">And become a suite of tools to build modern, responsive web applications, with ease.</p>
                 <p class="">
-                    <a href="https://mini.uwa.agency/" target="_blank" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Visit mini website', 'mini' ); ?></a>
+                    <a href="https://mini.uwa.agency/" target="_blank" rel="noopener noreferrer" class="S btn third-color-btn-invert fourth-color-text"><?php esc_html_e( 'Visit mini website', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="sep mb-2 light-grey-border"></div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0 h4"><i class="iconoir-cube third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;Contents</h2>
-                <p class="mt-0">Manage content types and related features.</p>
+                <h2 class="mb-0 h4"><i class="iconoir-cube third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;Contents</h2>
+                <p class="mt-0">Activate and manage <i>mini</i> content types.</p>
                 <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-content') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Contents', 'mini' ); ?></a>
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-content') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Content types', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0 h4"><i class="iconoir-search third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;SEO</h2>
-                <p class="mt-0">Manage SEO settings.</p>
+                <h2 class="mb-0 h4"><i class="iconoir-search third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;SEO</h2>
+                <p class="mt-0">Manage <i>mini</i> SEO settings and optimization.</p>
                 <p class="">
                     <a href="<?php echo esc_url( admin_url('admin.php?page=mini-seo') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'SEO', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0 h4"><i class="iconoir-settings third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;General settings</h2>
-                <p class="mt-0">Manage general settings.</p>
+                <h2 class="mb-0 h4"><i class="iconoir-settings third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;General settings</h2>
+                <p class="mt-0"><i>mini</i> general settings.</p>
                 <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-general') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'General', 'mini' ); ?></a>
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-general-settings') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'General settings', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0 h4"><i class="iconoir-shield third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;Security settings</h2>
-                <p class="mt-0">Manage security settings.</p>
+                <h2 class="mb-0 h4"><i class="iconoir-shield third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;Security settings</h2>
+                <p class="mt-0">Manage <i>mini</i> security settings.</p>
                 <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-security') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Security', 'mini' ); ?></a>
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-security') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Security settings', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0 h4"><i class="iconoir-task-list third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;Backoffice settings</h2>
-                <p class="mt-0">Manage backoffice settings.</p>
+                <h2 class="mb-0 h4"><i class="iconoir-edit-pencil third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;Backoffice settings</h2>
+                <p class="mt-0">Manage backoffice and Gutenberg editor settings.</p>
                 <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-backoffice') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Backoffice', 'mini' ); ?></a>
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-backoffice') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Backoffice and editor settings', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0 h4"><i class="iconoir-half-cookie third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;GDPR settings</h2>
-                <p class="mt-0">Manage GDPR settings.</p>
+                <h2 class="mb-0 h4"><i class="iconoir-half-cookie third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;GDPR settings</h2>
+                <p class="mt-0">Manage <i>mini</i> GDPR settings.</p>
                 <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-gdpr') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'GDPR', 'mini' ); ?></a>
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-gdpr') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'GDPR settings', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0 h4"><i class="iconoir-window-check third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;PWA settings</h2>
-                <p class="mt-0">Manage PWA (Progressive Web App) settings.</p>
+                <h2 class="mb-0 h4"><i class="iconoir-window-check third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;PWA settings</h2>
+                <p class="mt-0">Activate and manage <b>PWA</b> (<i>Progressive Web App</i>).</p>
                 <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-pwa') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'PWA', 'mini' ); ?></a>
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-pwa') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'PWA settings', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0 h4"><i class="iconoir-text third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;Fonts settings</h2>
+                <h2 class="mb-0 h4"><i class="iconoir-text third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;Fonts settings</h2>
                 <p class="mt-0">Manage fonts settings.</p>
                 <p class="">
                     <a href="<?php echo esc_url( admin_url('admin.php?page=mini-fonts') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Fonts', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0 h4"><i class="iconoir-stats-report third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;Analytics settings</h2>
+                <h2 class="mb-0 h4"><i class="iconoir-stats-report third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;Analytics settings</h2>
                 <p class="mt-0">Manage analytics settings.</p>
                 <p class="">
                     <a href="<?php echo esc_url( admin_url('admin.php?page=mini-analytics') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Analytics', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="sep mb-2 light-grey-border"></div>
-            <div class="box-20 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h3 class="mb-0 h4"><i class="iconoir-favourite-book third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;External libraries</h3>
-                <p class="mt-0">Manage external libraries settings.</p>
-                <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-ext-lib') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'External Libraries', 'mini' ); ?></a>
-                </p>
-            </div>
-            <div class="box-20 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h3 class="mb-0 h4"><i class="iconoir-spock-hand-gesture third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;Credits</h3>
-                <p class="mt-0">Manage credits settings.</p>
-                <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-credits') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Credits', 'mini' ); ?></a>
-                </p>
-            </div>
-            <div class="sep mb-2 light-grey-border"></div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0 h4"><i class="iconoir-building third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;Company settings</h2>
+                <h2 class="mb-0 h4"><i class="iconoir-building third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;Company settings</h2>
                 <p class="mt-0">Manage company settings.</p>
                 <p class="">
                     <a href="<?php echo esc_url( admin_url('admin.php?page=mini-company') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Company', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="sep mb-2 light-grey-border"></div>
+            <div class="box-20 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h3 class="mb-0 h5"><i class="iconoir-spock-hand-gesture third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;Credits</h3>
+                <p class="mt-0 S">Manage credits settings.</p>
+                <p class="">
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-credits') ); ?>" rel="noopener noreferrer" class="btn S fourth-color-btn white-text"><?php esc_html_e( 'Credits', 'mini' ); ?></a>
                 </p>
             </div>
         </div>
@@ -999,7 +992,7 @@ function mini_email_page_html() {
     settings_errors( 'mini_messages' );
 
     $current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'login';
-    $page_url    = admin_url( 'admin.php?page=mini-email' );
+    $page_url    = admin_url( 'admin.php?page=mini-general-settings' );
 
     ?>
     <div class="wrap">
@@ -1073,17 +1066,50 @@ function mini_backoffice_page_html() {
         add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
     }
     settings_errors( 'mini_messages' );
+
+    $current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'backoffice';
+    $page_url    = admin_url( 'admin.php?page=mini-backoffice' );
     ?>
     <div class="wrap">
         <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
 
-        <form action="options.php" method="post">
-            <?php
-            settings_fields( 'mini_backoffice' );
-            do_settings_sections( 'mini-backoffice' );
-            submit_button( 'Save Settings' );
-            ?>
-        </form>
+        <nav class="nav-tab-wrapper">
+            <a href="<?php echo esc_url( $page_url . '&tab=backoffice' ); ?>" class="nav-tab <?php echo $current_tab === 'backoffice' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Backoffice', 'mini' ); ?></a>
+            <a href="<?php echo esc_url( $page_url . '&tab=blocks' ); ?>" class="nav-tab <?php echo $current_tab === 'blocks' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Editor blocks', 'mini' ); ?></a>
+            <a href="<?php echo esc_url( $page_url . '&tab=ext-lib' ); ?>" class="nav-tab <?php echo $current_tab === 'ext-lib' ? 'nav-tab-active' : ''; ?>"><?php _e( 'External libraries', 'mini' ); ?></a>
+        </nav>
+
+        <?php if ( $current_tab === 'blocks' ) : ?>
+
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_blocks' );
+                do_settings_sections( 'mini-blocks' );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+
+        <?php elseif ( $current_tab === 'ext-lib' ) : ?>
+
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_ext_lib' );
+                do_settings_sections( 'mini-ext-lib' );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+
+        <?php else : ?>
+
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_backoffice' );
+                do_settings_sections( 'mini-backoffice' );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+
+        <?php endif; ?>
     </div>
     <?php
 }
