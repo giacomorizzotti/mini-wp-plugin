@@ -791,6 +791,12 @@ function mini_plugin_main_page_html() {
             'slug' => 'login-logout-menu',
             'file' => 'login-logout-menu/login-logout-menu.php',
             'description' => 'Add login/logout links to your navigation menus.'
+        ),
+        array(
+            'name' => 'OpenID Connect Generic',
+            'slug' => 'daggerhart-openid-connect-generic',
+            'file' => 'daggerhart-openid-connect-generic/openid-connect-generic.php',
+            'description' => 'Connect WordPress to an OpenID Connect identity provider for SSO authentication.'
         )
     );
     
