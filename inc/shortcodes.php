@@ -700,33 +700,43 @@ add_shortcode( 'courses_2', function() { return get_courses_callback( 2, 2 ); } 
 add_shortcode( 'courses_4', function() { return get_courses_callback( 4, 2 ); } );
 
 /* MATCH Shortcodes */
-function get_next_match_callback($num = 1, $cols=3) {
+function get_next_match_callback($num = 1, $cols = 3, $opts = []) {
+    $order       = isset($opts['order']) && strtoupper($opts['order']) === 'ASC' ? 'ASC' : 'DESC';
+    $category_id = isset($opts['categoryId']) ? absint($opts['categoryId']) : 0;
+
     $args = array(
         'posts_per_page' => absint($num),
-        'meta_key' => 'event_date',
-        'orderby' => 'meta_value',
-        'order' => 'DESC',
-        'post_type' => 'match',
-        'post_status' => 'publish',
-        'no_found_rows' => true,
+        'meta_key'       => 'event_date',
+        'orderby'        => 'meta_value',
+        'order'          => $order,
+        'post_type'      => 'match',
+        'post_status'    => 'publish',
+        'no_found_rows'  => true,
     );
+
+    if ($category_id) {
+        $args['tax_query'] = [[
+            'taxonomy' => 'match_category',
+            'field'    => 'term_id',
+            'terms'    => $category_id,
+        ]];
+    }
+
     $query = new WP_Query($args);
-    switch ($cols) {
-        case 1:
-            $box_class = 'box-100';
-            break;
-        case 2:
-            $box_class = 'box-50';
-            break;
-        case 3:
-            $box_class = 'box-33';
-            break;
-        case 4:
-            $box_class = 'box-25';
-            break;
-        default:
-            $box_class = 'box-33';
-            break;
+
+    // Accept string CSS values ('33', '50', etc.) or legacy integers
+    if (is_string($cols) && ctype_digit($cols)) {
+        $box_class = 'box-' . $cols;
+    } else {
+        switch ((int) $cols) {
+            case 1:  $box_class = 'box-100'; break;
+            case 2:  $box_class = 'box-50';  break;
+            case 3:  $box_class = 'box-33';  break;
+            case 4:  $box_class = 'box-25';  break;
+            case 5:  $box_class = 'box-20';  break;
+            case 6:  $box_class = 'box-16';  break;
+            default: $box_class = 'box-33';  break;
+        }
     }
     if ($query->have_posts()) :
         $n=1;
