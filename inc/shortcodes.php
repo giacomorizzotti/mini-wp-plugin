@@ -594,21 +594,26 @@ function get_courses_callback( $num = 3, $cols = 3, $opts = [] ) {
                         $ts = strtotime( $event_date );
                     ?>
                     <div class="date-box">
-                        <h3 class="m-0 label regular h6"><?php esc_html_e( 'Date', 'mini' ); ?></h3>
-                        <p class="L m-0">
-                            <span class="bold third-color-text">
-                                <?php echo esc_html( ucfirst( $formatters['day_name']->format( $ts ) ) ); ?>
-                            </span><br/>
-                            <span class="bold third-color-box b-rad-5">
-                                <?php echo esc_html( $formatters['day_number']->format( $ts ) ); ?>&nbsp;<?php echo esc_html( ucfirst( $formatters['month']->format( $ts ) ) ); ?>&nbsp;
-                                <span class="light false-white-text"><?php echo esc_html( $formatters['year']->format( $ts ) ); ?></span>
-                            </span>
+                        <h3 class="label light h5"><?php esc_html_e( 'Date', 'mini' ); ?></h3>
+                        <p class="m-0 bold third-color-text">
+                            <?php echo esc_html( ucfirst( $formatters['day_name']->format( $ts ) ) ); ?>
+                        </p>
+                        <p class="m-0 XL bold third-color-text">
+                            <?php echo esc_html( $formatters['day_number']->format( $ts ) ); ?>&nbsp;<?php echo esc_html( ucfirst( $formatters['month']->format( $ts ) ) ); ?>&nbsp;
+                            <span class="h5 light false-white-text"><?php echo esc_html( $formatters['year']->format( $ts ) ); ?></span>
                         </p>
                         <?php if ( $event_end ) :
                             $ts_end = strtotime( $event_end );
                         ?>
                         <div class="space"></div>
-                        <h3 class="m-0 label regular h6"><?php esc_html_e( 'End date', 'mini' ); ?></h3>
+                        <h3 class="label light h5"><?php esc_html_e( 'End date', 'mini' ); ?></h3>
+                        <p class="m-0 bold third-color-text">
+                            <?php echo esc_html( ucfirst( $formatters['day_name']->format( $ts_end ) ) ); ?>
+                        </p>
+                        <p class="m-0 XL bold third-color-text">
+                            <?php echo esc_html( $formatters['day_number']->format( $ts_end ) ); ?>&nbsp;<?php echo esc_html( ucfirst( $formatters['month']->format( $ts_end ) ) ); ?>&nbsp;
+                            <span class="h5 light false-white-text"><?php echo esc_html( $formatters['year']->format( $ts_end ) ); ?></span>
+                        </p>
                         <p class="L m-0">
                             <span class="bold third-color-text">
                                 <?php echo esc_html( ucfirst( $formatters['day_name']->format( $ts_end ) ) ); ?>
@@ -624,9 +629,8 @@ function get_courses_callback( $num = 3, $cols = 3, $opts = [] ) {
 
                     <?php if ( $show_location && $loc_name ) : ?>
                     <div class="location-box">
-                        <h3 class="m-0 label regular h6"><?php esc_html_e( 'Location', 'mini' ); ?></h3>
-                        <div class="space"></div>
-                        <p class="m-0 bold L"><?php echo esc_html( $loc_name ); ?></p>
+                        <h3 class="label light h5"><?php esc_html_e( 'Location', 'mini' ); ?></h3>
+                        <p class="m-0 bold XL"><?php echo esc_html( $loc_name ); ?></p>
                         <?php if ( $loc_address ) : ?>
                         <p class="m-0"><?php echo esc_html( $loc_address ); ?></p>
                         <?php endif; ?>
