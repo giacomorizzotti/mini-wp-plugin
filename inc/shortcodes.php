@@ -128,64 +128,73 @@ function mini_render_location_box($post_id, $cols=1, $wrapper_class = 'my-0', $n
 }
 
 /* NEWS Shortcodes */
-function get_latest_news_callback() {
+function get_latest_news_callback( $num = 3, $cols = 3, $opts = [] ) {
+    $category_id     = isset( $opts['categoryId'] )     ? absint( $opts['categoryId'] ) : 0;
+    $order           = isset( $opts['order'] ) && strtoupper( $opts['order'] ) === 'ASC' ? 'ASC' : 'DESC';
+    $highlight_first = isset( $opts['highlightFirst'] ) ? (bool) $opts['highlightFirst'] : false;
+
+    switch ( (int) $cols ) {
+        case 1:  $box_class = 'box-100'; break;
+        case 2:  $box_class = 'box-50';  break;
+        case 3:  $box_class = 'box-33';  break;
+        case 4:  $box_class = 'box-25';  break;
+        case 5:  $box_class = 'box-20';  break;
+        case 6:  $box_class = 'box-16';  break;
+        default: $box_class = 'box-33';  break;
+    }
+
     $args = array(
-        'posts_per_page' => 3,
-        'orderby' => 'post_date',
-        'order' => 'DESC',
-        'post_type' => 'news',
-        'post_status' => 'publish',
-        'no_found_rows' => true,
+        'posts_per_page'         => absint( $num ),
+        'orderby'                => 'post_date',
+        'order'                  => $order,
+        'post_type'              => 'news',
+        'post_status'            => 'publish',
+        'no_found_rows'          => true,
         'update_post_meta_cache' => false,
         'update_post_term_cache' => false,
     );
-    
-    $query = new WP_Query($args);
-    
-    if (!$query->have_posts()) {
+
+    if ( $category_id ) {
+        $args['tax_query'] = [[
+            'taxonomy' => 'news_category',
+            'field'    => 'term_id',
+            'terms'    => $category_id,
+        ]];
+    }
+
+    $query = new WP_Query( $args );
+
+    if ( ! $query->have_posts() ) {
         wp_reset_postdata();
         return '';
     }
-    
+
     ob_start();
-    ?>
-    <div class="boxes">
-    <?php
-    $n = 1;
-    while ($query->have_posts()) : $query->the_post();
-        $box_class = ($n === 1) ? 'box-100' : 'box-50';
-        $delay = ($n > 1) ? 'data-aos-delay="' . esc_attr(150 * ($n - 1)) . '"' : '';
-        $has_thumbnail = has_post_thumbnail();
-        $inner_box_class = $has_thumbnail ? 'box-50' : 'box-100';
-        ?>
-        <div class="<?php echo esc_attr($box_class); ?> my-0 p-0" data-aos="fade-up" <?php echo $delay; ?>>
-            <div class="boxes">
-                <?php if ($has_thumbnail) : ?>
-                    <div class="box-50">
-                        <a href="<?php the_permalink(); ?>"><?php the_post_thumbnail('large', ['class' => 'img']); ?></a>
-                    </div>
-                <?php endif; ?>
-                <div class="<?php echo esc_attr($inner_box_class); ?>">
-                    <h3>
-                        <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
-                    </h3>
-                    <p><?php the_excerpt(); ?></p>
-                    <p>
-                        <a href="<?php the_permalink(); ?>" class="btn"><?php esc_html_e('Read more', 'mini'); ?></a>
-                    </p>
-                </div>
-            </div>
-        </div>
-        <?php
+    echo '<div class="boxes">';
+    $n = 0;
+    while ( $query->have_posts() ) {
+        $query->the_post();
+        $item_class = ( $highlight_first && $n === 0 ) ? 'box-100' : $box_class;
+        echo '<div class="' . esc_attr( $item_class ) . '">';
+        get_template_part( 'template-parts/content', 'news', [ 'is_shortcode' => true ] );
+        echo '</div>';
         $n++;
-    endwhile;
-    ?>
-    </div>
-    <?php
+    }
+    echo '</div>';
     wp_reset_postdata();
+
     return ob_get_clean();
 }
-add_shortcode('latest_news', 'get_latest_news_callback');
+add_shortcode( 'latest_news', function( $atts ) {
+    $atts = shortcode_atts( [
+        'number'          => 3,
+        'cols'            => 3,
+        'highlight_first' => 0,
+    ], $atts, 'latest_news' );
+    return get_latest_news_callback( absint( $atts['number'] ), absint( $atts['cols'] ), [
+        'highlightFirst' => (bool) $atts['highlight_first'],
+    ] );
+} );
 
 /* POSTS archive-style Shortcodes */
 /**
@@ -443,79 +452,50 @@ function get_next_event_callback($num = 1, $cols = 3, $opts = []) {
         case 6:  $box_class = 'box-16';  break;
         default: $box_class = 'box-33';  break;
     }
+
     $query = new WP_Query($args);
-    if ($query->have_posts()) :
-        $n=1;
-        $event_list = '';
-        $event_list .= '
-        <div class="boxes g-0">
-        ';
-        while ($query->have_posts()) : $query->the_post();
-            $to_come = ! $upcoming_only || (
-                get_post_meta(get_the_ID(), 'event_date') != null &&
-                get_post_meta(get_the_ID(), 'event_date')[0] >= date('Y-m-d H:i:s')
-            );
-            if ( $n <= $num && $to_come ) {
-                $event_list .= '
-            <div class="'.$box_class.'">';
-                if (get_the_post_thumbnail(get_the_ID())!=false):
-                $event_list .= '
-                <div class="box-100 hh" style="background-image: url(\''.get_the_post_thumbnail_url(get_the_ID()).'\'); background-position: center; background-size: cover; background-repeat: no-repeat;">
-                    <div class="boxes align-content-start align-items-start">';
-                else:
-                $event_list .= '
-                <div class="box-100">
-                    <div class="boxes align-content-start align-items-start">';
-                endif;
-                $event_list .= '
-                            <div class="box-100 my-0 p-0">
-                                <h4 class="XL m-0 p-15 white-bg">
-                                    <a href="'.get_the_permalink().'" class="m-0 black-text">'.get_the_title().'</a>
-                                </h4>
-                            </div>
-                ';
-                if (
-                    get_post_meta(get_the_ID(), 'event_date', true) != null ||
-                    get_post_meta(get_the_ID(), 'event_time', true) != null) {
-                    $event_list .= mini_render_date_time_box(get_the_ID(), 1, 'p-0', 'white-box', 'fw-box');
-                    if ($show_location) {
-                        $event_list .= mini_render_location_box(get_the_ID(), 1, 'p-0', 'white-box', 'fw-box');
-                    }
-                }
-                if (
-                    get_the_excerpt(get_the_ID()) != null ) {
-                    $event_list .= '
-                            <div class="box-100 my-0 white-bg">
-                                <p class="S">'.get_the_excerpt(get_the_ID()).'</p>
-                            </div>
-                            <div class="box-100 p-0">
-                                <p class="m-0">
-                                    <a href="'.get_the_permalink().'" class="btn m-0">'.__('Event details', 'mini').'</a>
-                                </p>
-                            </div>
-                    ';
-                }
-                $event_list .= '
-                    </div>
-                </div>
-            </div>
-                ';
-            }
-            if ($to_come) { $n++; }
-        endwhile;
+
+    if ( ! $query->have_posts() ) {
         wp_reset_postdata();
-                $event_list .= '
-        </div>
-                ';
-        return $event_list;
-    endif;
-    
-    return '';
+        return '';
+    }
+
+    ob_start();
+    echo '<div class="boxes g-0">';
+    while ( $query->have_posts() ) {
+        $query->the_post();
+        echo '<div class="' . esc_attr( $box_class ) . '">';
+        get_template_part( 'template-parts/content', 'event', [
+            'is_shortcode'  => true,
+            'show_location' => $show_location,
+        ] );
+        echo '</div>';
+    }
+    echo '</div>';
+    wp_reset_postdata();
+
+    return ob_get_clean();
 }
-add_shortcode('next_event',    function() { return get_next_event_callback(1, 1); });
-add_shortcode('next_events',   function() { return get_next_event_callback(3, 3); });
-add_shortcode('next_3_events', function() { return get_next_event_callback(3, 3); });
-add_shortcode('next_4_events', function() { return get_next_event_callback(4, 2); });
+function mini_events_shortcode( $atts, $defaults = [] ) {
+    $atts = shortcode_atts( array_merge( [
+        'number'        => 3,
+        'cols'          => 3,
+        'order'         => 'ASC',
+        'category'      => 0,
+        'upcoming_only' => 1,
+        'show_location' => 1,
+    ], $defaults ), $atts, 'next_events' );
+    return get_next_event_callback( absint( $atts['number'] ), absint( $atts['cols'] ), [
+        'upcomingOnly' => (bool) $atts['upcoming_only'],
+        'categoryId'   => absint( $atts['category'] ),
+        'order'        => sanitize_key( $atts['order'] ),
+        'showLocation' => (bool) $atts['show_location'],
+    ] );
+}
+add_shortcode( 'next_event',    function( $atts ) { return mini_events_shortcode( $atts, [ 'number' => 1, 'cols' => 1 ] ); } );
+add_shortcode( 'next_events',   function( $atts ) { return mini_events_shortcode( $atts, [ 'number' => 3, 'cols' => 3 ] ); } );
+add_shortcode( 'next_3_events', function( $atts ) { return mini_events_shortcode( $atts, [ 'number' => 3, 'cols' => 3 ] ); } );
+add_shortcode( 'next_4_events', function( $atts ) { return mini_events_shortcode( $atts, [ 'number' => 4, 'cols' => 2 ] ); } );
 
 /* COURSE Shortcodes */
 
@@ -568,140 +548,39 @@ function get_courses_callback( $num = 3, $cols = 3, $opts = [] ) {
 
     ob_start();
     echo '<div class="boxes">';
-
-    while ( $query->have_posts() ) :
+    while ( $query->have_posts() ) {
         $query->the_post();
-        $post_id     = get_the_ID();
-        $has_thumb   = has_post_thumbnail();
-        $event_date  = get_post_meta( $post_id, 'event_date', true );
-        $event_end   = get_post_meta( $post_id, 'event_end_date', true );
-        $loc_name    = get_post_meta( $post_id, 'location_name', true );
-        $loc_address = get_post_meta( $post_id, 'location_address', true );
-        $has_meta    = $event_date || get_post_meta( $post_id, 'event_time', true ) || $loc_name || $loc_address;
-        ?>
-        <div class="<?php echo esc_attr( $box_class ); ?> my-0 p-0">
-            <div class="boxes justify-content-between">
-
-                <h2 class="box-100 entry-title m-0">
-                    <a href="<?php the_permalink(); ?>" rel="bookmark" class="black-text"><?php the_title(); ?></a>
-                </h2>
-
-                <?php if ( $has_meta ) : ?>
-                <div class="<?php echo $has_thumb ? 'box-60' : 'box-100'; ?> entry-content">
-
-                    <?php if ( $event_date ) :
-                        $formatters = get_italian_date_formatters();
-                        $ts = strtotime( $event_date );
-                    ?>
-                    <div class="date-box">
-                        <h3 class="label light h5"><?php esc_html_e( 'Date', 'mini' ); ?></h3>
-                        <p class="m-0 bold third-color-text">
-                            <?php echo esc_html( ucfirst( $formatters['day_name']->format( $ts ) ) ); ?>
-                        </p>
-                        <p class="m-0 XL bold third-color-text">
-                            <?php echo esc_html( $formatters['day_number']->format( $ts ) ); ?>&nbsp;<?php echo esc_html( ucfirst( $formatters['month']->format( $ts ) ) ); ?>&nbsp;
-                            <span class="h5 light false-white-text"><?php echo esc_html( $formatters['year']->format( $ts ) ); ?></span>
-                        </p>
-                        <?php if ( $event_end ) :
-                            $ts_end = strtotime( $event_end );
-                        ?>
-                        <div class="space"></div>
-                        <h3 class="label light h5"><?php esc_html_e( 'End date', 'mini' ); ?></h3>
-                        <p class="m-0 bold third-color-text">
-                            <?php echo esc_html( ucfirst( $formatters['day_name']->format( $ts_end ) ) ); ?>
-                        </p>
-                        <p class="m-0 XL bold third-color-text">
-                            <?php echo esc_html( $formatters['day_number']->format( $ts_end ) ); ?>&nbsp;<?php echo esc_html( ucfirst( $formatters['month']->format( $ts_end ) ) ); ?>&nbsp;
-                            <span class="h5 light false-white-text"><?php echo esc_html( $formatters['year']->format( $ts_end ) ); ?></span>
-                        </p>
-                        <p class="L m-0">
-                            <span class="bold third-color-text">
-                                <?php echo esc_html( ucfirst( $formatters['day_name']->format( $ts_end ) ) ); ?>
-                            </span><br/>
-                            <span class="bold third-color-box b-rad-5">
-                                <?php echo esc_html( $formatters['day_number']->format( $ts_end ) ); ?>&nbsp;<?php echo esc_html( ucfirst( $formatters['month']->format( $ts_end ) ) ); ?>&nbsp;
-                                <span class="light false-white-text"><?php echo esc_html( $formatters['year']->format( $ts_end ) ); ?></span></span>
-                        </p>
-                        <?php endif; ?>
-                    </div>
-                    <div class="space-2"></div>
-                    <?php endif; ?>
-
-                    <?php if ( $show_location && $loc_name ) : ?>
-                    <div class="location-box">
-                        <h3 class="label light h5"><?php esc_html_e( 'Location', 'mini' ); ?></h3>
-                        <p class="m-0 bold XL"><?php echo esc_html( $loc_name ); ?></p>
-                        <?php if ( $loc_address ) : ?>
-                        <p class="m-0"><?php echo esc_html( $loc_address ); ?></p>
-                        <?php endif; ?>
-                    </div>
-                    <?php endif; ?>
-
-                    <?php if ( has_excerpt() ) : ?>
-                    <?php the_excerpt(); ?>
-                    <?php endif; ?>
-
-                    <p class="">
-                        <a href="<?php the_permalink(); ?>" class="btn fourth-color-btn"><?php esc_html_e( 'Read more', 'mini' ); ?></a>
-                    </p>
-
-                </div>
-                <?php endif; ?>
-
-                <?php if ( $has_thumb ) : ?>
-                <div class="box-40">
-                    <img src="<?php echo esc_url( get_the_post_thumbnail_url( $post_id ) ); ?>" class="img" />
-                </div>
-                <?php endif; ?>
-
-                <?php if ( $show_lessons ) :
-                    $lessons_q = new WP_Query( [
-                        'post_type'      => 'lesson',
-                        'meta_key'       => 'parent_course_id',
-                        'meta_value'     => $post_id,
-                        'orderby'        => 'date',
-                        'order'          => 'ASC',
-                        'posts_per_page' => -1,
-                        'post_status'    => 'publish',
-                        'no_found_rows'  => true,
-                    ] );
-                    if ( $lessons_q->have_posts() ) : ?>
-                <div class="box box-100 my-2">
-                    <h3 class="label regular"><?php esc_html_e( 'Lessons in this course', 'mini' ); ?></h3>
-                    <div class="space"></div>
-                    <div class="boxes">
-                    <?php while ( $lessons_q->have_posts() ) : $lessons_q->the_post();
-                        $l_date = get_post_meta( get_the_ID(), 'event_date', true );
-                    ?>
-                        <div class="box-20 box-shadow-light b-rad-5 p-15">
-                            <p class="bold L">
-                                <a href="<?php the_permalink(); ?>" class="fourth-color-text"><?php the_title(); ?></a>
-                            </p>
-                            <?php if ( $l_date ) : ?>
-                            <p class="S m-0 third-color-box"><?php echo esc_html( date_i18n( get_option( 'date_format' ), strtotime( $l_date ) ) ); ?></p>
-                            <?php endif; ?>
-                            <?php if ( has_excerpt() ) : ?>
-                            <p class="S"><?php the_excerpt(); ?></p>
-                            <?php endif; ?>
-                        </div>
-                    <?php endwhile; wp_reset_postdata(); ?>
-                    </div>
-                </div>
-                    <?php endif;
-                endif; ?>
-
-            </div>
-        </div>
-        <?php
-    endwhile;
-
+        echo '<div class="' . esc_attr( $box_class ) . ' my-0 p-0">';
+        get_template_part( 'template-parts/content', 'course', [
+            'is_shortcode'  => true,
+            'show_location' => $show_location,
+            'show_lessons'  => $show_lessons,
+        ] );
+        echo '</div>';
+    }
     wp_reset_postdata();
     echo '</div>';
     return ob_get_clean();
 }
-add_shortcode( 'courses',   function() { return get_courses_callback( 3, 3 ); } );
-add_shortcode( 'courses_2', function() { return get_courses_callback( 2, 2 ); } );
-add_shortcode( 'courses_4', function() { return get_courses_callback( 4, 2 ); } );
+function mini_courses_shortcode( $atts, $defaults = [] ) {
+    $atts = shortcode_atts( array_merge( [
+        'number'        => 3,
+        'cols'          => 3,
+        'order'         => 'ASC',
+        'category'      => 0,
+        'show_location' => 1,
+        'show_lessons'  => 0,
+    ], $defaults ), $atts, 'courses' );
+    return get_courses_callback( absint( $atts['number'] ), absint( $atts['cols'] ), [
+        'categoryId'   => absint( $atts['category'] ),
+        'order'        => sanitize_key( $atts['order'] ),
+        'showLocation' => (bool) $atts['show_location'],
+        'showLessons'  => (bool) $atts['show_lessons'],
+    ] );
+}
+add_shortcode( 'courses',   function( $atts ) { return mini_courses_shortcode( $atts, [ 'number' => 3, 'cols' => 3 ] ); } );
+add_shortcode( 'courses_2', function( $atts ) { return mini_courses_shortcode( $atts, [ 'number' => 2, 'cols' => 2 ] ); } );
+add_shortcode( 'courses_4', function( $atts ) { return mini_courses_shortcode( $atts, [ 'number' => 4, 'cols' => 2 ] ); } );
 
 /* MATCH Shortcodes */
 function get_next_match_callback($num = 1, $cols = 3, $opts = []) {
@@ -742,101 +621,38 @@ function get_next_match_callback($num = 1, $cols = 3, $opts = []) {
             default: $box_class = 'box-33';  break;
         }
     }
-    if ($query->have_posts()) :
-        $n=1;
-        $match_list = '';
-        while ($query->have_posts()) : $query->the_post();
-            $to_come=false;
-            if ( get_post_meta(get_the_ID(), 'event_date') != null && get_post_meta(get_the_ID(), 'event_date')[0] >= date("Y-m-d") ) { $to_come = True; }
-            if ( $n <= $num && $to_come == true ) {
-                $match_list .= '
-<div class="boxes g-0">
-    <div class="'.$box_class.' my-0">
-        <div class="boxes align-content-start align-items-start">
-                ';
-				if (
-					get_post_meta(get_the_ID(), 'team_1')[0] != null && 
-					get_post_meta(get_the_ID(), 'team_2')[0] != null
-				) {
-                    $match_list .= '
-            <div class="box-zero-50 b-rad-20 oh box-shadow light-grey-border" style="max-width: 380px;">
-                <div class="boxes g-0">
-                    ';
-                    if ( get_post_meta(get_the_ID(), 'team_1_logo')[0] ) {
-                        $team_1_logo = get_post_meta(get_the_ID(), 'team_1_logo')[0];
-                        $match_list .= '
-                    <div class="box-100 p-15 pb-0 square fw-bg">
-                        <div class="oh" style="border-top-left-radius: 10px; border-top-right-radius: 10px; background-image: url(\''.$team_1_logo.'\'); background-position: center; background-size: cover; background-repeat: no-repeat; display: block; width: 100%; height: 100%;"></div>
-                    </div>
-                        ';
-                    }
-                    $team_1 = get_post_meta(get_the_ID(), 'team_1')[0];
-                    $match_list .= '
-                    <div class="box-100 black-bg">
-                        <h2 class="XL m-0 px-1"><a href="'.get_the_permalink().'" class="white-text">'.$team_1.'</a></h2>
-                    </div>
-                </div>
-            </div>
-            <div class="box-zero-50 b-rad-20 oh box-shadow light-grey-border" style="max-width: 380px;">
-                <div class="boxes g-0">
-                    ';
-                    if ( get_post_meta(get_the_ID(), 'team_2_logo')[0] ) {
-                        $team_2_logo = get_post_meta(get_the_ID(), 'team_2_logo')[0];
-                        $match_list .= '
-                    <div class="box-100 p-15 pb-0 square fw-bg">
-                        <div class="oh" style="border-top-left-radius: 10px; border-top-right-radius: 10px; background-image: url(\''.$team_2_logo.'\'); background-position: center; background-size: cover; background-repeat: no-repeat; display: block; width: 100%; height: 100%;"></div>
-                    </div>
-                        ';
-                    }
-                    $team_2 = get_post_meta(get_the_ID(), 'team_2')[0];
-                    $match_list .= '
-                    <div class="box-100 black-bg">
-                        <h2 class="XL m-0 px-1"><a href="'.get_the_permalink().'" class="white-text">'.$team_2.'</a></h2>
-                    </div>
-                    ';
-                    $match_list .= '
-                </div>
-            </div>
-            <div class="space"></div>
-                    ';
-                }
-                if (
-                    get_post_meta(get_the_ID(), 'event_date', true) != null ||
-                    get_post_meta(get_the_ID(), 'event_time', true) != null) {
-                    $match_list .= mini_render_date_time_box(get_the_ID(), 1, 'p-0', 'white-box', 'fw-box');
-                    $match_list .= mini_render_location_box(get_the_ID(), 1, 'p-0', 'white-box', 'fw-box');
-                }
-                $match_list .= '
-            <div class="box-100 p-0">
-                <p class=" m-0">
-                    <a href="'.get_the_permalink().'" class="btn m-0">'.__('Match details', 'mini').'</a>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-                ';
-            } else {
-        $match_list = '
-<div class="boxes g-0">
-    <div class="box-100">
-        <h4 class="m-0">
-            <p> <span class="wh-box">'.__('No matches to show', 'mini').'</span></p>
-        </h4>
-    </div>
-</div>
-        ';
-            }
-            if ($to_come == true) { $n++; }
-        endwhile;
+    if ( ! $query->have_posts() ) {
         wp_reset_postdata();
-        return $match_list;
-    endif;
-    
-    return '';
+        return '';
+    }
+
+    ob_start();
+    echo '<div class="boxes g-0">';
+    while ( $query->have_posts() ) {
+        $query->the_post();
+        echo '<div class="' . esc_attr( $box_class ) . ' my-0">';
+        get_template_part( 'template-parts/content', 'match', [ 'is_shortcode' => true ] );
+        echo '</div>';
+    }
+    echo '</div>';
+    wp_reset_postdata();
+
+    return ob_get_clean();
 }
-add_shortcode('next_match', function() { return get_next_match_callback(1, 1); });
-add_shortcode('next_matches', function() { return get_next_match_callback(3, 3); });
-add_shortcode('next_3_matches', function() { return get_next_match_callback(3, 3); });
-add_shortcode('next_4_matches', function() { return get_next_match_callback(4, 2); });
+function mini_matches_shortcode( $atts, $defaults = [] ) {
+    $atts = shortcode_atts( array_merge( [
+        'number'   => 3,
+        'cols'     => 3,
+        'order'    => 'DESC',
+        'category' => 0,
+    ], $defaults ), $atts, 'next_matches' );
+    return get_next_match_callback( absint( $atts['number'] ), absint( $atts['cols'] ), [
+        'categoryId' => absint( $atts['category'] ),
+        'order'      => sanitize_key( $atts['order'] ),
+    ] );
+}
+add_shortcode( 'next_match',    function( $atts ) { return mini_matches_shortcode( $atts, [ 'number' => 1, 'cols' => 1 ] ); } );
+add_shortcode( 'next_matches',  function( $atts ) { return mini_matches_shortcode( $atts, [ 'number' => 3, 'cols' => 3 ] ); } );
+add_shortcode( 'next_3_matches',function( $atts ) { return mini_matches_shortcode( $atts, [ 'number' => 3, 'cols' => 3 ] ); } );
+add_shortcode( 'next_4_matches',function( $atts ) { return mini_matches_shortcode( $atts, [ 'number' => 4, 'cols' => 2 ] ); } );
 
