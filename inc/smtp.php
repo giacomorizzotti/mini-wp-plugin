@@ -72,9 +72,9 @@ function mini_smtp_section_callback( $args ) {
         <div class="box-33 p-2 white-bg b-rad-5 box-shadow">
             <h4 class=""><?php esc_html_e( 'Encryption', 'mini' ); ?></h4>
             <select id="mini_smtp_encryption" name="mini_smtp_settings[mini_smtp_encryption]">
-                <option value="tls"  <?php selected( $encryption, 'tls' );  ?>>TLS / STARTTLS (recommended)</option>
-                <option value="ssl"  <?php selected( $encryption, 'ssl' );  ?>>SSL</option>
-                <option value=""     <?php selected( $encryption, '' );     ?>>None</option>
+                <option value="tls"  <?php selected( $encryption, 'tls' );  ?>><?php esc_html_e( 'TLS / STARTTLS (recommended)', 'mini' ); ?></option>
+                <option value="ssl"  <?php selected( $encryption, 'ssl' );  ?>><?php esc_html_e( 'SSL', 'mini' ); ?></option>
+                <option value=""     <?php selected( $encryption, '' );     ?>><?php esc_html_e( 'None', 'mini' ); ?></option>
             </select>
             <p class="S grey-text"><?php esc_html_e( 'Select the encryption method supported by your SMTP server.', 'mini' ); ?></p>
         </div>

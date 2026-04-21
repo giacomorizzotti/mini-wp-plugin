@@ -547,10 +547,10 @@ function mini_gdpr_create_cookie_page( $opts ) {
         $content .= '<p>' . esc_html( $type_descriptions[ $key ] ) . '</p>';
         $content .= '<table style="width:100%;border-collapse:collapse;">';
         $content .= '<thead><tr>';
-        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">Nome</th>';
-        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">Fornitore</th>';
-        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">Finalità</th>';
-        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">Durata</th>';
+        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">' . esc_html__( 'Name', 'mini' ) . '</th>';
+        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">' . esc_html__( 'Provider', 'mini' ) . '</th>';
+        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">' . esc_html__( 'Purpose', 'mini' ) . '</th>';
+        $content .= '<th style="text-align:left;padding:8px;border-bottom:2px solid #ddd;">' . esc_html__( 'Duration', 'mini' ) . '</th>';
         $content .= '</tr></thead><tbody>';
 
         foreach ( $group as $i => $cookie ) {

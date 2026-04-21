@@ -152,7 +152,7 @@ function mini_seo_render_tab_content( $current_tab ) {
                 <div class="sep my-2 light-grey-border"></div>
                 <label for="mini_seo_image"><?php _e('Default SEO Image', 'mini'); ?>:</label>
                 <div class="flex mb-1">
-                    <button type="button" class="btn my-0 me-1" id="mini_seo_default_image_button" style="width: 120px;">Select Image</button>
+                    <button type="button" class="btn my-0 me-1" id="mini_seo_default_image_button" style="width: 120px;"><?php esc_html_e( 'Select Image', 'mini' ); ?></button>
                     <input
                         type="url"
                         name="mini_seo_settings[default_image]"
@@ -680,7 +680,7 @@ function mini_seo_meta_box_callback($post) {
                     <div class="space-2"></div>
                     <label for="mini_seo_image" class="bold"><?php _e('Custom SEO Image', 'mini'); ?></label>
                     <div class="flex mb-1">
-                        <button type="button" class="btn my-0 me-1" id="mini_seo_image_button" style="width: 120px;">Select Image</button>
+                        <button type="button" class="btn my-0 me-1" id="mini_seo_image_button" style="width: 120px;"><?php esc_html_e( 'Select Image', 'mini' ); ?></button>
                         <input type="url" id="mini_seo_image" name="mini_seo_image" value="<?php echo esc_url($seo_image); ?>" placeholder="https://">
                     </div>
                     <p class="desc XS">
