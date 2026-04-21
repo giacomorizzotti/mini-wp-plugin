@@ -855,3 +855,61 @@ add_action('save_post_page', function($post_id) {
         delete_post_meta($post_id, '_mini_page_slideshow');
     }
 });
+
+/* START - Sync Main Menu items with content type toggles */
+/**
+ * Content types that should appear in the Main Menu when enabled.
+ * Key  = mini_content_settings option key.
+ * label = default menu item title.
+ * post_type = the registered post type slug (used for archive link + deduplication).
+ */
+function mini_content_type_menu_map() {
+    return [
+        'mini_news'   => [ 'label' => __('News', 'mini'),    'post_type' => 'news' ],
+        'mini_event'  => [ 'label' => __('Events', 'mini'),  'post_type' => 'event' ],
+        'mini_match'  => [ 'label' => __('Matches', 'mini'), 'post_type' => 'match' ],
+        'mini_course' => [ 'label' => __('Courses', 'mini'), 'post_type' => 'course' ],
+    ];
+}
+
+/**
+ * Add or remove a post-type-archive item in the Main Menu.
+ */
+function mini_sync_main_menu_item( $post_type, $label, $add ) {
+    $menu = wp_get_nav_menu_object( 'Main Menu' );
+    if ( ! $menu ) return;
+
+    $menu_id    = $menu->term_id;
+    $menu_items = wp_get_nav_menu_items( $menu_id, [ 'post_status' => 'any' ] ) ?: [];
+
+    // Remove any existing item pointing to this post type archive
+    foreach ( $menu_items as $item ) {
+        if ( $item->type === 'post_type_archive' && $item->object === $post_type ) {
+            wp_delete_post( $item->ID, true );
+        }
+    }
+
+    if ( $add ) {
+        wp_update_nav_menu_item( $menu_id, 0, [
+            'menu-item-title'  => $label,
+            'menu-item-type'   => 'post_type_archive',
+            'menu-item-object' => $post_type,
+            'menu-item-status' => 'publish',
+        ] );
+    }
+}
+
+/**
+ * Fires after mini_content_settings is saved.
+ * Syncs Main Menu items for each managed content type.
+ */
+add_action( 'update_option_mini_content_settings', function( $old_value, $new_value ) {
+    foreach ( mini_content_type_menu_map() as $key => $config ) {
+        $was_enabled = ! empty( $old_value[ $key ] );
+        $is_enabled  = ! empty( $new_value[ $key ] );
+        if ( $was_enabled !== $is_enabled ) {
+            mini_sync_main_menu_item( $config['post_type'], $config['label'], $is_enabled );
+        }
+    }
+}, 10, 2 );
+/* END - Sync Main Menu items with content type toggles */
