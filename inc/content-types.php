@@ -581,6 +581,16 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
  * so no custom save_post hook is needed.
  */
 add_action('add_meta_boxes', function() {
+    if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
+        add_meta_box(
+            'mini_event_poster',
+            __('Poster', 'mini'),
+            'mini_event_poster_meta_box',
+            'event',
+            'side',
+            'default'
+        );
+    }
     if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
         add_meta_box(
             'mini_slide_parent',
@@ -618,6 +628,56 @@ add_action('add_meta_boxes', function() {
         );
     }
 });
+
+function mini_event_poster_meta_box($post) {
+    $poster_id = (int) get_post_meta($post->ID, 'event_poster_id', true);
+    $poster_url = $poster_id ? wp_get_attachment_image_url($poster_id, 'medium') : '';
+    wp_nonce_field('mini_event_poster_save', 'mini_event_poster_nonce');
+    ?>
+    <div class="mini-meta-row">
+        <div class="mini-meta-field">
+            <div id="mini-event-poster-preview" style="<?php echo $poster_url ? '' : 'display:none;'; ?>margin-bottom:8px;">
+                <img src="<?php echo esc_url($poster_url); ?>" style="max-width:100%;height:auto;display:block;" />
+            </div>
+            <input type="hidden" name="event_poster_id" id="mini-event-poster-id" value="<?php echo esc_attr($poster_id ?: ''); ?>" />
+            <button type="button" class="button" id="mini-event-poster-select"><?php esc_html_e('Select / Upload Poster', 'mini'); ?></button>
+            <button type="button" class="button" id="mini-event-poster-remove" style="<?php echo $poster_url ? '' : 'display:none;'; ?>margin-top:4px;"><?php esc_html_e('Remove', 'mini'); ?></button>
+        </div>
+    </div>
+    <script>
+    (function() {
+        var frame;
+        document.getElementById('mini-event-poster-select').addEventListener('click', function(e) {
+            e.preventDefault();
+            if ( frame ) { frame.open(); return; }
+            frame = wp.media({
+                title: '<?php echo esc_js(__('Select Poster', 'mini')); ?>',
+                button: { text: '<?php echo esc_js(__('Use this image', 'mini')); ?>' },
+                multiple: false,
+                library: { type: 'image' }
+            });
+            frame.on('select', function() {
+                var att = frame.state().get('selection').first().toJSON();
+                document.getElementById('mini-event-poster-id').value = att.id;
+                var preview = document.getElementById('mini-event-poster-preview');
+                preview.querySelector('img').src = att.sizes && att.sizes.medium ? att.sizes.medium.url : att.url;
+                preview.style.display = '';
+                document.getElementById('mini-event-poster-remove').style.display = '';
+            });
+            frame.open();
+        });
+        document.getElementById('mini-event-poster-remove').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('mini-event-poster-id').value = '';
+            var preview = document.getElementById('mini-event-poster-preview');
+            preview.querySelector('img').src = '';
+            preview.style.display = 'none';
+            this.style.display = 'none';
+        });
+    })();
+    </script>
+    <?php
+}
 
 function mini_slide_parent_meta_box($post) {
     $slideshows = get_posts([
@@ -741,6 +801,28 @@ function mini_slideshow_layout_meta_box($post) {
     </div>
     <?php
 }
+
+add_action('admin_enqueue_scripts', function($hook) {
+    if ( ! is_mini_option_enabled('mini_content_settings', 'mini_event') ) return;
+    if ( ! in_array($hook, ['post.php', 'post-new.php'], true) ) return;
+    $screen = get_current_screen();
+    if ( $screen && $screen->post_type === 'event' ) {
+        wp_enqueue_media();
+    }
+});
+
+add_action('save_post_event', function($post_id) {
+    if ( ! isset($_POST['mini_event_poster_nonce']) ) return;
+    if ( ! wp_verify_nonce($_POST['mini_event_poster_nonce'], 'mini_event_poster_save') ) return;
+    if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return;
+    if ( ! current_user_can('edit_post', $post_id) ) return;
+
+    if ( ! empty($_POST['event_poster_id']) ) {
+        update_post_meta($post_id, 'event_poster_id', absint($_POST['event_poster_id']));
+    } else {
+        delete_post_meta($post_id, 'event_poster_id');
+    }
+});
 
 add_action('save_post_slideshow', function($post_id) {
     if ( ! isset($_POST['mini_slideshow_layout_nonce']) ) return;
