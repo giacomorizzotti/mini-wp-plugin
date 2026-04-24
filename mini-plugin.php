@@ -340,6 +340,15 @@ function mini_plugin_settings_pages() {
     );
     add_submenu_page(
         'mini',
+        'mini plugin - Contact Form',
+        'Contact Form',
+        'manage_options',
+        'mini-contact-form',
+        'mini_contact_form_page_html',
+        9
+    );
+    add_submenu_page(
+        'mini',
         'mini plugin - PWA',
         'PWA',
         'manage_options',
@@ -1826,4 +1835,8 @@ require_once plugin_dir_path(__FILE__) . 'inc/pwa.php';
 register_activation_hook( __FILE__, 'mini_pwa_activation_setup' );
 register_deactivation_hook( __FILE__, 'mini_pwa_deactivation_teardown' );
 /* END - PWA module include */
+
+/* START - Contact Form module include */
+require_once plugin_dir_path(__FILE__) . 'inc/contact-form.php';
+/* END - Contact Form module include */
 
