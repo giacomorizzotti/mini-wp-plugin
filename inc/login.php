@@ -132,6 +132,13 @@ function mini_login_block_wplogin() {
         return;
     }
 
+    // Allow logout, lostpassword, resetpass and other important actions
+    $allowed_actions = [ 'logout', 'lostpassword', 'resetpass', 'rp', 'register' ];
+    $action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
+    if ( in_array( $action, $allowed_actions, true ) ) {
+        return;
+    }
+
     // Redirect direct GET access to wp-login.php to home
     wp_safe_redirect( home_url(), 302 );
     exit;

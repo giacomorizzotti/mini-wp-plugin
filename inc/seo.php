@@ -521,6 +521,11 @@ function mini_add_seo_meta_boxes() {
         return;
     }
     
+    // Only show to editors, higher, or SEO experts
+    if ( ! current_user_can( 'edit_others_posts' ) && ! current_user_can( 'mini_manage_seo' ) ) {
+        return;
+    }
+    
     $post_types = ['post', 'page'];
     
     // Add custom post types if enabled

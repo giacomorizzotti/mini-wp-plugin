@@ -115,6 +115,37 @@ function mini_setup_default_menus() {
 register_activation_hook(__FILE__, 'mini_setup_default_menus');
 /* END - Default menus */
 
+/* START - SEO Expert role */
+function mini_register_seo_expert_role() {
+    $author = get_role( 'author' );
+    $caps   = $author ? $author->capabilities : array( 'read' => true );
+
+    // Allow viewing and editing all content (posts, pages, custom post types)
+    $caps['edit_others_posts']      = true;
+    $caps['edit_published_posts']   = true;
+    $caps['edit_pages']             = true;
+    $caps['edit_others_pages']      = true;
+    $caps['edit_published_pages']   = true;
+    $caps['read_private_posts']     = true;
+    $caps['read_private_pages']     = true;
+
+    // Custom SEO capability
+    $caps['mini_manage_seo'] = true;
+
+    $role = get_role( 'seo_expert' );
+    if ( $role ) {
+        // Update capabilities in case they changed
+        foreach ( $caps as $cap => $grant ) {
+            $role->add_cap( $cap, $grant );
+        }
+    } else {
+        add_role( 'seo_expert', __( 'SEO Expert', 'mini' ), $caps );
+    }
+}
+register_activation_hook( __FILE__, 'mini_register_seo_expert_role' );
+add_action( 'init', 'mini_register_seo_expert_role' ); // Ensure role and caps are always up to date
+/* END - SEO Expert role */
+
 /* START - content settings */
 function mini_content_settings_init() {
     register_setting( 'mini_content', 'mini_content_settings');
@@ -953,6 +984,13 @@ function mini_plugin_main_page_html() {
                 <p class="mt-0"><?php printf( esc_html__( 'Manage %s GDPR settings.', 'mini' ), '<i>mini</i>' ); ?></p>
                 <p class="">
                     <a href="<?php echo esc_url( admin_url('admin.php?page=mini-gdpr') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'GDPR settings', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0 h4"><i class="iconoir-mail third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'Contact form settings', 'mini' ); ?></h2>
+                <p class="mt-0"><?php printf( esc_html__( 'Manage %s contact form settings.', 'mini' ), '<i>mini</i>' ); ?></p>
+                <p class="">
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-contact-form') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Contact form settings', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
