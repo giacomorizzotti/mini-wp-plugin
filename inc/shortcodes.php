@@ -235,6 +235,81 @@ function mini_posts_shortcode( $atts ) {
 }
 add_shortcode( 'posts', 'mini_posts_shortcode' );
 
+/* POST GRID Shortcode */
+/**
+ * Renders a configurable grid of standard WordPress posts.
+ *
+ * Usage: [post_grid] [post_grid number="6" cols="3" order="DESC"]
+ *        [post_grid number="4" cols="2" category="5" highlight_first="1"]
+ */
+function mini_post_grid_callback( $num = 6, $cols = 3, $opts = [] ) {
+    $category_id     = isset( $opts['categoryId'] )     ? absint( $opts['categoryId'] )     : 0;
+    $order           = isset( $opts['order'] ) && strtoupper( $opts['order'] ) === 'ASC' ? 'ASC' : 'DESC';
+    $highlight_first = isset( $opts['highlightFirst'] ) ? (bool) $opts['highlightFirst']    : false;
+
+    switch ( (int) $cols ) {
+        case 1:  $box_class = 'box-100'; break;
+        case 2:  $box_class = 'box-50';  break;
+        case 3:  $box_class = 'box-33';  break;
+        case 4:  $box_class = 'box-25';  break;
+        case 5:  $box_class = 'box-20';  break;
+        case 6:  $box_class = 'box-16';  break;
+        default: $box_class = 'box-33';  break;
+    }
+
+    $args = [
+        'posts_per_page'         => absint( $num ),
+        'orderby'                => 'post_date',
+        'order'                  => $order,
+        'post_type'              => 'post',
+        'post_status'            => 'publish',
+        'no_found_rows'          => true,
+        'update_post_meta_cache' => false,
+        'update_post_term_cache' => false,
+    ];
+
+    if ( $category_id ) {
+        $args['cat'] = $category_id;
+    }
+
+    $query = new WP_Query( $args );
+
+    if ( ! $query->have_posts() ) {
+        wp_reset_postdata();
+        return '';
+    }
+
+    ob_start();
+    echo '<div class="boxes">';
+    $n = 0;
+    while ( $query->have_posts() ) {
+        $query->the_post();
+        $item_class = ( $highlight_first && $n === 0 ) ? 'box-100' : $box_class;
+        echo '<div class="' . esc_attr( $item_class ) . '">';
+        get_template_part( 'template-parts/content', 'post', [ 'is_shortcode' => true ] );
+        echo '</div>';
+        $n++;
+    }
+    echo '</div>';
+    wp_reset_postdata();
+
+    return ob_get_clean();
+}
+add_shortcode( 'post_grid', function( $atts ) {
+    $atts = shortcode_atts( [
+        'number'          => 6,
+        'cols'            => 3,
+        'order'           => 'DESC',
+        'category'        => 0,
+        'highlight_first' => 0,
+    ], $atts, 'post_grid' );
+    return mini_post_grid_callback( absint( $atts['number'] ), absint( $atts['cols'] ), [
+        'categoryId'     => absint( $atts['category'] ),
+        'order'          => sanitize_key( $atts['order'] ),
+        'highlightFirst' => (bool) $atts['highlight_first'],
+    ] );
+} );
+
 /* SLIDESHOW Shortcodes */
 function get_slides_callback($atts = []) {
     // Support both direct calls (legacy: first arg is a number) and shortcode attributes

@@ -815,12 +815,6 @@ function mini_plugin_main_page_html() {
             'description' => 'GDPR and CCPA compliance with cookie consent banner.'
         ),
         array(
-            'name' => 'Altcha',
-            'slug' => 'altcha-wordpress-next',
-            'file' => 'altcha-wordpress-next-2.5.0/altcha.php',
-            'description' => 'Anti-spam and bot protection.'
-        ),
-        array(
             'name' => 'Amministrazione Trasparente',
             'slug' => 'amministrazione-trasparente',
             'file' => 'amministrazione-trasparente/amministrazionetrasparente.php',

@@ -140,7 +140,18 @@ function mini_contact_form_shortcode( $atts ) {
     if ( empty( $opts['mini_cf_enabled'] ) ) {
         return '';
     }
-    
+
+    wp_enqueue_script(
+        'mini-altcha',
+        'https://cdn.jsdelivr.net/npm/altcha/dist/altcha.min.js',
+        [],
+        null,
+        true
+    );
+    // The Altcha widget is an ES module — without type="module" the custom
+    // element is never registered and the <altcha-widget> tag stays inert.
+    add_filter( 'script_loader_tag', 'mini_altcha_add_module_type', 10, 2 );
+
     $uid    = 'mini-cf-' . wp_unique_id();
     $fields = mini_get_contact_form_fields();
 
@@ -159,6 +170,12 @@ function mini_contact_form_handle_ajax() {
     if ( ! isset( $_POST['mini_cf_nonce'] ) ||
          ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['mini_cf_nonce'] ) ), 'mini_contact_form_nonce' ) ) {
         wp_send_json_error( [ 'message' => __( 'Security check failed. Please refresh the page and try again.', 'mini' ) ], 403 );
+    }
+
+    // Verify Altcha proof-of-work
+    $altcha_payload = sanitize_text_field( wp_unslash( $_POST['altcha'] ?? '' ) );
+    if ( empty( $altcha_payload ) || ! mini_altcha_verify_payload( $altcha_payload ) ) {
+        wp_send_json_error( [ 'message' => __( 'Security check failed. Please try again.', 'mini' ) ], 403 );
     }
 
     // Sanitize inputs
@@ -229,5 +246,113 @@ function mini_contact_form_handle_ajax() {
         wp_send_json_error( [ 'message' => $error_msg ] );
     }
 }
+
+/* START - Altcha (self-hosted proof-of-work) */
+
+/**
+ * Add type="module" to the Altcha widget script tag.
+ * Without it the browser won't register the <altcha-widget> custom element.
+ */
+function mini_altcha_add_module_type( $tag, $handle ) {
+    if ( 'mini-altcha' === $handle ) {
+        return str_replace( '<script ', '<script type="module" ', $tag );
+    }
+    return $tag;
+}
+
+/**
+ * Return (and lazily generate) the HMAC secret key for Altcha challenges.
+ * Stored in wp_options and never exposed to the client.
+ */
+function mini_altcha_get_secret_key() {
+    $key = get_option( 'mini_altcha_secret_key' );
+    if ( ! $key ) {
+        $key = bin2hex( random_bytes( 32 ) );
+        update_option( 'mini_altcha_secret_key', $key, false );
+    }
+    return $key;
+}
+
+/**
+ * AJAX endpoint: generate and return a fresh Altcha challenge.
+ */
+add_action( 'wp_ajax_nopriv_mini_altcha_challenge', 'mini_altcha_get_challenge' );
+add_action( 'wp_ajax_mini_altcha_challenge',        'mini_altcha_get_challenge' );
+
+function mini_altcha_get_challenge() {
+    $max_number = 100000;
+    $expires    = time() + 3600; // 1-hour TTL
+    $salt       = bin2hex( random_bytes( 12 ) ) . '?expires=' . $expires;
+    $number     = random_int( 0, $max_number );
+    $challenge  = hash( 'sha256', $salt . $number );
+    $signature  = hash_hmac( 'sha256', $challenge, mini_altcha_get_secret_key() );
+
+    wp_send_json( [
+        'algorithm'  => 'SHA-256',
+        'challenge'  => $challenge,
+        'maxnumber'  => $max_number,
+        'salt'       => $salt,
+        'signature'  => $signature,
+    ] );
+}
+
+/**
+ * Verify the Altcha payload (base64-encoded JSON) submitted by the widget.
+ *
+ * Checks:
+ *  1. JSON is well-formed and all required fields are present.
+ *  2. Challenge has not expired (TTL encoded in the salt).
+ *  3. SHA-256(salt + number) matches the challenge (proof-of-work).
+ *  4. HMAC-SHA-256(challenge, secret_key) matches the signature (origin).
+ *
+ * @param  string $payload_b64 Value of the 'altcha' POST field.
+ * @return bool
+ */
+function mini_altcha_verify_payload( $payload_b64 ) {
+    // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+    $json = base64_decode( $payload_b64, true );
+    if ( false === $json ) {
+        return false;
+    }
+
+    $data = json_decode( $json, true );
+    if ( ! is_array( $data ) ) {
+        return false;
+    }
+
+    $algorithm = $data['algorithm'] ?? '';
+    $challenge = $data['challenge'] ?? '';
+    $number    = $data['number']    ?? null;
+    $salt      = $data['salt']      ?? '';
+    $signature = $data['signature'] ?? '';
+
+    if ( 'SHA-256' !== $algorithm || '' === $challenge || null === $number
+         || '' === $salt || '' === $signature ) {
+        return false;
+    }
+
+    // Check expiry embedded in salt (?expires=<unix_timestamp>)
+    if ( preg_match( '/[?&]expires=(\d+)/', $salt, $m ) ) {
+        if ( time() > (int) $m[1] ) {
+            return false; // challenge expired
+        }
+    }
+
+    // Verify proof-of-work
+    $expected_challenge = hash( 'sha256', $salt . $number );
+    if ( ! hash_equals( $expected_challenge, $challenge ) ) {
+        return false;
+    }
+
+    // Verify HMAC signature to confirm this challenge was issued by us
+    $expected_sig = hash_hmac( 'sha256', $challenge, mini_altcha_get_secret_key() );
+    if ( ! hash_equals( $expected_sig, $signature ) ) {
+        return false;
+    }
+
+    return true;
+}
+
+/* END - Altcha (self-hosted proof-of-work) */
 
 /* END - Contact Form */
