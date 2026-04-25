@@ -640,8 +640,8 @@ function mini_event_poster_meta_box($post) {
                 <img src="<?php echo esc_url($poster_url); ?>" style="max-width:100%;height:auto;display:block;" />
             </div>
             <input type="hidden" name="event_poster_id" id="mini-event-poster-id" value="<?php echo esc_attr($poster_id ?: ''); ?>" />
-            <button type="button" class="button" id="mini-event-poster-select"><?php esc_html_e('Select / Upload Poster', 'mini'); ?></button>
-            <button type="button" class="button" id="mini-event-poster-remove" style="<?php echo $poster_url ? '' : 'display:none;'; ?>margin-top:4px;"><?php esc_html_e('Remove', 'mini'); ?></button>
+            <button type="button" class="btn" id="mini-event-poster-select"><?php esc_html_e('Select / Upload Poster', 'mini'); ?></button>
+            <button type="button" class="btn" id="mini-event-poster-remove" style="<?php echo $poster_url ? '' : 'display:none;'; ?>margin-top:4px;"><?php esc_html_e('Remove', 'mini'); ?></button>
         </div>
     </div>
     <script>

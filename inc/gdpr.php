@@ -791,7 +791,7 @@ function mini_gdpr_cookie_section_callback( $args ) {
                         <td style="padding:6px 8px;"><?php echo esc_html( $d['purpose'] ); ?></td>
                         <td style="padding:6px 8px;"><?php echo esc_html( $d['duration'] ); ?></td>
                         <td style="padding:6px 8px;">
-                            <button type="button" class="button button-primary mini-cookie-detect-add"
+                            <button type="button" class="btn mini-cookie-detect-add"
                                 data-name="<?php echo esc_attr( $d['name'] ); ?>"
                                 data-type="<?php echo esc_attr( $d['type'] ); ?>"
                                 data-provider="<?php echo esc_attr( $d['provider'] ); ?>"
@@ -804,7 +804,7 @@ function mini_gdpr_cookie_section_callback( $args ) {
                 </tbody>
             </table>
             <div style="margin-top:10px;">
-                <button type="button" id="mini-cookie-add-all-detected" class="button"><?php esc_html_e( 'Add all', 'mini' ); ?></button>
+                <button type="button" id="mini-cookie-add-all-detected" class="btn"><?php esc_html_e( 'Add all', 'mini' ); ?></button>
             </div>
         </div>
         <?php endif; ?>
@@ -838,14 +838,14 @@ function mini_gdpr_cookie_section_callback( $args ) {
                         <td style="padding:4px 8px;"><input type="text" name="mini_gdpr_cookie_settings[mini_gdpr_cookies][<?php echo $i; ?>][provider]" value="<?php echo esc_attr( $cookie['provider'] ); ?>" placeholder="Google" style="width:100%;"></td>
                         <td style="padding:4px 8px;"><input type="text" name="mini_gdpr_cookie_settings[mini_gdpr_cookies][<?php echo $i; ?>][purpose]" value="<?php echo esc_attr( $cookie['purpose'] ); ?>" placeholder="<?php esc_attr_e( 'Tracks unique visitors', 'mini' ); ?>" style="width:100%;"></td>
                         <td style="padding:4px 8px;"><input type="text" name="mini_gdpr_cookie_settings[mini_gdpr_cookies][<?php echo $i; ?>][duration]" value="<?php echo esc_attr( $cookie['duration'] ); ?>" placeholder="2 years" style="width:100%;"></td>
-                        <td style="padding:4px 8px;"><button type="button" class="button mini-cookie-remove" title="<?php esc_attr_e( 'Remove', 'mini' ); ?>" style="color:#b00;">&times;</button></td>
+                        <td style="padding:4px 8px;"><button type="button" class="btn mini-cookie-remove" title="<?php esc_attr_e( 'Remove', 'mini' ); ?>" style="color:#b00;">&times;</button></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>
             </table>
 
             <div style="margin-top:12px;">
-                <button type="button" id="mini-cookie-add" class="button"><?php esc_html_e( '+ Add cookie', 'mini' ); ?></button>
+                <button type="button" id="mini-cookie-add" class="btn"><?php esc_html_e( '+ Add cookie', 'mini' ); ?></button>
             </div>
         </div>
 
@@ -881,7 +881,7 @@ function mini_gdpr_cookie_section_callback( $args ) {
                 '<td style="padding:4px 8px;"><input type="text" name="mini_gdpr_cookie_settings[mini_gdpr_cookies][' + idx + '][provider]" value="" placeholder="Google" style="width:100%;"></td>' +
                 '<td style="padding:4px 8px;"><input type="text" name="mini_gdpr_cookie_settings[mini_gdpr_cookies][' + idx + '][purpose]" value="" placeholder="<?php echo esc_js( __( 'Tracks unique visitors', 'mini' ) ); ?>" style="width:100%;"></td>' +
                 '<td style="padding:4px 8px;"><input type="text" name="mini_gdpr_cookie_settings[mini_gdpr_cookies][' + idx + '][duration]" value="" placeholder="2 years" style="width:100%;"></td>' +
-                '<td style="padding:4px 8px;"><button type="button" class="button mini-cookie-remove" title="<?php echo esc_js( __( 'Remove', 'mini' ) ); ?>" style="color:#b00;">&times;</button></td>';
+                '<td style="padding:4px 8px;"><button type="button" class="btn mini-cookie-remove" title="<?php echo esc_js( __( 'Remove', 'mini' ) ); ?>" style="color:#b00;">&times;</button></td>';
             tbody.appendChild(tr);
         });
 
@@ -906,7 +906,7 @@ function mini_gdpr_cookie_section_callback( $args ) {
                 '<td style="padding:4px 8px;"><input type="text" name="mini_gdpr_cookie_settings[mini_gdpr_cookies][' + idx + '][provider]" value="' + provider.replace(/"/g,'&quot;') + '" placeholder="Google" style="width:100%;"></td>' +
                 '<td style="padding:4px 8px;"><input type="text" name="mini_gdpr_cookie_settings[mini_gdpr_cookies][' + idx + '][purpose]" value="' + purpose.replace(/"/g,'&quot;') + '" placeholder="<?php echo esc_js( __( 'Tracks unique visitors', 'mini' ) ); ?>" style="width:100%;"></td>' +
                 '<td style="padding:4px 8px;"><input type="text" name="mini_gdpr_cookie_settings[mini_gdpr_cookies][' + idx + '][duration]" value="' + duration.replace(/"/g,'&quot;') + '" placeholder="2 years" style="width:100%;"></td>' +
-                '<td style="padding:4px 8px;"><button type="button" class="button mini-cookie-remove" title="<?php echo esc_js( __( 'Remove', 'mini' ) ); ?>" style="color:#b00;">&times;</button></td>';
+                '<td style="padding:4px 8px;"><button type="button" class="btn mini-cookie-remove" title="<?php echo esc_js( __( 'Remove', 'mini' ) ); ?>" style="color:#b00;">&times;</button></td>';
             tbody.appendChild(tr);
             // Hide the detected row and disable its button
             var detectedRow = document.getElementById('mini-detected-' + name);

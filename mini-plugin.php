@@ -387,6 +387,15 @@ function mini_plugin_settings_pages() {
         'mini_pwa_page_html',
         9
     );
+    add_submenu_page(
+        'mini',
+        'mini plugin - User',
+        'User',
+        'manage_options',
+        'mini-user',
+        'mini_user_page_html',
+        9
+    );
 }
 add_action( 'admin_menu', 'mini_plugin_settings_pages' );
 /* END - mini menu */
@@ -821,18 +830,6 @@ function mini_plugin_main_page_html() {
             'description' => 'Italian public administration transparency compliance.'
         ),
         array(
-            'name' => 'Dashboard Widgets Suite',
-            'slug' => 'dashboard-widgets-suite',
-            'file' => 'dashboard-widgets-suite/dashboard-widgets.php',
-            'description' => 'Customize your WordPress dashboard with useful widgets.'
-        ),
-        array(
-            'name' => 'Login Logout Menu',
-            'slug' => 'login-logout-menu',
-            'file' => 'login-logout-menu/login-logout-menu.php',
-            'description' => 'Add login/logout links to your navigation menus.'
-        ),
-        array(
             'name' => 'OpenID Connect Generic',
             'slug' => 'daggerhart-openid-connect-generic',
             'file' => 'daggerhart-openid-connect-generic/openid-connect-generic.php',
@@ -875,7 +872,7 @@ function mini_plugin_main_page_html() {
                             $button_text = __('Active', 'mini');
                             $button_class = 'light-grey-btn grey-text';
                             $button_disabled = 'disabled';
-                            $status_color = 'success-text success-border';
+                            $status_color = 'success-text border success-border';
                             $status = __('Active', 'mini');
                         } elseif ($is_installed) {
                             $activate_url = wp_nonce_url(
@@ -885,7 +882,7 @@ function mini_plugin_main_page_html() {
                             $button_text = __('Activate', 'mini');
                             $button_class = 'success-btn white-text';
                             $button_disabled = '';
-                            $status_color = 'grey-text grey-border';
+                            $status_color = 'grey-text border grey-border';
                             $status = __('Installed', 'mini');
                         } else {
                             $install_url = wp_nonce_url(
@@ -893,9 +890,9 @@ function mini_plugin_main_page_html() {
                                 'install-plugin_' . $plugin['slug']
                             );
                             $button_text = __('Install', 'mini');
-                            $button_class = 'success-btn';
+                            $button_class = 'info-btn white-text';
                             $button_disabled = '';
-                            $status_color = 'grey-text grey-border';
+                            $status_color = 'grey-text border grey-border';
                             $status = __('Not installed', 'mini');
                         }
                     ?>
@@ -994,6 +991,14 @@ function mini_plugin_main_page_html() {
                     <a href="<?php echo esc_url( admin_url('admin.php?page=mini-pwa') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'PWA settings', 'mini' ); ?></a>
                 </p>
             </div>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0 h4"><i class="iconoir-user third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'User settings', 'mini' ); ?></h2>
+                <p class="mt-0"><?php printf( esc_html__( 'Manage %s user settings.', 'mini' ), '<i>mini</i>' ); ?></p>
+                <p class="">
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-user') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'User settings', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="sep mb-2 light-grey-border"></div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
                 <h2 class="mb-0 h4"><i class="iconoir-text third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'Fonts settings', 'mini' ); ?></h2>
                 <p class="mt-0"><?php esc_html_e( 'Manage fonts settings.', 'mini' ); ?></p>
@@ -1243,6 +1248,32 @@ function mini_gdpr_page_html() {
 }
 /* END - GDPR page */
 
+/* START - User page */
+function mini_user_page_html() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    if ( isset( $_GET['settings-updated'] ) ) {
+        add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
+    }
+    settings_errors( 'mini_messages' );
+    ?>
+    <div class="wrap">
+        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+
+        <form action="options.php" method="post">
+            <?php
+            settings_fields( 'mini_user' );
+            do_settings_sections( 'mini-user' );
+            submit_button( 'Save Settings' );
+            ?>
+        </form>
+    </div>
+    <?php
+}
+/* END - User page */
+
 /* START - Content types module include */
 require_once plugin_dir_path(__FILE__) . 'inc/content-types.php';
 /* END - Content types module include */
@@ -1479,7 +1510,7 @@ function teams_box_html( $post, $meta ){
                     <label for="team_1_logo" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team one logo', 'mini'); ?>:</label>
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
                         <input type="text" id="team_1_logo" name="team_1_logo" value="<?php echo esc_attr($team_1_logo_value); ?>" style="flex: 1;"/>
-                        <button type="button" class="button" id="team_1_logo_button"><?php _e('Select Image', 'mini'); ?></button>
+                        <button type="button" class="btn" id="team_1_logo_button"><?php _e('Select Image', 'mini'); ?></button>
                     </div>
                     <?php if ($team_1_logo_value): ?>
                     <div id="team_1_logo_preview" style="margin-top: 0.5rem;">
@@ -1510,7 +1541,7 @@ function teams_box_html( $post, $meta ){
                     <label for="team_2_logo" style="margin-bottom: 0.5rem; display: block;"><?php _e('Team two logo', 'mini'); ?>:</label>
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
                         <input type="text" id="team_2_logo" name="team_2_logo" value="<?php echo esc_attr($team_2_logo_value); ?>" style="flex: 1;"/>
-                        <button type="button" class="button" id="team_2_logo_button"><?php _e('Select Image', 'mini'); ?></button>
+                        <button type="button" class="btn" id="team_2_logo_button"><?php _e('Select Image', 'mini'); ?></button>
                     </div>
                     <?php if ($team_2_logo_value): ?>
                     <div id="team_2_logo_preview" style="margin-top: 0.5rem;">
@@ -1871,4 +1902,8 @@ register_deactivation_hook( __FILE__, 'mini_pwa_deactivation_teardown' );
 /* START - Contact Form module include */
 require_once plugin_dir_path(__FILE__) . 'inc/contact-form.php';
 /* END - Contact Form module include */
+
+/* START - User module include */
+require_once plugin_dir_path(__FILE__) . 'inc/user.php';
+/* END - User module include */
 

@@ -5,6 +5,37 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+/* START - Submissions database */
+
+function mini_cf_create_submissions_table() {
+    global $wpdb;
+    $table_name      = $wpdb->prefix . 'mini_cf_submissions';
+    $charset_collate = $wpdb->get_charset_collate();
+    $sql             = "CREATE TABLE $table_name (
+        id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        submitted_at datetime NOT NULL,
+        name varchar(100) NOT NULL DEFAULT '',
+        surname varchar(100) NOT NULL DEFAULT '',
+        email varchar(200) NOT NULL DEFAULT '',
+        phone varchar(50) NOT NULL DEFAULT '',
+        message text NOT NULL,
+        consent tinyint(1) NOT NULL DEFAULT 0,
+        PRIMARY KEY (id)
+    ) $charset_collate;";
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    dbDelta( $sql );
+}
+
+add_action( 'admin_init', function() {
+    if ( get_option( 'mini_cf_db_version' ) === '1.0' ) {
+        return;
+    }
+    mini_cf_create_submissions_table();
+    update_option( 'mini_cf_db_version', '1.0', false );
+} );
+
+/* END - Submissions database */
+
 /* Settings */
 
 function mini_contact_form_settings_init() {
@@ -105,25 +136,82 @@ function mini_contact_form_section_callback( $args ) {
 
 /* Admin page */
 
+add_action( 'admin_init', 'mini_cf_handle_submission_deletes' );
+function mini_cf_handle_submission_deletes() {
+    if ( ! isset( $_GET['page'] ) || 'mini-contact-form' !== $_GET['page'] ) {
+        return;
+    }
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    // Handle single-row delete
+    if ( isset( $_GET['action'], $_GET['id'] ) && 'delete' === $_GET['action'] ) {
+        $id = absint( $_GET['id'] );
+        if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'mini_cf_delete_' . $id ) ) {
+            wp_die( esc_html__( 'Security check failed.', 'mini' ) );
+        }
+        global $wpdb;
+        $wpdb->delete( $wpdb->prefix . 'mini_cf_submissions', [ 'id' => $id ], [ '%d' ] );
+        wp_safe_redirect( add_query_arg( [ 'page' => 'mini-contact-form', 'tab' => 'submissions', 'deleted' => '1' ], admin_url( 'admin.php' ) ) );
+        exit;
+    }
+
+    // Handle delete-all
+    if ( isset( $_POST['mini_cf_delete_all_nonce'] ) ) {
+        if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['mini_cf_delete_all_nonce'] ) ), 'mini_cf_delete_all' ) ) {
+            wp_die( esc_html__( 'Security check failed.', 'mini' ) );
+        }
+        global $wpdb;
+        $table = $wpdb->prefix . 'mini_cf_submissions';
+        $wpdb->query( "TRUNCATE TABLE `{$table}`" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+        wp_safe_redirect( add_query_arg( [ 'page' => 'mini-contact-form', 'tab' => 'submissions', 'deleted' => 'all' ], admin_url( 'admin.php' ) ) );
+        exit;
+    }
+}
+
 function mini_contact_form_page_html() {
     if ( ! current_user_can( 'manage_options' ) ) {
         return;
     }
+
     if ( isset( $_GET['settings-updated'] ) ) {
         add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
     }
+    if ( isset( $_GET['deleted'] ) ) {
+        $msg = 'all' === $_GET['deleted']
+            ? __( 'All submissions deleted.', 'mini' )
+            : __( 'Submission deleted.', 'mini' );
+        add_settings_error( 'mini_messages', 'mini_message', $msg, 'updated' );
+    }
     settings_errors( 'mini_messages' );
+
+    $current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'settings';
+    $page_url    = admin_url( 'admin.php?page=mini-contact-form' );
     ?>
     <div class="wrap">
         <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-        <br/>
-        <form action="options.php" method="post">
-            <?php
-            settings_fields( 'mini_contact_form' );
-            do_settings_sections( 'mini-contact-form' );
-            submit_button( 'Save Settings' );
-            ?>
-        </form>
+
+        <nav class="nav-tab-wrapper">
+            <a href="<?php echo esc_url( $page_url . '&tab=settings' ); ?>" class="nav-tab <?php echo 'settings' === $current_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'mini' ); ?></a>
+            <a href="<?php echo esc_url( $page_url . '&tab=submissions' ); ?>" class="nav-tab <?php echo 'submissions' === $current_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Submissions', 'mini' ); ?></a>
+        </nav>
+
+        <?php if ( 'submissions' === $current_tab ) : ?>
+
+            <?php mini_cf_render_submissions_tab( $page_url ); ?>
+
+        <?php else : ?>
+
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_contact_form' );
+                do_settings_sections( 'mini-contact-form' );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+
+        <?php endif; ?>
     </div>
     <?php
 }
@@ -185,20 +273,52 @@ function mini_contact_form_handle_ajax() {
     $phone   = sanitize_text_field( wp_unslash( $_POST['mini_cf_phone']   ?? '' ) );
     $message = sanitize_textarea_field( wp_unslash( $_POST['mini_cf_message'] ?? '' ) );
 
-    // Validate required fields
-    if ( empty( $name ) || empty( $surname ) || empty( $email ) ) {
-        wp_send_json_error( [ 'message' => __( 'Please fill in all required fields.', 'mini' ) ] );
-    }
+    // Collect per-field validation errors
+    $field_errors = [];
 
-    if ( ! is_email( $email ) ) {
-        wp_send_json_error( [ 'message' => __( 'Please enter a valid email address.', 'mini' ) ] );
+    if ( empty( $name ) ) {
+        $field_errors['mini_cf_name'] = __( 'Name is required.', 'mini' );
+    }
+    if ( empty( $surname ) ) {
+        $field_errors['mini_cf_surname'] = __( 'Surname is required.', 'mini' );
+    }
+    if ( empty( $email ) ) {
+        $field_errors['mini_cf_email'] = __( 'Email is required.', 'mini' );
+    } elseif ( ! is_email( $email ) ) {
+        $field_errors['mini_cf_email'] = __( 'Please enter a valid email address.', 'mini' );
+    }
+    if ( ! empty( $phone ) && ! preg_match( '/^\+?[\d\s\-().]{6,20}$/', $phone ) ) {
+        $field_errors['mini_cf_phone'] = __( 'Please enter a valid phone number.', 'mini' );
     }
 
     // Check GDPR consent if required
     $opts = get_option( 'mini_contact_form_settings', [] );
     if ( ! empty( $opts['mini_cf_gdpr_consent'] ) && empty( $_POST['mini_cf_consent'] ) ) {
-        wp_send_json_error( [ 'message' => __( 'You must accept the Privacy Policy to proceed.', 'mini' ) ] );
+        $field_errors['mini_cf_consent'] = __( 'You must accept the Privacy Policy to proceed.', 'mini' );
     }
+
+    if ( ! empty( $field_errors ) ) {
+        wp_send_json_error( [
+            'message' => __( 'Please correct the errors below.', 'mini' ),
+            'fields'  => $field_errors,
+        ] );
+    }
+
+    // Save submission to database
+    global $wpdb;
+    $wpdb->insert(
+        $wpdb->prefix . 'mini_cf_submissions',
+        [
+            'submitted_at' => current_time( 'mysql' ),
+            'name'         => $name,
+            'surname'      => $surname,
+            'email'        => $email,
+            'phone'        => $phone,
+            'message'      => $message,
+            'consent'      => ! empty( $_POST['mini_cf_consent'] ) ? 1 : 0,
+        ],
+        [ '%s', '%s', '%s', '%s', '%s', '%s', '%d' ]
+    );
 
     // Build and send email
     $to      = ! empty( $opts['mini_cf_recipient_email'] ) ? $opts['mini_cf_recipient_email'] : get_option( 'admin_email' );
@@ -354,5 +474,98 @@ function mini_altcha_verify_payload( $payload_b64 ) {
 }
 
 /* END - Altcha (self-hosted proof-of-work) */
+
+/* START - Submissions tab */
+
+function mini_cf_render_submissions_tab( $page_url ) {
+    global $wpdb;
+    $table        = $wpdb->prefix . 'mini_cf_submissions';
+    $per_page     = 20;
+    $current_page = max( 1, absint( $_GET['paged'] ?? 1 ) );
+    $offset       = ( $current_page - 1 ) * $per_page;
+
+    // phpcs:disable WordPress.DB.DirectDatabaseQuery
+    $total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
+    $rows  = $wpdb->get_results(
+        $wpdb->prepare( "SELECT * FROM `{$table}` ORDER BY submitted_at DESC LIMIT %d OFFSET %d", $per_page, $offset )
+    );
+    // phpcs:enable WordPress.DB.DirectDatabaseQuery
+
+    $total_pages = max( 1, (int) ceil( $total / $per_page ) );
+    ?>
+    <br>
+    <?php if ( $total > 0 ) : ?>
+
+        <form method="post" class="mb-1 flex align-items-center">
+            <?php wp_nonce_field( 'mini_cf_delete_all', 'mini_cf_delete_all_nonce' ); ?>
+            <button type="submit" class="danger-btn"
+                onclick="return confirm('<?php esc_attr_e( 'Delete all submissions? This cannot be undone.', 'mini' ); ?>')">
+                <?php esc_html_e( 'Delete all submissions', 'mini' ); ?>
+            </button>
+            <span class="">
+                <?php
+                /* translators: %d: total number of submissions */
+                printf( esc_html__( '%d submission(s) recorded.', 'mini' ), $total );
+                ?>
+            </span>
+        </form>
+
+        <table class="wp-list-table widefat fixed striped">
+            <thead>
+                <tr>
+                    <th scope="col" style="width: 160px;"><?php esc_html_e( 'Date', 'mini' ); ?></th>
+                    <th scope="col" style="width: 200px;"><?php esc_html_e( 'Name', 'mini' ); ?></th>
+                    <th scope="col" style="width: 220px;"><?php esc_html_e( 'Email', 'mini' ); ?></th>
+                    <th scope="col" style="width: 160px;"><?php esc_html_e( 'Phone', 'mini' ); ?></th>
+                    <th scope="col"><?php esc_html_e( 'Message', 'mini' ); ?></th>
+                    <th scope="col" style="width: 100px;"><?php esc_html_e( 'Consent', 'mini' ); ?></th>
+                    <th scope="col" style="width: 120px;"><?php esc_html_e( 'Actions', 'mini' ); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ( $rows as $row ) : ?>
+                <tr>
+                    <td><?php echo esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $row->submitted_at ) ) ); ?></td>
+                    <td><?php echo esc_html( $row->name . ' ' . $row->surname ); ?></td>
+                    <td><a href="mailto:<?php echo esc_attr( $row->email ); ?>"><?php echo esc_html( $row->email ); ?></a></td>
+                    <td><?php echo esc_html( $row->phone ); ?></td>
+                    <td title="<?php echo esc_attr( $row->message ); ?>"><?php echo esc_html( wp_trim_words( $row->message, 15, '…' ) ); ?></td>
+                    <td><?php echo $row->consent ? '&#10003;' : '&mdash;'; ?></td>
+                    <td>
+                        <a href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'page' => 'mini-contact-form', 'tab' => 'submissions', 'action' => 'delete', 'id' => $row->id ], admin_url( 'admin.php' ) ), 'mini_cf_delete_' . $row->id ) ); ?>"
+                           onclick="return confirm('<?php esc_attr_e( 'Delete this submission?', 'mini' ); ?>')"
+                           class="btn danger-btn S white-text">
+                            <?php esc_html_e( 'Delete', 'mini' ); ?>
+                        </a>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+
+        <?php if ( $total_pages > 1 ) : ?>
+        <div class="tablenav bottom">
+            <div class="tablenav-pages">
+                <?php
+                echo paginate_links( [
+                    'base'      => esc_url( add_query_arg( 'paged', '%#%', $page_url . '&tab=submissions' ) ),
+                    'format'    => '',
+                    'current'   => $current_page,
+                    'total'     => $total_pages,
+                    'prev_text' => '&laquo;',
+                    'next_text' => '&raquo;',
+                ] );
+                ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
+    <?php else : ?>
+        <p><?php esc_html_e( 'No submissions yet.', 'mini' ); ?></p>
+    <?php endif; ?>
+    <?php
+}
+
+/* END - Submissions tab */
 
 /* END - Contact Form */

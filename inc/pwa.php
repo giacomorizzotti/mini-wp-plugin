@@ -129,7 +129,7 @@ function mini_pwa_section_callback( $args ) {
             <h4><?php esc_html_e( 'Icon 192×192', 'mini' ); ?></h4>
             <div style="display:flex; gap: 0.5rem; align-items: center;">
                 <input type="text" id="mini_pwa_icon_192" name="mini_pwa_settings[mini_pwa_icon_192]" value="<?php echo esc_attr( $icon_192 ); ?>" class="large-text mini-pwa-icon-url" data-preview="mini_pwa_icon_192_preview">
-                <button type="button" class="button mini-pwa-media-upload" data-target="mini_pwa_icon_192"><?php esc_html_e( 'Select', 'mini' ); ?></button>
+                <button type="button" class="btn mini-pwa-media-upload" data-target="mini_pwa_icon_192"><?php esc_html_e( 'Select', 'mini' ); ?></button>
             </div>
             <?php if ( $icon_192 ) : ?>
                 <img id="mini_pwa_icon_192_preview" src="<?php echo esc_url( $icon_192 ); ?>" style="margin-top:0.5rem; width:48px; height:48px; object-fit:contain;" alt="">
@@ -143,7 +143,7 @@ function mini_pwa_section_callback( $args ) {
             <h4><?php esc_html_e( 'Icon 512×512', 'mini' ); ?></h4>
             <div style="display:flex; gap: 0.5rem; align-items: center;">
                 <input type="text" id="mini_pwa_icon_512" name="mini_pwa_settings[mini_pwa_icon_512]" value="<?php echo esc_attr( $icon_512 ); ?>" class="large-text mini-pwa-icon-url" data-preview="mini_pwa_icon_512_preview">
-                <button type="button" class="button mini-pwa-media-upload" data-target="mini_pwa_icon_512"><?php esc_html_e( 'Select', 'mini' ); ?></button>
+                <button type="button" class="btn mini-pwa-media-upload" data-target="mini_pwa_icon_512"><?php esc_html_e( 'Select', 'mini' ); ?></button>
             </div>
             <?php if ( $icon_512 ) : ?>
                 <img id="mini_pwa_icon_512_preview" src="<?php echo esc_url( $icon_512 ); ?>" style="margin-top:0.5rem; width:48px; height:48px; object-fit:contain;" alt="">
