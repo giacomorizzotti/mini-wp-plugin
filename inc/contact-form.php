@@ -44,7 +44,7 @@ function mini_contact_form_settings_init() {
     ] );
     add_settings_section(
         'mini_contact_form_section',
-        __( 'Contact Form settings', 'mini' ),
+        __( 'Contact form settings', 'mini' ),
         'mini_contact_form_section_callback',
         'mini-contact-form'
     );

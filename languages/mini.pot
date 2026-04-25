@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-21 17:17+0200\n"
+"POT-Creation-Date: 2026-04-25 22:02+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,343 +17,220 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mini-plugin.php:923
-#, php-format
-msgid "%s general settings."
+#: inc/pwa.php:10
+msgid "PWA settings"
 msgstr ""
 
-#: inc/seo.php:713
-msgid "(click to add)"
+#: inc/pwa.php:52
+msgid "Standalone (recommended) — looks like a native app, no browser UI"
 msgstr ""
 
-#: inc/seo.php:731
-msgid "(prevent search engines from following links on this page)"
+#: inc/pwa.php:53
+msgid "Fullscreen — hides all browser and OS chrome"
 msgstr ""
 
-#: inc/seo.php:727
-msgid "(prevent search engines from indexing this page)"
-msgstr ""
-
-#: inc/gdpr.php:848
-msgid "+ Add cookie"
-msgstr ""
-
-#: inc/content-types.php:798
-msgid "2/3"
-msgstr ""
-
-#: inc/pwa.php:86
-msgid ""
-"Abbreviated name shown under the home screen icon (keep under 12 characters)."
-msgstr ""
-
-#: mini-plugin.php:851
-msgid "Activate"
-msgstr ""
-
-#: mini-plugin.php:951
-#, php-format
-msgid "Activate and manage %1$s (%2$s)."
-msgstr ""
-
-#: mini-plugin.php:909
-#, php-format
-msgid "Activate and manage %s content types."
-msgstr ""
-
-#: inc/pwa.php:71
-msgid "Activate the Progressive Web App features for this site."
-msgstr ""
-
-#: mini-plugin.php:841 mini-plugin.php:845
-msgid "Active"
-msgstr ""
-
-#: inc/gdpr.php:800
-msgid "Add"
-msgstr ""
-
-#: inc/content-types.php:16 inc/post-types.php:27
-msgid "Add "
-msgstr ""
-
-#: inc/dashboard.php:269
-msgid "Add Course"
-msgstr ""
-
-#: inc/dashboard.php:262
-msgid "Add Event"
-msgstr ""
-
-#: inc/dashboard.php:275
-msgid "Add Lesson"
-msgstr ""
-
-#: inc/content-types.php:17 inc/content-types.php:52 inc/post-types.php:28
-msgid "Add New "
-msgstr ""
-
-#: inc/content-types.php:223
-msgid "Add New Slide"
-msgstr ""
-
-#: inc/content-types.php:74
-msgid "Add New Tag"
-msgstr ""
-
-#: inc/dashboard.php:255
-msgid "Add News"
-msgstr ""
-
-#: inc/dashboard.php:247
-msgid "Add Page"
-msgstr ""
-
-#: inc/dashboard.php:296
-msgid "Add Post"
-msgstr ""
-
-#: inc/dashboard.php:288
-msgid "Add Slide"
-msgstr ""
-
-#: inc/dashboard.php:282
-msgid "Add Slideshow"
-msgstr ""
-
-#: inc/gdpr.php:807
-msgid "Add all"
-msgstr ""
-
-#: inc/gdpr.php:814
-msgid ""
-"Add all cookies used by your website. Rows with an empty name will be "
-"discarded."
-msgstr ""
-
-#: inc/content-types.php:77
-msgid "Add or remove tags"
-msgstr ""
-
-#: inc/gdpr.php:334
-msgid "Address"
-msgstr ""
-
-#: inc/seo.php:600
-msgid "Advanced"
-msgstr ""
-
-#: inc/seo.php:781
-msgid "Advanced SEO Settings"
-msgstr ""
-
-#: inc/security.php:80
-msgid ""
-"After the maximum number of failed attempts, the IP is blocked for the "
-"specified duration. The counter resets on a successful login."
-msgstr ""
-
-#: inc/content-types.php:47
-msgid "All "
-msgstr ""
-
-#: inc/content-types.php:71
-msgid "All Tags"
-msgstr ""
-
-#: inc/gdpr.php:361
-msgid ""
-"All address fields must be filled for the address to appear in the policy."
-msgstr ""
-
-#: inc/gdpr.php:679 mini-plugin.php:967
-msgid "Analytics"
-msgstr ""
-
-#: mini-plugin.php:964
-msgid "Analytics settings"
-msgstr ""
-
-#: inc/seo.php:708
-msgid "Analyze Content for Keywords"
-msgstr ""
-
-#: inc/pwa.php:78
-msgid "App name"
-msgstr ""
-
-#: inc/smtp.php:83
-msgid "Authentication"
-msgstr ""
-
-#: inc/seo.php:601
-msgid "Author"
-msgstr ""
-
-#: inc/seo.php:814
-msgid "Author Bio"
-msgstr ""
-
-#: inc/seo.php:362
-msgid "Author Defaults"
-msgstr ""
-
-#: inc/seo.php:808
-msgid "Author Details for E-E-A-T"
-msgstr ""
-
-#: inc/seo.php:810
-msgid "Author Name"
-msgstr ""
-
-#: inc/seo.php:822
-msgid "Author Website"
-msgstr ""
-
-#: inc/seo.php:824
-msgid ""
-"Author's personal or professional website. Leave empty to use user profile "
-"website."
-msgstr ""
-
-#: inc/seo.php:820
-msgid "Author's professional title. Leave empty to use default or user meta."
-msgstr ""
-
-#: inc/pwa.php:122
-msgid "Background color"
-msgstr ""
-
-#: mini-plugin.php:1089
-msgid "Backoffice"
-msgstr ""
-
-#: mini-plugin.php:939
-msgid "Backoffice and editor settings"
-msgstr ""
-
-#: inc/backoffice.php:10 mini-plugin.php:936
-msgid "Backoffice settings"
-msgstr ""
-
-#: inc/security.php:55
-msgid ""
-"Blocks all XML-RPC requests and removes the pingback link tag from the page "
-"head. Recommended unless you use the WordPress mobile app, Jetpack, or "
-"another XML-RPC-dependent service."
-msgstr ""
-
-#: mini-plugin.php:233
-msgid "Blogging"
-msgstr ""
-
-#: mini-plugin.php:1717
-msgid "Blogging settings"
-msgstr ""
-
-#: inc/pwa.php:92
-msgid "Brief description of the app, used in install prompts."
-msgstr ""
-
-#: inc/seo.php:816
-msgid ""
-"Brief description of the author's expertise. Leave empty to use user profile "
-"bio."
+#: inc/pwa.php:54
+msgid "Minimal UI — shows a minimal browser bar"
 msgstr ""
 
 #: inc/pwa.php:55
 msgid "Browser — normal browser tab"
 msgstr ""
 
-#: inc/gdpr.php:353
-msgid "CAP"
+#: inc/pwa.php:191
+msgid "Select Icon"
 msgstr ""
 
-#: inc/seo.php:784
-msgid "Canonical URL"
+#: inc/pwa.php:192 inc/content-types.php:655 mini-plugin.php:1578
+#: mini-plugin.php:1606
+msgid "Use this image"
 msgstr ""
 
-#: inc/seo.php:761
-msgid "Card Type"
+#: inc/content-types.php:16 inc/post-types.php:27
+msgid "Add "
 msgstr ""
 
-#: inc/backoffice.php:116
-msgid "Checked post types will use the Classic Editor instead of Gutenberg."
+#: inc/content-types.php:17 inc/content-types.php:52 inc/post-types.php:28
+msgid "Add New "
+msgstr ""
+
+#: inc/content-types.php:18 inc/gdpr.php:288 inc/gdpr.php:754
+#: inc/post-types.php:29
+msgid "Edit"
+msgstr ""
+
+#: inc/content-types.php:19 inc/content-types.php:50 inc/post-types.php:30
+msgid "Edit "
+msgstr ""
+
+#: inc/content-types.php:20 inc/content-types.php:53 inc/post-types.php:31
+msgid "New "
+msgstr ""
+
+#: inc/content-types.php:21 inc/content-types.php:22 inc/post-types.php:32
+#: inc/post-types.php:33
+msgid "View "
+msgstr ""
+
+#: inc/content-types.php:23 inc/content-types.php:46 inc/post-types.php:34
+msgid "Search "
+msgstr ""
+
+#: inc/content-types.php:24 inc/post-types.php:35
+msgid "No "
+msgstr ""
+
+#: inc/content-types.php:47
+msgid "All "
+msgstr ""
+
+#: inc/content-types.php:48 inc/content-types.php:49
+msgid "Parent "
+msgstr ""
+
+#: inc/content-types.php:51
+msgid "Update "
+msgstr ""
+
+#: inc/content-types.php:67 inc/content-types.php:79
+msgid "Tags"
+msgstr ""
+
+#: inc/content-types.php:68
+msgid "Tag"
+msgstr ""
+
+#: inc/content-types.php:69
+msgid "Search Tags"
+msgstr ""
+
+#: inc/content-types.php:70
+msgid "Popular Tags"
+msgstr ""
+
+#: inc/content-types.php:71
+msgid "All Tags"
+msgstr ""
+
+#: inc/content-types.php:72
+msgid "Edit Tag"
+msgstr ""
+
+#: inc/content-types.php:73
+msgid "Update Tag"
+msgstr ""
+
+#: inc/content-types.php:74
+msgid "Add New Tag"
+msgstr ""
+
+#: inc/content-types.php:75
+msgid "New Tag Name"
+msgstr ""
+
+#: inc/content-types.php:76
+msgid "Separate tags with commas"
+msgstr ""
+
+#: inc/content-types.php:77
+msgid "Add or remove tags"
 msgstr ""
 
 #: inc/content-types.php:78
 msgid "Choose from the most used tags"
 msgstr ""
 
-#: inc/backoffice.php:111
+#: inc/content-types.php:223
+msgid "Add New Slide"
+msgstr ""
+
+#: inc/content-types.php:299
+msgid "Slides without a parent slideshow"
+msgstr ""
+
+#: inc/content-types.php:445
+msgid "Event date"
+msgstr ""
+
+#: inc/content-types.php:446 inc/content-types.php:521 mini-plugin.php:1441
+#: mini-plugin.php:1453
+msgid "Location"
+msgstr ""
+
+#: inc/content-types.php:520 mini-plugin.php:1288 mini-plugin.php:1300
+#: mini-plugin.php:1346
+msgid "Date"
+msgstr ""
+
+#: inc/content-types.php:587
+msgid "Poster"
+msgstr ""
+
+#: inc/content-types.php:597 inc/content-types.php:605
+msgid "Slideshow"
+msgstr ""
+
+#: inc/content-types.php:613
+msgid "Layout"
+msgstr ""
+
+#: inc/content-types.php:623
+msgid "Course"
+msgstr ""
+
+#: inc/content-types.php:654
+msgid "Select Poster"
+msgstr ""
+
+#: inc/content-types.php:868 inc/dashboard.php:56
+msgid "News"
+msgstr ""
+
+#: inc/content-types.php:869 inc/dashboard.php:65
+msgid "Events"
+msgstr ""
+
+#: inc/content-types.php:870 inc/dashboard.php:74
+msgid "Matches"
+msgstr ""
+
+#: inc/content-types.php:871 inc/dashboard.php:84
+msgid "Courses"
+msgstr ""
+
+#: inc/gdpr.php:51
+msgid "Privacy Policy page"
+msgstr ""
+
+#: inc/gdpr.php:107 inc/gdpr.php:429
+msgid "Permission denied."
+msgstr ""
+
+#: inc/gdpr.php:119
+msgid "Privacy Policy page updated."
+msgstr ""
+
+#: inc/gdpr.php:126
 msgid ""
-"Choose which post types should use the Classic Editor instead of Gutenberg."
+"Could not fetch the privacy policy content from the API. Please try again."
 msgstr ""
 
-#: inc/dashboard.php:235
-msgid "Ciao!"
-msgstr ""
-
-#: inc/dashboard.php:233
-#, php-format
-msgid "Ciao, <span class=\"bold\">%s!</span>"
-msgstr ""
-
-#: inc/gdpr.php:345
-msgid "City"
-msgstr ""
-
-#: inc/seo.php:240
-msgid "Clears mini sitemap cache and regenerates XML on next request."
-msgstr ""
-
-#: inc/seo.php:709
-msgid "Click to extract the most frequently used words from your content"
-msgstr ""
-
-#: inc/smtp.php:69
-msgid "Common ports: 25 (no encryption), 465 (SSL), 587 (TLS/STARTTLS)."
-msgstr ""
-
-#: mini-plugin.php:975
-msgid "Company"
-msgstr ""
-
-#: mini-plugin.php:972
-msgid "Company settings"
-msgstr ""
-
-#: inc/content-types.php:784
-msgid "Container"
-msgstr ""
-
-#: inc/dashboard.php:34
-msgid "Content Statistics"
-msgstr ""
-
-#: mini-plugin.php:123
-msgid "Content type settings"
-msgstr ""
-
-#: mini-plugin.php:234 mini-plugin.php:911
-msgid "Content types"
-msgstr ""
-
-#: inc/content-types.php:795
-msgid "Content width"
-msgstr ""
-
-#: mini-plugin.php:908
-msgid "Contents"
-msgstr ""
-
-#: inc/pwa.php:118
+#: inc/gdpr.php:176
 msgid ""
-"Controls the browser toolbar color and the task switcher color on Android."
+"GDPR: Could not fetch the privacy policy content from the API. Please try "
+"again."
 msgstr ""
 
-#: inc/gdpr.php:569
-msgid "Cookie Policy"
+#: inc/gdpr.php:184
+msgid "Privacy Policy"
+msgstr ""
+
+#: inc/gdpr.php:270 inc/gdpr.php:737
+msgid "Fetching…"
+msgstr ""
+
+#: inc/gdpr.php:297 inc/gdpr.php:763
+msgid "Request failed. Please try again."
 msgstr ""
 
 #: inc/gdpr.php:378
@@ -364,371 +241,9 @@ msgstr ""
 msgid "Cookie Policy page updated."
 msgstr ""
 
-#: mini-plugin.php:1175
-msgid "Cookie policy"
-msgstr ""
-
-#: inc/gdpr.php:813
-msgid "Cookies list"
-msgstr ""
-
 #: inc/gdpr.php:447
 msgid ""
 "Could not fetch the cookie policy content from the API. Please try again."
-msgstr ""
-
-#: inc/gdpr.php:126
-msgid ""
-"Could not fetch the privacy policy content from the API. Please try again."
-msgstr ""
-
-#: inc/gdpr.php:357
-msgid "Country"
-msgstr ""
-
-#: inc/content-types.php:623
-msgid "Course"
-msgstr ""
-
-#: inc/content-types.php:871 inc/dashboard.php:84 mini-plugin.php:194
-msgid "Courses"
-msgstr ""
-
-#: inc/gdpr.php:718
-msgid "Create and populate a Cookie Policy page from the list below."
-msgstr ""
-
-#: inc/gdpr.php:250
-msgid ""
-"Create and populate a Privacy Policy page using the default UWA template."
-msgstr ""
-
-#: mini-plugin.php:980 mini-plugin.php:983
-msgid "Credits"
-msgstr ""
-
-#: inc/seo.php:681
-msgid "Custom SEO Image"
-msgstr ""
-
-#: inc/login.php:48
-msgid "Custom login path"
-msgstr ""
-
-#: inc/backoffice.php:28
-msgid "Customize the WordPress admin experience for your clients and editors."
-msgstr ""
-
-#: inc/login.php:35
-msgid ""
-"Customize the WordPress login URL to improve security by hiding the default "
-"wp-login.php path."
-msgstr ""
-
-#: inc/gdpr.php:328
-msgid "DPO email"
-msgstr ""
-
-#: inc/gdpr.php:322
-msgid "DPO name"
-msgstr ""
-
-#: inc/gdpr.php:330
-msgid "Data Protection Officer contact email."
-msgstr ""
-
-#: inc/gdpr.php:324
-msgid "Data Protection Officer full name. Leave empty if not applicable."
-msgstr ""
-
-#: inc/content-types.php:520 inc/shortcodes.php:597 mini-plugin.php:1216
-#: mini-plugin.php:1228 mini-plugin.php:1274
-msgid "Date"
-msgstr ""
-
-#: mini-plugin.php:1258
-msgid "Date & Time"
-msgstr ""
-
-#: inc/seo.php:276
-msgid "Default Author Bio"
-msgstr ""
-
-#: inc/seo.php:263
-msgid "Default Author Information"
-msgstr ""
-
-#: inc/seo.php:266
-msgid "Default Author Name"
-msgstr ""
-
-#: inc/seo.php:295
-msgid "Default Author Website"
-msgstr ""
-
-#: inc/seo.php:285
-msgid "Default Job Title"
-msgstr ""
-
-#: inc/seo.php:315
-msgid "Default LinkedIn URL"
-msgstr ""
-
-#: inc/seo.php:133
-msgid "Default Meta Description"
-msgstr ""
-
-#: inc/seo.php:153
-msgid "Default SEO Image"
-msgstr ""
-
-#: inc/seo.php:132
-msgid "Default Settings"
-msgstr ""
-
-#: inc/seo.php:305
-msgid "Default Twitter Handle"
-msgstr ""
-
-#: inc/seo.php:143
-msgid "Default Website Keywords"
-msgstr ""
-
-#: inc/pwa.php:90 inc/seo.php:675
-msgid "Description"
-msgstr ""
-
-#: inc/gdpr.php:772
-msgid "Detected cookies not yet in your list"
-msgstr ""
-
-#: inc/backoffice.php:115
-msgid "Disable Gutenberg per post type"
-msgstr ""
-
-#: inc/security.php:41
-msgid "Disable REST API for non-logged-in users"
-msgstr ""
-
-#: inc/security.php:50
-msgid "Disable XML-RPC"
-msgstr ""
-
-#: mini-plugin.php:1730
-msgid "Disable blogging"
-msgstr ""
-
-#: mini-plugin.php:1737
-msgid "Disable comments"
-msgstr ""
-
-#: inc/security.php:53
-msgid "Disable the XML-RPC endpoint and remove its advertised header."
-msgstr ""
-
-#: inc/login.php:43
-msgid "Disable the default wp-login.php path and redirect it to the home page."
-msgstr ""
-
-#: inc/pwa.php:104
-msgid "Display mode"
-msgstr ""
-
-#: inc/gdpr.php:553 inc/gdpr.php:781 inc/gdpr.php:823
-msgid "Duration"
-msgstr ""
-
-#: inc/content-types.php:18 inc/gdpr.php:258 inc/gdpr.php:288 inc/gdpr.php:725
-#: inc/gdpr.php:754 inc/post-types.php:29
-msgid "Edit"
-msgstr ""
-
-#: inc/content-types.php:19 inc/content-types.php:50 inc/post-types.php:30
-msgid "Edit "
-msgstr ""
-
-#: inc/content-types.php:72
-msgid "Edit Tag"
-msgstr ""
-
-#: inc/seo.php:252
-msgid ""
-"Edit robots.txt directives directly here. When sitemap is enabled, the "
-"sitemap line is automatically enforced."
-msgstr ""
-
-#: mini-plugin.php:1090
-msgid "Editor blocks"
-msgstr ""
-
-#: inc/backoffice.php:81 mini-plugin.php:235
-msgid "Editor settings"
-msgstr ""
-
-#: inc/gdpr.php:310
-msgid "Email"
-msgstr ""
-
-#: mini-plugin.php:197
-msgid ""
-"Enable \"Course\" content type to manage <u>courses</u> and <u>lessons</u>"
-msgstr ""
-
-#: mini-plugin.php:211
-msgid "Enable \"Match\" content type to manage sport <u>events</u>"
-msgstr ""
-
-#: inc/gdpr.php:715
-msgid "Enable Cookie Policy page"
-msgstr ""
-
-#: inc/pwa.php:68
-msgid "Enable PWA"
-msgstr ""
-
-#: inc/gdpr.php:247
-msgid "Enable Privacy Policy page"
-msgstr ""
-
-#: inc/seo.php:187
-msgid "Enable SEO content features"
-msgstr ""
-
-#: inc/seo.php:197
-msgid "Enable SEO meta tags for pages, posts and custom content types."
-msgstr ""
-
-#: inc/smtp.php:53
-msgid "Enable SMTP"
-msgstr ""
-
-#: inc/smtp.php:86
-msgid "Enable SMTP authentication (username & password)."
-msgstr ""
-
-#: inc/login.php:40
-msgid "Enable custom login URL"
-msgstr ""
-
-#: inc/seo.php:217
-msgid "Enable mini XML sitemap"
-msgstr ""
-
-#: mini-plugin.php:182
-msgid "Enable the \"Event\" content type to manage <u>events</u>."
-msgstr ""
-
-#: mini-plugin.php:168
-msgid "Enable the \"News\" content type to manage <u>news articles</u>."
-msgstr ""
-
-#: mini-plugin.php:152
-msgid ""
-"Enable the \"Slideshow\" content type to manage <u>slideshows</u> and "
-"<u>slides</u>."
-msgstr ""
-
-#: inc/smtp.php:73
-msgid "Encryption"
-msgstr ""
-
-#: inc/shortcodes.php:611 mini-plugin.php:1281 mini-plugin.php:1286
-msgid "End date"
-msgstr ""
-
-#: mini-plugin.php:1232
-msgid "End date (optional)"
-msgstr ""
-
-#: mini-plugin.php:1299 mini-plugin.php:1304
-msgid "End time"
-msgstr ""
-
-#: inc/content-types.php:445
-msgid "Event date"
-msgstr ""
-
-#: inc/shortcodes.php:493
-msgid "Event details"
-msgstr ""
-
-#: inc/content-types.php:869 inc/dashboard.php:65 mini-plugin.php:180
-msgid "Events"
-msgstr ""
-
-#: mini-plugin.php:1091
-msgid "External libraries"
-msgstr ""
-
-#: inc/seo.php:598
-msgid "Facebook"
-msgstr ""
-
-#: inc/seo.php:165
-msgid ""
-"Fallback image for SEO/social media when no custom or featured image is set."
-"<br><strong>Recommended: 1200*630px</strong>"
-msgstr ""
-
-#: inc/gdpr.php:260 inc/gdpr.php:727
-msgid "Fetch from API"
-msgstr ""
-
-#: inc/gdpr.php:270 inc/gdpr.php:737
-msgid "Fetching…"
-msgstr ""
-
-#: mini-plugin.php:960
-msgid "Fonts"
-msgstr ""
-
-#: mini-plugin.php:957
-msgid "Fonts settings"
-msgstr ""
-
-#: mini-plugin.php:73
-msgid "Footer Menu"
-msgstr ""
-
-#: inc/smtp.php:103
-msgid "From Email"
-msgstr ""
-
-#: inc/smtp.php:109
-msgid "From Name"
-msgstr ""
-
-#: inc/content-types.php:797
-msgid "Full"
-msgstr ""
-
-#: inc/seo.php:832
-msgid "Full LinkedIn profile URL. Leave empty to skip."
-msgstr ""
-
-#: inc/pwa.php:80
-msgid "Full name displayed on the splash screen and app store listings."
-msgstr ""
-
-#: inc/content-types.php:786
-msgid "Full width"
-msgstr ""
-
-#: inc/pwa.php:53
-msgid "Fullscreen — hides all browser and OS chrome"
-msgstr ""
-
-#: inc/gdpr.php:678
-msgid "Functional"
-msgstr ""
-
-#: mini-plugin.php:943 mini-plugin.php:946
-msgid "GDPR settings"
-msgstr ""
-
-#: inc/gdpr.php:514
-#, php-format
-msgid "GDPR: Cookie policy API returned HTTP %d. Please try again."
 msgstr ""
 
 #: inc/gdpr.php:499
@@ -738,420 +253,612 @@ msgid ""
 "again."
 msgstr ""
 
-#: inc/gdpr.php:176
-msgid ""
-"GDPR: Could not fetch the privacy policy content from the API. Please try "
-"again."
-msgstr ""
-
-#: inc/seo.php:358
-msgid "General SEO Settings"
-msgstr ""
-
-#: mini-plugin.php:922 mini-plugin.php:925
-msgid "General settings"
-msgstr ""
-
-#: inc/seo.php:219
-msgid "Generates custom sitemap endpoints like"
-msgstr ""
-
-#: inc/security.php:36
-msgid "Harden your WordPress installation against common attack vectors."
-msgstr ""
-
-#: mini-plugin.php:831
-msgid "Here are some useful plugins that work great with mini:"
-msgstr ""
-
-#: inc/backoffice.php:36
-msgid ""
-"Hide WordPress core, plugin, and theme update notices for all roles except "
-"Administrator."
-msgstr ""
-
-#: inc/backoffice.php:33
-msgid "Hide update nags for non-administrators"
-msgstr ""
-
-#: inc/pwa.php:129
-msgid "Icon 192×192"
-msgstr ""
-
-#: inc/pwa.php:143
-msgid "Icon 512×512"
-msgstr ""
-
-#: inc/seo.php:232
-msgid ""
-"If disabled, only post-type sitemaps containing at least one indexable URL "
-"are listed in the sitemap index."
-msgstr ""
-
-#: inc/seo.php:795
-msgid "If this content exists on another URL/domain"
-msgstr ""
-
-#: inc/seo.php:230
-msgid "Include empty post type sitemaps in index"
-msgstr ""
-
-#: mini-plugin.php:861
-msgid "Install"
-msgstr ""
-
-#: mini-plugin.php:855
-msgid "Installed"
-msgstr ""
-
-#: inc/seo.php:818
-msgid "Job Title"
-msgstr ""
-
-#: inc/seo.php:596 inc/seo.php:703
-msgid "Keywords"
-msgstr ""
-
-#: inc/content-types.php:613
-msgid "Layout"
-msgstr ""
-
-#: inc/seo.php:748 inc/seo.php:773
-msgid ""
-"Leave empty to automatically use the SEO Description. Updates automatically "
-"unless you manually edit this field."
-msgstr ""
-
-#: inc/seo.php:744 inc/seo.php:769
-msgid ""
-"Leave empty to automatically use the SEO Title. Updates automatically unless "
-"you manually edit this field."
-msgstr ""
-
-#: inc/seo.php:790
-msgid "Leave empty to use the default:"
-msgstr ""
-
-#: inc/dashboard.php:89
-msgid "Lessons"
-msgstr ""
-
-#: inc/shortcodes.php:666
-msgid "Lessons in this course"
-msgstr ""
-
-#: inc/security.php:59
-msgid "Limit login attempts"
-msgstr ""
-
-#: inc/seo.php:830
-msgid "LinkedIn URL"
-msgstr ""
-
-#: inc/content-types.php:446 inc/content-types.php:521 inc/shortcodes.php:627
-#: mini-plugin.php:1369 mini-plugin.php:1381
-msgid "Location"
-msgstr ""
-
-#: mini-plugin.php:1387
-msgid "Location address"
-msgstr ""
-
-#: inc/security.php:64
-msgid "Lock out an IP address after too many failed login attempts."
-msgstr ""
-
-#: inc/security.php:75
-msgid "Lockout duration (minutes)"
-msgstr ""
-
-#: inc/login.php:14
-msgid "Login URL settings"
-msgstr ""
-
-#: mini-plugin.php:1014
-msgid "Login settings"
-msgstr ""
-
-#: mini-plugin.php:72
-msgid "Main Menu"
-msgstr ""
-
-#: mini-plugin.php:944
+#: inc/gdpr.php:514
 #, php-format
-msgid "Manage %s GDPR settings."
+msgid "GDPR: Cookie policy API returned HTTP %d. Please try again."
 msgstr ""
 
-#: mini-plugin.php:916
-#, php-format
-msgid "Manage %s SEO settings and optimization."
-msgstr ""
-
-#: mini-plugin.php:930
-#, php-format
-msgid "Manage %s security settings."
-msgstr ""
-
-#: mini-plugin.php:965
-msgid "Manage analytics settings."
-msgstr ""
-
-#: mini-plugin.php:937
-msgid "Manage backoffice and Gutenberg editor settings."
-msgstr ""
-
-#: mini-plugin.php:973
-msgid "Manage company settings."
-msgstr ""
-
-#: mini-plugin.php:981
-msgid "Manage credits settings."
-msgstr ""
-
-#: mini-plugin.php:958
-msgid "Manage fonts settings."
-msgstr ""
-
-#: inc/gdpr.php:710
-msgid "Manage your site's cookie policy page."
-msgstr ""
-
-#: inc/gdpr.php:242
-msgid "Manage your site's privacy policy page."
-msgstr ""
-
-#: inc/pwa.php:173
-msgid "Manifest preview"
-msgstr ""
-
-#: inc/gdpr.php:680
-msgid "Marketing"
-msgstr ""
-
-#: inc/shortcodes.php:808
-msgid "Match details"
-msgstr ""
-
-#: inc/content-types.php:870 inc/dashboard.php:74 mini-plugin.php:209
-msgid "Matches"
-msgstr ""
-
-#: inc/security.php:69
-msgid "Max attempts"
-msgstr ""
-
-#: inc/pwa.php:54
-msgid "Minimal UI — shows a minimal browser bar"
-msgstr ""
-
-#: inc/gdpr.php:550 inc/gdpr.php:777 inc/gdpr.php:819
+#: inc/gdpr.php:550
 msgid "Name"
+msgstr ""
+
+#: inc/gdpr.php:551
+msgid "Provider"
+msgstr ""
+
+#: inc/gdpr.php:552
+msgid "Purpose"
+msgstr ""
+
+#: inc/gdpr.php:553
+msgid "Duration"
+msgstr ""
+
+#: inc/gdpr.php:569
+msgid "Cookie Policy"
 msgstr ""
 
 #: inc/gdpr.php:677
 msgid "Necessary"
 msgstr ""
 
-#: inc/content-types.php:20 inc/content-types.php:53 inc/post-types.php:31
-msgid "New "
+#: inc/gdpr.php:678
+msgid "Functional"
 msgstr ""
 
-#: inc/content-types.php:75
-msgid "New Tag Name"
+#: inc/gdpr.php:679
+msgid "Analytics"
 msgstr ""
 
-#: inc/content-types.php:868 inc/dashboard.php:56 mini-plugin.php:166
-msgid "News"
+#: inc/gdpr.php:680
+msgid "Marketing"
 msgstr ""
 
-#: inc/content-types.php:24 inc/post-types.php:35
-msgid "No "
+#: inc/gdpr.php:882 inc/gdpr.php:907
+msgid "Tracks unique visitors"
 msgstr ""
 
-#: mini-plugin.php:627
-msgid "No content found to analyze. Please add some content first."
+#: inc/gdpr.php:884 inc/gdpr.php:909
+msgid "Remove"
 msgstr ""
 
-#: inc/dashboard.php:201
-msgid "No content found."
+#: inc/seo.php:9
+msgid "SEO settings"
 msgstr ""
 
-#: inc/shortcodes.php:820
-msgid "No matches to show"
+#: inc/seo.php:133
+msgid "Default Meta Description"
 msgstr ""
 
-#: inc/seo.php:731
-msgid "Nofollow"
+#: inc/seo.php:143
+msgid "Default Website Keywords"
 msgstr ""
 
-#: inc/seo.php:727
-msgid "Noindex"
+#: inc/seo.php:153
+msgid "Default SEO Image"
 msgstr ""
 
-#: inc/smtp.php:77
-msgid "None"
-msgstr ""
-
-#: mini-plugin.php:865
-msgid "Not installed"
-msgstr ""
-
-#: inc/gdpr.php:341
-msgid "Number"
-msgstr ""
-
-#: inc/seo.php:746
-msgid "OG Description"
-msgstr ""
-
-#: inc/seo.php:750
-msgid "OG Image URL"
-msgstr ""
-
-#: inc/seo.php:742
-msgid "OG Title"
-msgstr ""
-
-#: inc/pwa.php:158
-msgid "Offline fallback page"
-msgstr ""
-
-#: inc/seo.php:740
-msgid "Open Graph (Facebook) Tags"
-msgstr ""
-
-#: inc/seo.php:687
-msgid "Optional:"
-msgstr ""
-
-#: inc/content-types.php:712 inc/content-types.php:743
-msgid "Order"
-msgstr ""
-
-#: inc/seo.php:812
+#: inc/seo.php:165
 msgid ""
-"Override the author name for this content. Leave empty to use the post "
-"author's name."
-msgstr ""
-
-#: inc/gdpr.php:318
-msgid ""
-"Overrides the email for PEC-specific fields. Leave empty to use the email "
-"above."
-msgstr ""
-
-#: inc/gdpr.php:305
-msgid "Owner / Company name"
-msgstr ""
-
-#: inc/gdpr.php:316
-msgid "PEC"
-msgstr ""
-
-#: inc/pwa.php:139
-msgid "PNG icon, 192×192 px. Required for Android home screen."
-msgstr ""
-
-#: inc/pwa.php:153
-msgid "PNG icon, 512×512 px. Required for splash screens and app stores."
-msgstr ""
-
-#: inc/pwa.php:10 mini-plugin.php:950 mini-plugin.php:953
-msgid "PWA settings"
-msgstr ""
-
-#: inc/pwa.php:167
-msgid ""
-"Page to show when the user is offline and the requested resource is not "
-"cached. Leave blank to use the browser default error page."
-msgstr ""
-
-#: inc/dashboard.php:122
-msgid "Pages"
-msgstr ""
-
-#: inc/content-types.php:48 inc/content-types.php:49
-msgid "Parent "
-msgstr ""
-
-#: inc/content-types.php:730
-msgid "Parent Course"
-msgstr ""
-
-#: inc/content-types.php:693
-msgid "Parent Slideshow"
-msgstr ""
-
-#: inc/smtp.php:97
-msgid "Password"
-msgstr ""
-
-#: inc/gdpr.php:107 inc/gdpr.php:429
-msgid "Permission denied."
-msgstr ""
-
-#: inc/content-types.php:70
-msgid "Popular Tags"
-msgstr ""
-
-#: inc/content-types.php:587
-msgid "Poster"
-msgstr ""
-
-#: inc/dashboard.php:131
-msgid "Posts"
-msgstr ""
-
-#: inc/security.php:46
-msgid ""
-"Prevents user enumeration via /wp-json/wp/v2/users and reduces the exposed "
-"attack surface. Does not affect logged-in users or internal WordPress "
-"requests."
-msgstr ""
-
-#: inc/seo.php:607
-msgid "Preview"
+"Fallback image for SEO/social media when no custom or featured image is set."
+"<br><strong>Recommended: 1200*630px</strong>"
 msgstr ""
 
 #: inc/seo.php:175
 msgid "Preview in Open Graph format (1.91:1 ratio)"
 msgstr ""
 
-#: inc/seo.php:643 inc/seo.php:662
+#: inc/seo.php:250
+msgid "Robots.txt Rules"
+msgstr ""
+
+#: inc/seo.php:266
+msgid "Default Author Name"
+msgstr ""
+
+#: inc/seo.php:276
+msgid "Default Author Bio"
+msgstr ""
+
+#: inc/seo.php:285
+msgid "Default Job Title"
+msgstr ""
+
+#: inc/seo.php:295
+msgid "Default Author Website"
+msgstr ""
+
+#: inc/seo.php:305
+msgid "Default Twitter Handle"
+msgstr ""
+
+#: inc/seo.php:315
+msgid "Default LinkedIn URL"
+msgstr ""
+
+#: inc/seo.php:336 inc/contact-form.php:179 inc/smtp.php:123
+#: mini-plugin.php:252 mini-plugin.php:784 mini-plugin.php:1037
+#: mini-plugin.php:1098 mini-plugin.php:1124 mini-plugin.php:1183
+#: mini-plugin.php:1209 mini-plugin.php:1258
+msgid "Settings Saved"
+msgstr ""
+
+#: inc/seo.php:340
+msgid "Sitemap cache updated."
+msgstr ""
+
+#: inc/seo.php:344
+msgid "Robots.txt rules reset to default."
+msgstr ""
+
+#: inc/seo.php:358
+msgid "General SEO Settings"
+msgstr ""
+
+#: inc/seo.php:359
+msgid "SEO Contents"
+msgstr ""
+
+#: inc/seo.php:360
+msgid "Sitemap"
+msgstr ""
+
+#: inc/seo.php:361
+msgid "Robots.txt"
+msgstr ""
+
+#: inc/seo.php:362
+msgid "Author Defaults"
+msgstr ""
+
+#: inc/seo.php:475 inc/seo.php:494
+msgid "You do not have sufficient permissions to access this page."
+msgstr ""
+
+#: inc/seo.php:550
+msgid "mini SEO"
+msgstr ""
+
+#: inc/seo.php:600
+msgid "SEO"
+msgstr ""
+
+#: inc/seo.php:601 inc/seo.php:708
+msgid "Keywords"
+msgstr ""
+
+#: inc/seo.php:602
+msgid "Robots"
+msgstr ""
+
+#: inc/seo.php:603
+msgid "Facebook"
+msgstr ""
+
+#: inc/seo.php:604
+msgid "X (Twitter)"
+msgstr ""
+
+#: inc/seo.php:605
+msgid "Advanced"
+msgstr ""
+
+#: inc/seo.php:606
+msgid "Author"
+msgstr ""
+
+#: inc/seo.php:612
+msgid "Preview"
+msgstr ""
+
+#: inc/seo.php:635
+msgid "Using:"
+msgstr ""
+
+#: inc/seo.php:637
+msgid "custom SEO image"
+msgstr ""
+
+#: inc/seo.php:639
+msgid "featured image"
+msgstr ""
+
+#: inc/seo.php:641
+msgid "default SEO image"
+msgstr ""
+
+#: inc/seo.php:648 inc/seo.php:667
 msgid ""
 "Preview shown in Open Graph format (1.91:1 ratio). Recommended: 1200×630px"
 msgstr ""
 
-#: mini-plugin.php:1174
-msgid "Privacy"
+#: inc/seo.php:674
+msgid "Title"
 msgstr ""
 
-#: inc/gdpr.php:184
-msgid "Privacy Policy"
+#: inc/seo.php:677
+msgid ""
+"characters. Most search engines use a maximum of 60 chars for the title."
 msgstr ""
 
-#: inc/gdpr.php:51
-msgid "Privacy Policy page"
+#: inc/seo.php:680
+msgid "Description"
 msgstr ""
 
-#: inc/gdpr.php:119
-msgid "Privacy Policy page updated."
+#: inc/seo.php:683
+msgid ""
+"characters. Most search engines use a maximum of 160 chars for the "
+"description."
 msgstr ""
 
-#: inc/gdpr.php:551 inc/gdpr.php:779 inc/gdpr.php:821
-msgid "Provider"
+#: inc/seo.php:686
+msgid "Custom SEO Image"
 msgstr ""
 
-#: inc/gdpr.php:349
-msgid "Province"
+#: inc/seo.php:692
+msgid "Optional:"
 msgstr ""
 
-#: inc/gdpr.php:552 inc/gdpr.php:780 inc/gdpr.php:822
-msgid "Purpose"
+#: inc/seo.php:693
+msgid ""
+"Set a custom image for SEO/social media. <br/>If not set, the featured image "
+"will be used. <br/>If no featured image exists, the default SEO image will "
+"be used."
 msgstr ""
 
-#: inc/shortcodes.php:174 inc/shortcodes.php:641
-msgid "Read more"
+#: inc/seo.php:696
+msgid "Recommended dimensions:"
+msgstr ""
+
+#: inc/seo.php:710
+msgid ""
+"Separate keywords with commas. Example: <i>keyword1</i>, <i>keyword2</i>, "
+"<i>keyword3</i>"
+msgstr ""
+
+#: inc/seo.php:713
+msgid "Analyze Content for Keywords"
+msgstr ""
+
+#: inc/seo.php:714
+msgid "Click to extract the most frequently used words from your content"
+msgstr ""
+
+#: inc/seo.php:718
+msgid "Suggested Keywords"
+msgstr ""
+
+#: inc/seo.php:718
+msgid "(click to add)"
+msgstr ""
+
+#: inc/seo.php:728
+msgid "Robots Meta Tag"
+msgstr ""
+
+#: inc/seo.php:732
+msgid "Noindex"
+msgstr ""
+
+#: inc/seo.php:732
+msgid "(prevent search engines from indexing this page)"
+msgstr ""
+
+#: inc/seo.php:736
+msgid "Nofollow"
+msgstr ""
+
+#: inc/seo.php:736
+msgid "(prevent search engines from following links on this page)"
+msgstr ""
+
+#: inc/seo.php:745
+msgid "Open Graph (Facebook) Tags"
+msgstr ""
+
+#: inc/seo.php:747
+msgid "OG Title"
+msgstr ""
+
+#: inc/seo.php:748 inc/seo.php:773
+msgid "Uses SEO Title if left empty"
+msgstr ""
+
+#: inc/seo.php:749 inc/seo.php:774
+msgid ""
+"Leave empty to automatically use the SEO Title. Updates automatically unless "
+"you manually edit this field."
+msgstr ""
+
+#: inc/seo.php:751
+msgid "OG Description"
+msgstr ""
+
+#: inc/seo.php:752 inc/seo.php:777
+msgid "Uses SEO Description if left empty"
+msgstr ""
+
+#: inc/seo.php:753 inc/seo.php:778
+msgid ""
+"Leave empty to automatically use the SEO Description. Updates automatically "
+"unless you manually edit this field."
+msgstr ""
+
+#: inc/seo.php:755
+msgid "OG Image URL"
+msgstr ""
+
+#: inc/seo.php:764
+msgid "X (Twitter) Card Tags"
+msgstr ""
+
+#: inc/seo.php:766
+msgid "Card Type"
+msgstr ""
+
+#: inc/seo.php:768
+msgid "Summary"
+msgstr ""
+
+#: inc/seo.php:769
+msgid "Summary Large Image"
+msgstr ""
+
+#: inc/seo.php:772
+msgid "Twitter Title"
+msgstr ""
+
+#: inc/seo.php:776
+msgid "Twitter Description"
+msgstr ""
+
+#: inc/seo.php:786
+msgid "Advanced SEO Settings"
+msgstr ""
+
+#: inc/seo.php:789
+msgid "Canonical URL"
+msgstr ""
+
+#: inc/seo.php:792
+msgid ""
+"The canonical URL tells search engines which URL is the primary/preferred "
+"version of this content."
+msgstr ""
+
+#: inc/seo.php:795
+msgid "Leave empty to use the default:"
+msgstr ""
+
+#: inc/seo.php:798
+msgid "When to use:"
+msgstr ""
+
+#: inc/seo.php:799
+msgid "To prevent duplicate content issues"
+msgstr ""
+
+#: inc/seo.php:800
+msgid "If this content exists on another URL/domain"
+msgstr ""
+
+#: inc/seo.php:801
+msgid "To consolidate ranking signals to one URL"
+msgstr ""
+
+#: inc/seo.php:804
+msgid "Warning:"
+msgstr ""
+
+#: inc/seo.php:804
+msgid ""
+"Setting this to another domain will tell search engines to ignore this page "
+"and index the other URL instead."
+msgstr ""
+
+#: inc/seo.php:813
+msgid "Author Details for E-E-A-T"
+msgstr ""
+
+#: inc/seo.php:815
+msgid "Author Name"
+msgstr ""
+
+#: inc/seo.php:817
+msgid ""
+"Override the author name for this content. Leave empty to use the post "
+"author's name."
+msgstr ""
+
+#: inc/seo.php:819
+msgid "Author Bio"
+msgstr ""
+
+#: inc/seo.php:821
+msgid ""
+"Brief description of the author's expertise. Leave empty to use user profile "
+"bio."
+msgstr ""
+
+#: inc/seo.php:823
+msgid "Job Title"
+msgstr ""
+
+#: inc/seo.php:825
+msgid "Author's professional title. Leave empty to use default or user meta."
+msgstr ""
+
+#: inc/seo.php:827
+msgid "Author Website"
+msgstr ""
+
+#: inc/seo.php:829
+msgid ""
+"Author's personal or professional website. Leave empty to use user profile "
+"website."
+msgstr ""
+
+#: inc/seo.php:831
+msgid "Twitter Handle"
+msgstr ""
+
+#: inc/seo.php:833
+msgid "Twitter username without @. Leave empty to skip."
+msgstr ""
+
+#: inc/seo.php:835
+msgid "LinkedIn URL"
+msgstr ""
+
+#: inc/seo.php:837
+msgid "Full LinkedIn profile URL. Leave empty to skip."
+msgstr ""
+
+#: inc/user.php:13
+msgid "User settings"
+msgstr ""
+
+#: inc/user.php:64
+msgid "Logout"
+msgstr ""
+
+#: inc/user.php:67
+msgid "Login"
+msgstr ""
+
+#: inc/contact-form.php:47
+msgid "Contact form settings"
+msgstr ""
+
+#: inc/contact-form.php:120
+msgid ""
+"Hi {name},\n"
+"Thank you for getting in touch! We have received your message and will get "
+"back to you as soon as possible.\n"
+"\n"
+"Best regards"
+msgstr ""
+
+#: inc/contact-form.php:152 inc/contact-form.php:163
+msgid "Security check failed."
+msgstr ""
+
+#: inc/contact-form.php:183
+msgid "All submissions deleted."
+msgstr ""
+
+#: inc/contact-form.php:184
+msgid "Submission deleted."
+msgstr ""
+
+#: inc/contact-form.php:260
+msgid "Security check failed. Please refresh the page and try again."
+msgstr ""
+
+#: inc/contact-form.php:266
+msgid "Security check failed. Please try again."
+msgstr ""
+
+#: inc/contact-form.php:280
+msgid "Name is required."
+msgstr ""
+
+#: inc/contact-form.php:283
+msgid "Surname is required."
+msgstr ""
+
+#: inc/contact-form.php:286
+msgid "Email is required."
+msgstr ""
+
+#: inc/contact-form.php:288
+msgid "Please enter a valid email address."
+msgstr ""
+
+#: inc/contact-form.php:291
+msgid "Please enter a valid phone number."
+msgstr ""
+
+#: inc/contact-form.php:297
+msgid "You must accept the Privacy Policy to proceed."
+msgstr ""
+
+#: inc/contact-form.php:302
+msgid "Please correct the errors below."
+msgstr ""
+
+#: inc/contact-form.php:328 inc/contact-form.php:353
+#, php-format
+msgid "New message from %s"
+msgstr ""
+
+#: inc/contact-form.php:330
+#, php-format
+msgid "Name: %s"
+msgstr ""
+
+#: inc/contact-form.php:331
+#, php-format
+msgid "Email: %s"
+msgstr ""
+
+#: inc/contact-form.php:333
+#, php-format
+msgid "Phone: %s"
+msgstr ""
+
+#: inc/contact-form.php:336
+msgid "Message:"
+msgstr ""
+
+#: inc/contact-form.php:360
+msgid "Thank you! Your message has been sent."
+msgstr ""
+
+#: inc/contact-form.php:365
+msgid "The message could not be sent. Please try again later."
+msgstr ""
+
+#: inc/contact-form.php:508
+#, php-format
+msgid "%d submission(s) recorded."
+msgstr ""
+
+#: inc/login.php:14
+msgid "Login URL settings"
+msgstr ""
+
+#: inc/smtp.php:9
+msgid "SMTP email settings"
+msgstr ""
+
+#: inc/backoffice.php:10
+msgid "Backoffice settings"
+msgstr ""
+
+#: inc/backoffice.php:81
+msgid "Editor settings"
+msgstr ""
+
+#: inc/dashboard.php:34
+msgid "Content Statistics"
+msgstr ""
+
+#: inc/dashboard.php:40
+msgid "Recent Content"
+msgstr ""
+
+#: inc/dashboard.php:89
+msgid "Lessons"
+msgstr ""
+
+#: inc/dashboard.php:99
+msgid "Slideshows"
+msgstr ""
+
+#: inc/dashboard.php:104
+msgid "Slides"
+msgstr ""
+
+#: inc/dashboard.php:122
+msgid "Pages"
+msgstr ""
+
+#: inc/dashboard.php:131
+msgid "Posts"
+msgstr ""
+
+#: inc/dashboard.php:201
+msgid "No content found."
+msgstr ""
+
+#: inc/dashboard.php:233
+#, php-format
+msgid "Ciao, <span class=\"bold\">%s!</span>"
+msgstr ""
+
+#: inc/dashboard.php:235
+msgid "Ciao!"
 msgstr ""
 
 #: inc/dashboard.php:240
@@ -1160,586 +867,307 @@ msgid ""
 "started."
 msgstr ""
 
-#: inc/dashboard.php:40
-msgid "Recent Content"
+#: inc/dashboard.php:247
+msgid "Add Page"
 msgstr ""
 
-#: inc/seo.php:691
-msgid "Recommended dimensions:"
+#: inc/dashboard.php:255
+msgid "Add News"
 msgstr ""
 
-#: inc/content-types.php:644 inc/gdpr.php:841 inc/gdpr.php:884 inc/gdpr.php:909
-msgid "Remove"
+#: inc/dashboard.php:262
+msgid "Add Event"
 msgstr ""
 
-#: inc/gdpr.php:297 inc/gdpr.php:763
-msgid "Request failed. Please try again."
+#: inc/dashboard.php:269
+msgid "Add Course"
 msgstr ""
 
-#: inc/seo.php:254
-msgid "Reset robots.txt to default"
+#: inc/dashboard.php:275
+msgid "Add Lesson"
 msgstr ""
 
-#: inc/security.php:44
-msgid ""
-"Return a 401 error for all REST API requests made by unauthenticated "
-"visitors."
+#: inc/dashboard.php:282
+msgid "Add Slideshow"
 msgstr ""
 
-#: inc/seo.php:597
-msgid "Robots"
+#: inc/dashboard.php:288
+msgid "Add Slide"
 msgstr ""
 
-#: inc/seo.php:723
-msgid "Robots Meta Tag"
-msgstr ""
-
-#: inc/seo.php:249 inc/seo.php:361
-msgid "Robots.txt"
-msgstr ""
-
-#: inc/seo.php:250
-msgid "Robots.txt Rules"
-msgstr ""
-
-#: inc/seo.php:344
-msgid "Robots.txt rules reset to default."
-msgstr ""
-
-#: inc/seo.php:595 mini-plugin.php:915 mini-plugin.php:918
-msgid "SEO"
-msgstr ""
-
-#: inc/seo.php:359
-msgid "SEO Contents"
-msgstr ""
-
-#: inc/seo.php:9
-msgid "SEO settings"
-msgstr ""
-
-#: inc/smtp.php:61
-msgid "SMTP Host"
-msgstr ""
-
-#: inc/smtp.php:67
-msgid "SMTP Port"
-msgstr ""
-
-#: inc/smtp.php:99
-msgid "SMTP account password. Leave blank to keep the existing value."
-msgstr ""
-
-#: inc/smtp.php:93
-msgid "SMTP account username (usually your email address)."
-msgstr ""
-
-#: inc/smtp.php:9
-msgid "SMTP email settings"
-msgstr ""
-
-#: mini-plugin.php:1015
-msgid "SMTP settings"
-msgstr ""
-
-#: inc/smtp.php:76
-msgid "SSL"
-msgstr ""
-
-#: inc/gdpr.php:252 inc/gdpr.php:720
-msgid ""
-"Save your settings first, then click \"Fetch from API\" to create or refresh "
-"the page content."
-msgstr ""
-
-#: inc/content-types.php:23 inc/content-types.php:46 inc/post-types.php:34
-msgid "Search "
-msgstr ""
-
-#: inc/content-types.php:69
-msgid "Search Tags"
-msgstr ""
-
-#: inc/security.php:10 mini-plugin.php:929 mini-plugin.php:932
-msgid "Security settings"
-msgstr ""
-
-#: inc/pwa.php:132 inc/pwa.php:146
-msgid "Select"
-msgstr ""
-
-#: inc/content-types.php:643
-msgid "Select / Upload Poster"
-msgstr ""
-
-#: inc/pwa.php:191
-msgid "Select Icon"
-msgstr ""
-
-#: inc/seo.php:155 inc/seo.php:683 mini-plugin.php:1441 mini-plugin.php:1472
-msgid "Select Image"
-msgstr ""
-
-#: inc/content-types.php:654
-msgid "Select Poster"
-msgstr ""
-
-#: mini-plugin.php:1504 mini-plugin.php:1532
-msgid "Select Team Logo"
-msgstr ""
-
-#: inc/smtp.php:79
-msgid "Select the encryption method supported by your SMTP server."
-msgstr ""
-
-#: inc/smtp.php:56
-msgid "Send emails via SMTP instead of the default PHP mail function."
-msgstr ""
-
-#: inc/seo.php:705
-msgid ""
-"Separate keywords with commas. Example: <i>keyword1</i>, <i>keyword2</i>, "
-"<i>keyword3</i>"
-msgstr ""
-
-#: inc/content-types.php:76
-msgid "Separate tags with commas"
-msgstr ""
-
-#: inc/seo.php:688
-msgid ""
-"Set a custom image for SEO/social media. <br/>If not set, the featured image "
-"will be used. <br/>If no featured image exists, the default SEO image will "
-"be used."
-msgstr ""
-
-#: inc/seo.php:799
-msgid ""
-"Setting this to another domain will tell search engines to ignore this page "
-"and index the other URL instead."
-msgstr ""
-
-#: inc/seo.php:336 inc/smtp.php:123 mini-plugin.php:221 mini-plugin.php:746
-#: mini-plugin.php:1002 mini-plugin.php:1052 mini-plugin.php:1078
-#: mini-plugin.php:1137 mini-plugin.php:1163
-msgid "Settings Saved"
-msgstr ""
-
-#: inc/pwa.php:84
-msgid "Short name"
-msgstr ""
-
-#: inc/seo.php:207 inc/seo.php:360
-msgid "Sitemap"
-msgstr ""
-
-#: inc/seo.php:340
-msgid "Sitemap cache updated."
-msgstr ""
-
-#: inc/dashboard.php:104
-msgid "Slides"
-msgstr ""
-
-#: inc/content-types.php:299
-msgid "Slides without a parent slideshow"
-msgstr ""
-
-#: inc/content-types.php:597 inc/content-types.php:605
-#: inc/content-types.php:763
-msgid "Slideshow"
-msgstr ""
-
-#: inc/dashboard.php:99 mini-plugin.php:150
-msgid "Slideshows"
-msgstr ""
-
-#: inc/pwa.php:124
-msgid "Splash screen background color shown before the app's CSS is loaded."
-msgstr ""
-
-#: inc/pwa.php:52
-msgid "Standalone (recommended) — looks like a native app, no browser UI"
-msgstr ""
-
-#: inc/content-types.php:787
-msgid "Standard"
-msgstr ""
-
-#: inc/pwa.php:97
-msgid "Start URL"
-msgstr ""
-
-#: inc/gdpr.php:337
-msgid "Street"
-msgstr ""
-
-#: inc/seo.php:713
-msgid "Suggested Keywords"
-msgstr ""
-
-#: inc/seo.php:763
-msgid "Summary"
-msgstr ""
-
-#: inc/seo.php:764
-msgid "Summary Large Image"
-msgstr ""
-
-#: inc/smtp.php:75
-msgid "TLS / STARTTLS (recommended)"
-msgstr ""
-
-#: inc/content-types.php:68
-msgid "Tag"
-msgstr ""
-
-#: inc/content-types.php:67 inc/content-types.php:79
-msgid "Tags"
-msgstr ""
-
-#: mini-plugin.php:1431 mini-plugin.php:1434
-msgid "Team one"
-msgstr ""
-
-#: mini-plugin.php:1438
-msgid "Team one logo"
-msgstr ""
-
-#: mini-plugin.php:1454
-msgid "Team one score"
-msgstr ""
-
-#: mini-plugin.php:1462 mini-plugin.php:1465
-msgid "Team two"
-msgstr ""
-
-#: mini-plugin.php:1469
-msgid "Team two logo"
-msgstr ""
-
-#: mini-plugin.php:1485
-msgid "Team two score"
-msgstr ""
-
-#: mini-plugin.php:1413
-msgid "Teams"
-msgstr ""
-
-#: inc/pwa.php:99
-msgid ""
-"The URL loaded when the app is launched from the home screen. Use a relative "
-"path (e.g. /)."
-msgstr ""
-
-#: inc/seo.php:787
-msgid ""
-"The canonical URL tells search engines which URL is the primary/preferred "
-"version of this content."
-msgstr ""
-
-#: inc/smtp.php:105
-msgid "The email address that will appear in the From field."
-msgstr ""
-
-#: inc/smtp.php:63
-msgid "The hostname of your SMTP server."
-msgstr ""
-
-#: inc/smtp.php:111
-msgid "The name that will appear in the From field."
-msgstr ""
-
-#: inc/login.php:53
-msgid ""
-"The path used to access the login page. Use only letters, numbers, and "
-"hyphens."
-msgstr ""
-
-#: inc/pwa.php:116
-msgid "Theme color"
-msgstr ""
-
-#: inc/gdpr.php:773
-msgid ""
-"These cookies were found in the current browser session. Click \"Add\" to "
-"append them to your list below, then review and save."
-msgstr ""
-
-#: inc/seo.php:264
-msgid ""
-"These defaults are used when no specific author data is available for posts."
-msgstr ""
-
-#: inc/content-types.php:789
-msgid "Thin"
-msgstr ""
-
-#: mini-plugin.php:153
-msgid "This option loads <i>mini</i> <b>slider.js</b> library."
-msgstr ""
-
-#: mini-plugin.php:1732
-msgid ""
-"This option will <u>disable blogging features</u> including <b>posts</b>, "
-"<b>blog archive pages</b> and related admin menus."
-msgstr ""
-
-#: mini-plugin.php:1739
-msgid "This option will disable comment features and related admin menus."
-msgstr ""
-
-#: inc/seo.php:141
-msgid ""
-"This will be used when individual pages don't have their own description."
-msgstr ""
-
-#: mini-plugin.php:1292
-msgid "Time"
-msgstr ""
-
-#: inc/seo.php:669
-msgid "Title"
-msgstr ""
-
-#: inc/seo.php:796
-msgid "To consolidate ranking signals to one URL"
-msgstr ""
-
-#: inc/seo.php:794
-msgid "To prevent duplicate content issues"
-msgstr ""
-
-#: inc/security.php:201
-#, php-format
-msgid "Too many failed login attempts. Please try again in %d minute(s)."
-msgstr ""
-
-#: inc/gdpr.php:839 inc/gdpr.php:882 inc/gdpr.php:907
-msgid "Tracks unique visitors"
-msgstr ""
-
-#: inc/pwa.php:61
-msgid ""
-"Turn your website into an installable Progressive Web App (PWA). This "
-"generates a Web App Manifest and registers a service worker for offline "
-"support."
-msgstr ""
-
-#: inc/seo.php:771
-msgid "Twitter Description"
-msgstr ""
-
-#: inc/seo.php:826
-msgid "Twitter Handle"
-msgstr ""
-
-#: inc/seo.php:767
-msgid "Twitter Title"
-msgstr ""
-
-#: inc/seo.php:828
-msgid "Twitter username without @. Leave empty to skip."
-msgstr ""
-
-#: inc/gdpr.php:778 inc/gdpr.php:820
-msgid "Type"
-msgstr ""
-
-#: inc/content-types.php:51
-msgid "Update "
-msgstr ""
-
-#: inc/seo.php:237
-msgid "Update Sitemap Now"
-msgstr ""
-
-#: inc/content-types.php:73
-msgid "Update Tag"
-msgstr ""
-
-#: mini-plugin.php:154
-msgid ""
-"Use <code class=\"XS\">[slideshow slideshow=\"<span class=\"acid-green-"
-"text\">slug</span>\"]</code> shortcode to embed or activate the slideshow "
-"<b>directly in page</b>."
-msgstr ""
-
-#: inc/content-types.php:655 inc/pwa.php:192 mini-plugin.php:1506
-#: mini-plugin.php:1534
-msgid "Use this image"
-msgstr ""
-
-#: inc/gdpr.php:312
-msgid "Used as both contact email and PEC unless PEC is set separately."
-msgstr ""
-
-#: inc/seo.php:323
-msgid "Used as fallback for author LinkedIn in JSON-LD."
-msgstr ""
-
-#: inc/seo.php:313
-msgid "Used as fallback for author Twitter in JSON-LD."
-msgstr ""
-
-#: inc/seo.php:283
-msgid "Used as fallback for author bio in JSON-LD."
-msgstr ""
-
-#: inc/seo.php:293
-msgid "Used as fallback for author job title in JSON-LD."
-msgstr ""
-
-#: inc/seo.php:274
-msgid "Used as fallback for author name in JSON-LD and meta tags."
-msgstr ""
-
-#: inc/seo.php:303
-msgid "Used as fallback for author website in JSON-LD."
-msgstr ""
-
-#: inc/seo.php:151
-msgid "Used as fallback meta keywords when a page/post has no custom keywords."
-msgstr ""
-
-#: mini-plugin.php:830
-msgid "Useful Plugins"
-msgstr ""
-
-#: inc/backoffice.php:38
-msgid ""
-"Useful for client sites where you want to control the update process. "
-"Administrators will still see all update notices normally."
-msgstr ""
-
-#: mini-plugin.php:823
-msgid "Useful plugins"
-msgstr ""
-
-#: mini-plugin.php:74
-msgid "User Menu"
-msgstr ""
-
-#: inc/smtp.php:91
-msgid "Username"
-msgstr ""
-
-#: inc/seo.php:747 inc/seo.php:772
-msgid "Uses SEO Description if left empty"
-msgstr ""
-
-#: inc/seo.php:743 inc/seo.php:768
-msgid "Uses SEO Title if left empty"
-msgstr ""
-
-#: mini-plugin.php:566
-msgid "Using custom SEO image"
-msgstr ""
-
-#: mini-plugin.php:584
-msgid "Using default SEO image"
-msgstr ""
-
-#: mini-plugin.php:577
-msgid "Using featured image"
-msgstr ""
-
-#: inc/seo.php:630
-msgid "Using:"
-msgstr ""
-
-#: inc/content-types.php:21 inc/content-types.php:22 inc/post-types.php:32
-#: inc/post-types.php:33
-msgid "View "
+#: inc/dashboard.php:296
+msgid "Add Post"
 msgstr ""
 
 #: inc/dashboard.php:303
 msgid "View Site"
 msgstr ""
 
-#: mini-plugin.php:903
-msgid "Visit mini website"
+#: inc/security.php:10
+msgid "Security settings"
 msgstr ""
 
-#: inc/seo.php:799
-msgid "Warning:"
-msgstr ""
-
-#: inc/pwa.php:73
-msgid ""
-"When enabled, a manifest.json is served and a service worker is registered "
-"on all front-end pages. Requires HTTPS in production."
-msgstr ""
-
-#: inc/seo.php:199
-msgid ""
-"When enabled, you'll be able to customize title, description, keywords, "
-"robots directives, and social media tags for each page/post."
-msgstr ""
-
-#: inc/seo.php:793
-msgid "When to use:"
-msgstr ""
-
-#: inc/content-types.php:788
-msgid "Wide"
-msgstr ""
-
-#: inc/seo.php:599
-msgid "X (Twitter)"
-msgstr ""
-
-#: inc/seo.php:759
-msgid "X (Twitter) Card Tags"
-msgstr ""
-
-#: inc/seo.php:475 inc/seo.php:494
-msgid "You do not have sufficient permissions to access this page."
-msgstr ""
-
-#: inc/security.php:117
+#: inc/security.php:106
 msgid "You must be logged in to access the REST API."
 msgstr ""
 
-#: inc/seo.php:678
+#: inc/security.php:190
+#, php-format
+msgid "Too many failed login attempts. Please try again in %d minute(s)."
+msgstr ""
+
+#: mini-plugin.php:72
+msgid "Main Menu"
+msgstr ""
+
+#: mini-plugin.php:73
+msgid "Footer Menu"
+msgstr ""
+
+#: mini-plugin.php:74
+msgid "User Menu"
+msgstr ""
+
+#: mini-plugin.php:142
+msgid "SEO Expert"
+msgstr ""
+
+#: mini-plugin.php:154
+msgid "Content type settings"
+msgstr ""
+
+#: mini-plugin.php:183
 msgid ""
-"characters. Most search engines use a maximum of 160 chars for the "
-"description."
+"Enable the \"Slideshow\" content type to manage <u>slideshows</u> and "
+"<u>slides</u>."
 msgstr ""
 
-#: inc/seo.php:672
+#: mini-plugin.php:184
+msgid "This option loads <i>mini</i> <b>slider.js</b> library."
+msgstr ""
+
+#: mini-plugin.php:185
 msgid ""
-"characters. Most search engines use a maximum of 60 chars for the title."
+"Use <code class=\"XS\">[slideshow slideshow=\"<span class=\"acid-green-"
+"text\">slug</span>\"]</code> shortcode to embed or activate the slideshow "
+"<b>directly in page</b>."
 msgstr ""
 
-#: inc/seo.php:632
-msgid "custom SEO image"
+#: mini-plugin.php:199
+msgid "Enable the \"News\" content type to manage <u>news articles</u>."
 msgstr ""
 
-#: inc/seo.php:636
-msgid "default SEO image"
+#: mini-plugin.php:213
+msgid "Enable the \"Event\" content type to manage <u>events</u>."
 msgstr ""
 
-#: inc/seo.php:634
-msgid "featured image"
+#: mini-plugin.php:228
+msgid ""
+"Enable \"Course\" content type to manage <u>courses</u> and <u>lessons</u>"
 msgstr ""
 
-#: mini-plugin.php:822
+#: mini-plugin.php:242
+msgid "Enable \"Match\" content type to manage sport <u>events</u>"
+msgstr ""
+
+#: mini-plugin.php:264
+msgid "Blogging"
+msgstr ""
+
+#: mini-plugin.php:265
+msgid "Content types"
+msgstr ""
+
+#: mini-plugin.php:604
+msgid "Using custom SEO image"
+msgstr ""
+
+#: mini-plugin.php:615
+msgid "Using featured image"
+msgstr ""
+
+#: mini-plugin.php:622
+msgid "Using default SEO image"
+msgstr ""
+
+#: mini-plugin.php:665
+msgid "No content found to analyze. Please add some content first."
+msgstr ""
+
+#: mini-plugin.php:842
 msgid "mini"
 msgstr ""
 
-#: inc/seo.php:545
-msgid "mini SEO"
+#: mini-plugin.php:843
+msgid "Useful plugins"
 msgstr ""
 
-#: inc/content-types.php:732
-msgid "— No course —"
+#: mini-plugin.php:850
+msgid "Useful Plugins"
 msgstr ""
 
-#: inc/content-types.php:701
-msgid "— No slideshow —"
+#: mini-plugin.php:851
+msgid "Here are some useful plugins that work great with mini:"
 msgstr ""
 
-#: inc/content-types.php:765 inc/pwa.php:160
-msgid "— None —"
+#: mini-plugin.php:861 mini-plugin.php:865
+msgid "Active"
+msgstr ""
+
+#: mini-plugin.php:871
+msgid "Activate"
+msgstr ""
+
+#: mini-plugin.php:875
+msgid "Installed"
+msgstr ""
+
+#: mini-plugin.php:881
+msgid "Install"
+msgstr ""
+
+#: mini-plugin.php:885
+msgid "Not installed"
+msgstr ""
+
+#: mini-plugin.php:929
+#, php-format
+msgid "Activate and manage %s content types."
+msgstr ""
+
+#: mini-plugin.php:936
+#, php-format
+msgid "Manage %s SEO settings and optimization."
+msgstr ""
+
+#: mini-plugin.php:943
+#, php-format
+msgid "%s general settings."
+msgstr ""
+
+#: mini-plugin.php:950
+#, php-format
+msgid "Manage %s security settings."
+msgstr ""
+
+#: mini-plugin.php:964
+#, php-format
+msgid "Manage %s GDPR settings."
+msgstr ""
+
+#: mini-plugin.php:971
+#, php-format
+msgid "Manage %s contact form settings."
+msgstr ""
+
+#: mini-plugin.php:978
+#, php-format
+msgid "Activate and manage %1$s (%2$s)."
+msgstr ""
+
+#: mini-plugin.php:985
+#, php-format
+msgid "Manage %s user settings."
+msgstr ""
+
+#: mini-plugin.php:1049
+msgid "Login settings"
+msgstr ""
+
+#: mini-plugin.php:1050
+msgid "SMTP settings"
+msgstr ""
+
+#: mini-plugin.php:1051
+msgid "External libraries"
+msgstr ""
+
+#: mini-plugin.php:1135
+msgid "Backoffice"
+msgstr ""
+
+#: mini-plugin.php:1136
+msgid "Gutenberg blocks"
+msgstr ""
+
+#: mini-plugin.php:1137
+msgid "Legacy editor"
+msgstr ""
+
+#: mini-plugin.php:1220
+msgid "Privacy"
+msgstr ""
+
+#: mini-plugin.php:1221
+msgid "Cookie policy"
+msgstr ""
+
+#: mini-plugin.php:1304
+msgid "End date (optional)"
+msgstr ""
+
+#: mini-plugin.php:1330
+msgid "Date & Time"
+msgstr ""
+
+#: mini-plugin.php:1353 mini-plugin.php:1358
+msgid "End date"
+msgstr ""
+
+#: mini-plugin.php:1364
+msgid "Time"
+msgstr ""
+
+#: mini-plugin.php:1371 mini-plugin.php:1376
+msgid "End time"
+msgstr ""
+
+#: mini-plugin.php:1459
+msgid "Location address"
+msgstr ""
+
+#: mini-plugin.php:1485
+msgid "Teams"
+msgstr ""
+
+#: mini-plugin.php:1503 mini-plugin.php:1506
+msgid "Team one"
+msgstr ""
+
+#: mini-plugin.php:1510
+msgid "Team one logo"
+msgstr ""
+
+#: mini-plugin.php:1513 mini-plugin.php:1544
+msgid "Select Image"
+msgstr ""
+
+#: mini-plugin.php:1526
+msgid "Team one score"
+msgstr ""
+
+#: mini-plugin.php:1534 mini-plugin.php:1537
+msgid "Team two"
+msgstr ""
+
+#: mini-plugin.php:1541
+msgid "Team two logo"
+msgstr ""
+
+#: mini-plugin.php:1557
+msgid "Team two score"
+msgstr ""
+
+#: mini-plugin.php:1576 mini-plugin.php:1604
+msgid "Select Team Logo"
+msgstr ""
+
+#: mini-plugin.php:1789
+msgid "Blogging settings"
+msgstr ""
+
+#: mini-plugin.php:1804
+msgid ""
+"This option will <u>disable blogging features</u> including <b>posts</b>, "
+"<b>blog archive pages</b> and related admin menus."
 msgstr ""

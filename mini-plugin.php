@@ -263,7 +263,6 @@ function mini_content_page_html() {
         <nav class="nav-tab-wrapper">
             <a href="<?php echo esc_url( $page_url . '&tab=blogging' ); ?>" class="nav-tab <?php echo $current_tab === 'blogging' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Blogging', 'mini' ); ?></a>
             <a href="<?php echo esc_url( $page_url . '&tab=content-types' ); ?>" class="nav-tab <?php echo $current_tab === 'content-types' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Content types', 'mini' ); ?></a>
-            <a href="<?php echo esc_url( $page_url . '&tab=editor' ); ?>" class="nav-tab <?php echo $current_tab === 'editor' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Editor settings', 'mini' ); ?></a>
         </nav>
 
         <?php if ( $current_tab === 'blogging' ) : ?>
@@ -282,16 +281,6 @@ function mini_content_page_html() {
                 <?php
                 settings_fields( 'mini_content' );
                 do_settings_sections( 'mini-content' );
-                submit_button( 'Save Settings' );
-                ?>
-            </form>
-
-        <?php elseif ( $current_tab === 'editor' ) : ?>
-
-            <form action="options.php" method="post">
-                <?php
-                settings_fields( 'mini_editor' );
-                do_settings_sections( 'mini-editor' );
                 submit_button( 'Save Settings' );
                 ?>
             </form>
@@ -318,7 +307,7 @@ function mini_plugin_settings_pages() {
     add_submenu_page(
         'mini',
         'mini plugin - Contents',
-        'Contents',
+        'Contents & types',
         'manage_options',
         'mini-content',
         'mini_content_page_html',
@@ -336,7 +325,7 @@ function mini_plugin_settings_pages() {
     add_submenu_page(
         'mini',
         'mini plugin - Settings',
-        'Settings',
+        'General settings',
         'manage_options',
         'mini-general-settings',
         'mini_email_page_html',
@@ -354,7 +343,7 @@ function mini_plugin_settings_pages() {
     add_submenu_page(
         'mini',
         'mini plugin - Backoffice',
-        'Backoffice',
+        'Backoffice & editing',
         'manage_options',
         'mini-backoffice',
         'mini_backoffice_page_html',
@@ -390,7 +379,7 @@ function mini_plugin_settings_pages() {
     add_submenu_page(
         'mini',
         'mini plugin - User',
-        'User',
+        'User settings',
         'manage_options',
         'mini-user',
         'mini_user_page_html',
@@ -960,42 +949,42 @@ function mini_plugin_main_page_html() {
                 <h2 class="mb-0 h4"><i class="iconoir-shield third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'Security settings', 'mini' ); ?></h2>
                 <p class="mt-0"><?php printf( esc_html__( 'Manage %s security settings.', 'mini' ), '<i>mini</i>' ); ?></p>
                 <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-security') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Security settings', 'mini' ); ?></a>
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-security') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Security', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0 h4"><i class="iconoir-edit-pencil third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'Backoffice settings', 'mini' ); ?></h2>
+                <h2 class="mb-0 h4"><i class="iconoir-edit-pencil third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'Backoffice and editing settings', 'mini' ); ?></h2>
                 <p class="mt-0"><?php esc_html_e( 'Manage backoffice and Gutenberg editor settings.', 'mini' ); ?></p>
                 <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-backoffice') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Backoffice and editor settings', 'mini' ); ?></a>
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-backoffice') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Backoffice and editing', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
                 <h2 class="mb-0 h4"><i class="iconoir-half-cookie third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'GDPR settings', 'mini' ); ?></h2>
                 <p class="mt-0"><?php printf( esc_html__( 'Manage %s GDPR settings.', 'mini' ), '<i>mini</i>' ); ?></p>
                 <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-gdpr') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'GDPR settings', 'mini' ); ?></a>
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-gdpr') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'GDPR', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
                 <h2 class="mb-0 h4"><i class="iconoir-mail third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'Contact form settings', 'mini' ); ?></h2>
                 <p class="mt-0"><?php printf( esc_html__( 'Manage %s contact form settings.', 'mini' ), '<i>mini</i>' ); ?></p>
                 <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-contact-form') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Contact form settings', 'mini' ); ?></a>
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-contact-form') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Contact form', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
                 <h2 class="mb-0 h4"><i class="iconoir-window-check third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'PWA settings', 'mini' ); ?></h2>
                 <p class="mt-0"><?php printf( esc_html__( 'Activate and manage %1$s (%2$s).', 'mini' ), '<b>PWA</b>', '<i>Progressive Web App</i>' ); ?></p>
                 <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-pwa') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'PWA settings', 'mini' ); ?></a>
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-pwa') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'PWA', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
                 <h2 class="mb-0 h4"><i class="iconoir-user third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'User settings', 'mini' ); ?></h2>
                 <p class="mt-0"><?php printf( esc_html__( 'Manage %s user settings.', 'mini' ), '<i>mini</i>' ); ?></p>
                 <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-user') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'User settings', 'mini' ); ?></a>
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-user') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'User', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="sep mb-2 light-grey-border"></div>
@@ -1018,7 +1007,7 @@ function mini_plugin_main_page_html() {
                 <h2 class="mb-0 h4"><i class="iconoir-building third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'Company settings', 'mini' ); ?></h2>
                 <p class="mt-0"><?php esc_html_e( 'Manage company settings.', 'mini' ); ?></p>
                 <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-company') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Company', 'mini' ); ?></a>
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-company') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Owner data', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="sep mb-2 light-grey-border"></div>
@@ -1059,6 +1048,7 @@ function mini_email_page_html() {
         <nav class="nav-tab-wrapper">
             <a href="<?php echo esc_url( $page_url . '&tab=login' ); ?>" class="nav-tab <?php echo $current_tab === 'login' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Login settings', 'mini' ); ?></a>
             <a href="<?php echo esc_url( $page_url . '&tab=smtp' ); ?>" class="nav-tab <?php echo $current_tab === 'smtp' ? 'nav-tab-active' : ''; ?>"><?php _e( 'SMTP settings', 'mini' ); ?></a>
+            <a href="<?php echo esc_url( $page_url . '&tab=ext-lib' ); ?>" class="nav-tab <?php echo $current_tab === 'ext-lib' ? 'nav-tab-active' : ''; ?>"><?php _e( 'External libraries', 'mini' ); ?></a>
         </nav>
 
         <?php if ( $current_tab === 'smtp' ) : ?>
@@ -1067,6 +1057,16 @@ function mini_email_page_html() {
                 <?php
                 settings_fields( 'mini_smtp' );
                 do_settings_sections( 'mini-smtp' );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+
+        <?php elseif ( $current_tab === 'ext-lib' ) : ?>
+
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_ext_lib' );
+                do_settings_sections( 'mini-ext-lib' );
                 submit_button( 'Save Settings' );
                 ?>
             </form>
@@ -1133,8 +1133,8 @@ function mini_backoffice_page_html() {
 
         <nav class="nav-tab-wrapper">
             <a href="<?php echo esc_url( $page_url . '&tab=backoffice' ); ?>" class="nav-tab <?php echo $current_tab === 'backoffice' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Backoffice', 'mini' ); ?></a>
-            <a href="<?php echo esc_url( $page_url . '&tab=blocks' ); ?>" class="nav-tab <?php echo $current_tab === 'blocks' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Editor blocks', 'mini' ); ?></a>
-            <a href="<?php echo esc_url( $page_url . '&tab=ext-lib' ); ?>" class="nav-tab <?php echo $current_tab === 'ext-lib' ? 'nav-tab-active' : ''; ?>"><?php _e( 'External libraries', 'mini' ); ?></a>
+            <a href="<?php echo esc_url( $page_url . '&tab=blocks' ); ?>" class="nav-tab <?php echo $current_tab === 'blocks' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Gutenberg blocks', 'mini' ); ?></a>
+            <a href="<?php echo esc_url( $page_url . '&tab=editor' ); ?>" class="nav-tab <?php echo $current_tab === 'editor' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Legacy editor', 'mini' ); ?></a>
         </nav>
 
         <?php if ( $current_tab === 'blocks' ) : ?>
@@ -1147,12 +1147,12 @@ function mini_backoffice_page_html() {
                 ?>
             </form>
 
-        <?php elseif ( $current_tab === 'ext-lib' ) : ?>
+        <?php elseif ( $current_tab === 'editor' ) : ?>
 
             <form action="options.php" method="post">
                 <?php
-                settings_fields( 'mini_ext_lib' );
-                do_settings_sections( 'mini-ext-lib' );
+                settings_fields( 'mini_editor' );
+                do_settings_sections( 'mini-editor' );
                 submit_button( 'Save Settings' );
                 ?>
             </form>
