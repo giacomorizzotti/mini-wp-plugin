@@ -175,8 +175,10 @@ function get_latest_news_callback( $num = 3, $cols = 3, $opts = [] ) {
     while ( $query->have_posts() ) {
         $query->the_post();
         $item_class = ( $highlight_first && $n === 0 ) ? 'box-100' : $box_class;
-        echo '<div class="' . esc_attr( $item_class ) . '">';
+        echo '<div class="' . esc_attr( $item_class ) . ' p-0">';
+        echo '<div class="boxes">';
         get_template_part( 'template-parts/content', 'news', [ 'is_shortcode' => true ] );
+        echo '</div>';
         echo '</div>';
         $n++;
     }
@@ -285,7 +287,7 @@ function mini_post_grid_callback( $num = 6, $cols = 3, $opts = [] ) {
     while ( $query->have_posts() ) {
         $query->the_post();
         $item_class = ( $highlight_first && $n === 0 ) ? 'box-100' : $box_class;
-        echo '<div class="' . esc_attr( $item_class ) . '">';
+        echo '<div class="' . esc_attr( $item_class ) . ' p-0">';
         get_template_part( 'template-parts/content', 'post', [ 'is_shortcode' => true ] );
         echo '</div>';
         $n++;
@@ -536,14 +538,16 @@ function get_next_event_callback($num = 1, $cols = 3, $opts = []) {
     }
 
     ob_start();
-    echo '<div class="boxes g-0">';
+    echo '<div class="boxes">';
     while ( $query->have_posts() ) {
         $query->the_post();
-        echo '<div class="' . esc_attr( $box_class ) . '">';
+        echo '<div class="' . esc_attr( $box_class ) . ' p-0">';
+        echo '<div class="boxes">';
         get_template_part( 'template-parts/content', 'event', [
             'is_shortcode'  => true,
             'show_location' => $show_location,
         ] );
+        echo '</div>';
         echo '</div>';
     }
     echo '</div>';
@@ -702,11 +706,13 @@ function get_next_match_callback($num = 1, $cols = 3, $opts = []) {
     }
 
     ob_start();
-    echo '<div class="boxes g-0">';
+    echo '<div class="boxes">';
     while ( $query->have_posts() ) {
         $query->the_post();
-        echo '<div class="' . esc_attr( $box_class ) . ' my-0">';
+        echo '<div class="' . esc_attr( $box_class ) . ' my-0 p-0">';
+        echo '<div class="boxes">';
         get_template_part( 'template-parts/content', 'match', [ 'is_shortcode' => true ] );
+        echo '</div>';
         echo '</div>';
     }
     echo '</div>';
