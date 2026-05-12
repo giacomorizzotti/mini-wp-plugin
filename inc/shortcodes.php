@@ -313,175 +313,76 @@ add_shortcode( 'post_grid', function( $atts ) {
 } );
 
 /* SLIDESHOW Shortcodes */
-function get_slides_callback($atts = []) {
+function get_slides_callback( $atts = [] ) {
     // Support both direct calls (legacy: first arg is a number) and shortcode attributes
-    if (is_array($atts)) {
-        $atts = shortcode_atts([
+    if ( is_array( $atts ) ) {
+        $atts = shortcode_atts( [
             'slideshow' => '',
             'number'    => -1,
-        ], $atts, 'slider');
-        $slideshow_ref = sanitize_text_field($atts['slideshow']);
-        $number        = intval($atts['number']);
+        ], $atts, 'slider' );
+        $slideshow_ref = sanitize_text_field( $atts['slideshow'] );
+        $number        = intval( $atts['number'] );
     } else {
         // Legacy direct call: get_slides_callback(3)
-        $number        = absint($atts) ?: -1;
+        $number        = absint( $atts ) ?: -1;
         $slideshow_ref = '';
     }
 
-    $args = array(
+    // Resolve the slideshow post and delegate to template part
+    if ( ! empty( $slideshow_ref ) ) {
+        if ( is_numeric( $slideshow_ref ) ) {
+            $slideshow_post = get_post( absint( $slideshow_ref ) );
+        } else {
+            $slideshow_post = get_page_by_path( $slideshow_ref, OBJECT, 'slideshow' );
+        }
+        if ( ! $slideshow_post ) {
+            return '';
+        }
+
+        $prev_post           = $GLOBALS['post'] ?? null;
+        $GLOBALS['post']     = $slideshow_post;
+        setup_postdata( $slideshow_post );
+
+        ob_start();
+        get_template_part( 'template-parts/content', 'slideshow', [
+            'number' => $number > 0 ? $number : -1,
+        ] );
+        $output = ob_get_clean();
+
+        if ( $prev_post ) {
+            $GLOBALS['post'] = $prev_post;
+            setup_postdata( $prev_post );
+        } else {
+            wp_reset_postdata();
+        }
+
+        return $output;
+    }
+
+    // Legacy fallback: no slideshow specified, query all slides
+    $args = [
         'posts_per_page' => $number > 0 ? $number : -1,
         'orderby'        => 'menu_order',
         'order'          => 'ASC',
         'post_type'      => 'slide',
         'post_status'    => 'publish',
         'no_found_rows'  => true,
-    );
-
-    // Filter by parent slideshow if provided (accepts ID or slug)
-    if (!empty($slideshow_ref)) {
-        if (is_numeric($slideshow_ref)) {
-            $args['post_parent'] = absint($slideshow_ref);
-        } else {
-            $parent = get_page_by_path($slideshow_ref, OBJECT, 'slideshow');
-            if ($parent) {
-                $args['post_parent'] = $parent->ID;
-            } else {
-                return '';
-            }
-        }
+    ];
+    $query = new WP_Query( $args );
+    if ( ! $query->have_posts() ) {
+        return '';
     }
-    $query = new WP_Query($args);
-    if ($query->have_posts()) :
-        $show_controls = $query->post_count > 1;
-        $slider = '';
-        $slider .= '
-<div class="container fw grad-fw-down-w">
-    <div class="container fw">
-        <div class="slider-wrapper">
-        '.($show_controls ? '<i id="left" class="iconoir-arrow-left-circle slider-controls"></i>' : '').'            <ul class="slider fh">
-        ';
-        $n=1;
-        while ($query->have_posts()) : $query->the_post();
-            $post_id = get_the_ID();
 
-            if (function_exists('mini_get_page_layout')) {
-                $layout = mini_get_page_layout($post_id);
-            } else {
-                $space_top = get_post_meta($post_id, 'space_top', true);
-                $space_bottom = get_post_meta($post_id, 'space_bot', true);
-                $spacing_class = '';
-                if ($space_top && $space_bottom) {
-                    $spacing_class = 'space-top-bot';
-                } elseif ($space_top) {
-                    $spacing_class = 'space-top';
-                } elseif ($space_bottom) {
-                    $spacing_class = 'space-bot';
-                }
-
-                $layout = array(
-                    'title_presence' => get_post_meta($post_id, 'title_presence', true),
-                    'container_width' => get_post_meta($post_id, 'page_container', true),
-                    'spacing_class' => $spacing_class,
-                );
-            }
-
-            $container_classes = trim(
-                sanitize_html_class((string) ($layout['container_width'] ?? ''))
-            );
-
-            $boxes_classes = trim(
-                sanitize_html_class((string) ($layout['spacing_class'] ?? ''))
-            );
-
-            $show_title = !empty($layout['title_presence']);
-            $slide_title = esc_html(get_the_title($post_id));
-            $slide_content = apply_filters('the_content', get_the_content(null, false, $post_id));
-
-            $header_top    = esc_attr((string) get_post_meta($post_id, 'header_styling_top', true));
-            $header_scroll = esc_attr((string) get_post_meta($post_id, 'header_styling_scroll', true));
-
-            $slider .= '
-                <li class="slide" data-header-top="'.$header_top.'" data-header-scroll="'.$header_scroll.'">
-            ';
-            if (get_the_post_thumbnail($post_id)!=false) {
-            $slider .= '
-                    <div class="img">
-                        <img src="'.esc_url(get_the_post_thumbnail_url($post_id)).'" alt="" draggable="false" />
-                    </div>
-            ';
-            }
-            $slider .= '                    
-                    <div class="caption">
-                        <div class="container fw">
-                            <div class="container '.esc_attr($container_classes).'">
-                                <div class="boxes fh align-content-end '.esc_attr($boxes_classes).'">';
-            if ($show_title) {
-                $slider .= '
-                                    <div class="box-100">
-                                        <h2 class="m-0 white-box p-1">'.$slide_title.'</h2>
-                                    </div>
-                ';
-            }
-            $slider .= '
-                        '.$slide_content.'
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            ';
-        $n++;
-        endwhile;
-        $slider .= '
-            </ul>
-            '.($show_controls ? '<i id="right" class="iconoir-arrow-right-circle slider-controls"></i>' : '').'
-        </div>
-    </div>
-</div>
-        ';
-        wp_reset_postdata();
-
-        // Inline script: update #header classes based on the active slide.
-        // Uses IntersectionObserver (root = slider) so only the slide that is
-        // ≥60% visible within the slider viewport triggers the header update.
-        // A MutationObserver re-observes clone slides added by slider.js.
-        $slider .= '
-<script>
-(function(){
-    var sl  = document.querySelector(".slider");
-    var hd  = document.getElementById("header");
-    if (!sl || !hd) return;
-    var topCls  = ["top-wh","top-bk","top-col","top-inv"];
-    var scrCls  = ["scroll-wh","scroll-bk","scroll-col","scroll-inv"];
-    var all     = topCls.concat(scrCls);
-    function apply(t, s) {
-        all.forEach(function(c){ hd.classList.remove(c); });
-        if (t) hd.classList.add(t);
-        if (s) hd.classList.add(s);
+    ob_start();
+    echo '<div class="container fw"><div class="slider-wrapper"><ul class="slider fh">';
+    while ( $query->have_posts() ) {
+        $query->the_post();
+        get_template_part( 'template-parts/content', 'slide' );
     }
-    var io = new IntersectionObserver(function(entries){
-        entries.forEach(function(e){
-            if (e.intersectionRatio >= 0.6) {
-                apply(
-                    e.target.dataset.headerTop    || "",
-                    e.target.dataset.headerScroll || ""
-                );
-            }
-        });
-    }, { root: sl, threshold: 0.6 });
-    function obs(){
-        sl.querySelectorAll("li.slide").forEach(function(s){ io.observe(s); });
-    }
-    new MutationObserver(obs).observe(sl, { childList: true });
-    obs();
-})();
-</script>
-        ';
+    echo '</ul></div></div>';
+    wp_reset_postdata();
 
-        return $slider;
-    endif;
-    
-    return '';
+    return ob_get_clean();
 }
 add_shortcode('slider', 'get_slides_callback');
 add_shortcode('slideshow', 'get_slides_callback');

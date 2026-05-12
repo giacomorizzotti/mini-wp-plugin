@@ -74,6 +74,12 @@ function mini_login_intercept() {
 
     $slug         = sanitize_title( trim( $opts['mini_login_slug'] ?? 'login', '/' ) ) ?: 'login';
     $request_path = trim( parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH ), '/' );
+    $base_path    = trim( parse_url( home_url(), PHP_URL_PATH ), '/' );
+    if ( $base_path && strpos( $request_path, $base_path . '/' ) === 0 ) {
+        $request_path = trim( substr( $request_path, strlen( $base_path ) ), '/' );
+    } elseif ( $request_path === $base_path ) {
+        $request_path = '';
+    }
 
     if ( $request_path === $slug ) {
         global $pagenow;
