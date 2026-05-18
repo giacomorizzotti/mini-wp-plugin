@@ -163,6 +163,7 @@ function mini_content_section_callback( $args ) {
     $event_enabled = is_mini_option_enabled('mini_content_settings', 'mini_event');
     $match_enabled = is_mini_option_enabled('mini_content_settings', 'mini_match');
     $course_enabled = is_mini_option_enabled('mini_content_settings', 'mini_course');
+    $landing_page_enabled = is_mini_option_enabled('mini_content_settings', 'mini_landing_page');
     ?>
     <p id="<?php echo esc_attr( $args['id'] ); ?>">
         <i>mini</i> allows you to manage many custom content types to extend WordPress features.
@@ -240,6 +241,20 @@ function mini_content_section_callback( $args ) {
                 <?php esc_html_e( 'Matches', 'mini' ); ?>
             </label>
             <p class="" for="mini_match"><?= __( 'Enable "Match" content type to manage sport <u>events</u>', 'mini' ); ?>.</p>
+        </div>
+        <div class="box-25 p-2 white-bg b-rad-5 box-shadow">
+            <label for="mini_landing_page" class="h5 bold bk-text">
+                <input
+                    type="checkbox"
+                    id="mini_landing_page"
+                    name="mini_content_settings[mini_landing_page]"
+                    class="me-1"
+                    value="1"
+                    <?php checked($landing_page_enabled, true); ?>
+                >
+                <?php esc_html_e( 'Landing Pages', 'mini' ); ?>
+            </label>
+            <p class="" for="mini_landing_page"><?= __( 'Enable the "Landing Page" content type to manage dedicated <u>landing pages</u>.', 'mini' ); ?></p>
         </div>
     </div>
     <?php

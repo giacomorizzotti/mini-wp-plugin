@@ -543,6 +543,9 @@ function mini_add_seo_meta_boxes() {
         $post_types[] = 'course';
         $post_types[] = 'lesson';
     }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_landing_page')) {
+        $post_types[] = 'landing_page';
+    }
     
     foreach ($post_types as $post_type) {
         add_meta_box(

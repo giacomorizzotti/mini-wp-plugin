@@ -604,7 +604,7 @@ add_action('add_meta_boxes', function() {
             'mini_page_slideshow',
             __('Slideshow', 'mini'),
             'mini_page_slideshow_meta_box',
-            'page',
+            ['page', 'landing_page'],
             'side',
             'default'
         );
@@ -856,6 +856,19 @@ add_action('save_post_page', function($post_id) {
     }
 });
 
+add_action('save_post_landing_page', function($post_id) {
+    if ( ! isset($_POST['mini_page_slideshow_nonce']) ) return;
+    if ( ! wp_verify_nonce($_POST['mini_page_slideshow_nonce'], 'mini_page_slideshow_save') ) return;
+    if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return;
+    if ( ! current_user_can('edit_post', $post_id) ) return;
+
+    if ( ! empty($_POST['mini_page_slideshow']) ) {
+        update_post_meta($post_id, '_mini_page_slideshow', absint($_POST['mini_page_slideshow']));
+    } else {
+        delete_post_meta($post_id, '_mini_page_slideshow');
+    }
+});
+
 /* START - Sync Main Menu items with content type toggles */
 /**
  * Content types that should appear in the Main Menu when enabled.
@@ -911,5 +924,34 @@ add_action( 'update_option_mini_content_settings', function( $old_value, $new_va
             mini_sync_main_menu_item( $config['post_type'], $config['label'], $is_enabled );
         }
     }
+    flush_rewrite_rules();
 }, 10, 2 );
 /* END - Sync Main Menu items with content type toggles */
+
+/* START - Custom post type - LANDING PAGE */
+if (is_mini_option_enabled('mini_content_settings', 'mini_landing_page')) {
+    add_action('init', function() {
+        register_post_type('landing_page', [
+            'labels' => [
+                'name'          => __('Landing Pages', 'mini'),
+                'singular_name' => __('Landing Page', 'mini'),
+                'add_new'       => __('Add Landing Page', 'mini'),
+                'add_new_item'  => __('Add New Landing Page', 'mini'),
+                'edit_item'     => __('Edit Landing Page', 'mini'),
+                'new_item'      => __('New Landing Page', 'mini'),
+                'view_item'     => __('View Landing Page', 'mini'),
+                'search_items'  => __('Search Landing Pages', 'mini'),
+                'not_found'     => __('No landing pages found', 'mini'),
+                'archives'      => __('Landing Pages', 'mini'),
+            ],
+            'public'        => true,
+            'hierarchical'  => true,
+            'has_archive'   => false,
+            'menu_icon'     => 'dashicons-welcome-widgets-menus',
+            'rewrite'       => ['slug' => 'lp', 'with_front' => false],
+            'show_in_rest'  => true,
+            'supports'      => ['title', 'editor', 'thumbnail', 'excerpt', 'page-attributes', 'panels'],
+        ]);
+    });
+}
+/* END - Custom post type - LANDING PAGE */
