@@ -339,6 +339,15 @@ function mini_plugin_settings_pages() {
     );
     add_submenu_page(
         'mini',
+        'mini plugin - Translations',
+        'Translations',
+        'manage_options',
+        'mini-translations',
+        'mini_translations_page_html',
+        9
+    );
+    add_submenu_page(
+        'mini',
         'mini plugin - Settings',
         'General settings',
         'manage_options',
@@ -940,6 +949,13 @@ function mini_plugin_main_page_html() {
             </div>
             <div class="sep mb-2 light-grey-border"></div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0 h4"><i class="iconoir-settings third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'General settings', 'mini' ); ?></h2>
+                <p class="mt-0"><?php printf( esc_html__( '%s general settings.', 'mini' ), '<i>mini</i>' ); ?></p>
+                <p class="">
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-general-settings') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'General settings', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
                 <h2 class="mb-0 h4"><i class="iconoir-cube third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'Contents', 'mini' ); ?></h2>
                 <p class="mt-0"><?php printf( esc_html__( 'Activate and manage %s content types.', 'mini' ), '<i>mini</i>' ); ?></p>
                 <p class="">
@@ -947,17 +963,17 @@ function mini_plugin_main_page_html() {
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0 h4"><i class="iconoir-translate third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'Translations', 'mini' ); ?></h2>
+                <p class="mt-0"><?php printf( esc_html__( 'Manage %s translations.', 'mini' ), '<i>mini</i>' ); ?></p>
+                <p class="">
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-translations') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Translations', 'mini' ); ?></a>
+                </p>
+            </div>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
                 <h2 class="mb-0 h4"><i class="iconoir-search third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'SEO', 'mini' ); ?></h2>
                 <p class="mt-0"><?php printf( esc_html__( 'Manage %s SEO settings and optimization.', 'mini' ), '<i>mini</i>' ); ?></p>
                 <p class="">
                     <a href="<?php echo esc_url( admin_url('admin.php?page=mini-seo') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'SEO', 'mini' ); ?></a>
-                </p>
-            </div>
-            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
-                <h2 class="mb-0 h4"><i class="iconoir-settings third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'General settings', 'mini' ); ?></h2>
-                <p class="mt-0"><?php printf( esc_html__( '%s general settings.', 'mini' ), '<i>mini</i>' ); ?></p>
-                <p class="">
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-general-settings') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'General settings', 'mini' ); ?></a>
                 </p>
             </div>
             <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
@@ -1921,4 +1937,8 @@ require_once plugin_dir_path(__FILE__) . 'inc/contact-form.php';
 /* START - User module include */
 require_once plugin_dir_path(__FILE__) . 'inc/user.php';
 /* END - User module include */
+
+/* START - Translations module include */
+require_once plugin_dir_path(__FILE__) . 'inc/translations.php';
+/* END - Translations module include */
 
