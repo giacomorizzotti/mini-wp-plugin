@@ -932,3 +932,321 @@ function mini_gdpr_cookie_section_callback( $args ) {
 }
 
 /* END - GDPR Cookie Policy settings */
+
+/* START - GDPR Consent Banner */
+
+function mini_gdpr_banner_settings_init() {
+    register_setting( 'mini_gdpr_banner', 'mini_gdpr_banner_settings', [
+        'sanitize_callback' => 'mini_gdpr_banner_sanitize',
+    ] );
+    add_settings_section(
+        'mini_gdpr_banner_section',
+        __( 'Cookie Consent Banner', 'mini' ),
+        'mini_gdpr_banner_section_callback',
+        'mini-gdpr-banner'
+    );
+}
+add_action( 'admin_init', 'mini_gdpr_banner_settings_init' );
+
+function mini_gdpr_banner_default_description() {
+    return __( 'Lo facciamo per migliorare la tua esperienza su questo sito; scegli tu se ce lo vuoi permettere.', 'mini' );
+}
+
+function mini_gdpr_banner_sanitize( $input ) {
+    $out = [];
+    $out['mini_gdpr_banner_enabled']        = ! empty( $input['mini_gdpr_banner_enabled'] ) ? 1 : 0;
+    $out['mini_gdpr_banner_version']        = sanitize_text_field( $input['mini_gdpr_banner_version'] ?? '1' );
+    $out['mini_gdpr_banner_description']    = sanitize_textarea_field( $input['mini_gdpr_banner_description'] ?? '' );
+    $cats                                   = $input['mini_gdpr_banner_categories'] ?? [];
+    $out['mini_gdpr_banner_categories']     = [];
+    foreach ( [ 'preferences', 'analytics', 'marketing' ] as $cat ) {
+        $out['mini_gdpr_banner_categories'][ $cat ] = [
+            'label'   => sanitize_text_field( $cats[ $cat ]['label'] ?? '' ),
+            'desc'    => sanitize_textarea_field( $cats[ $cat ]['desc'] ?? '' ),
+            'handles' => sanitize_textarea_field( $cats[ $cat ]['handles'] ?? '' ),
+        ];
+    }
+    return $out;
+}
+
+function mini_gdpr_banner_section_callback( $args ) {
+    $opts        = get_option( 'mini_gdpr_banner_settings', [] );
+    $enabled     = ! empty( $opts['mini_gdpr_banner_enabled'] );
+    $version     = $opts['mini_gdpr_banner_version'] ?? '1';
+    $description = $opts['mini_gdpr_banner_description'] ?? '';
+    $cats        = $opts['mini_gdpr_banner_categories'] ?? [];
+
+    $cat_defaults = [
+        'preferences' => [ 'label' => __( 'Preferences', 'mini' ), 'desc' => __( 'Preference cookies remember your settings and choices on this site.', 'mini' ), 'handles' => '' ],
+        'analytics'   => [ 'label' => __( 'Analytics', 'mini' ),   'desc' => __( 'Analytics cookies help us understand how visitors interact with this website.', 'mini' ), 'handles' => '' ],
+        'marketing'   => [ 'label' => __( 'Marketing', 'mini' ),   'desc' => __( 'Marketing cookies are used to deliver relevant advertisements.', 'mini' ), 'handles' => '' ],
+    ];
+    foreach ( $cat_defaults as $key => $defaults ) {
+        $cats[ $key ] = array_merge( $defaults, (array) ( $cats[ $key ] ?? [] ) );
+    }
+    ?>
+    <div class="boxes">
+        <div class="box-100 p-2 blue-bg b-rad-5 box-shadow">
+            <h4 class="white-text"><?php esc_html_e( 'Enable Consent Banner', 'mini' ); ?></h4>
+            <label class="white-text">
+                <input type="checkbox" name="mini_gdpr_banner_settings[mini_gdpr_banner_enabled]" value="1" <?php checked( $enabled ); ?>>
+                <?php esc_html_e( 'Show the cookie consent banner to visitors.', 'mini' ); ?>
+            </label>
+        </div>
+        <div class="box-100 p-2 b-rad-5 box-shadow">
+            <h4><?php esc_html_e( 'Banner description', 'mini' ); ?></h4>
+            <p class="S grey-text"><?php esc_html_e( 'Text shown below the banner title. Leave empty to use the default.', 'mini' ); ?></p>
+            <textarea name="mini_gdpr_banner_settings[mini_gdpr_banner_description]" rows="3" class="large-text" placeholder="<?php echo esc_attr( mini_gdpr_banner_default_description() ); ?>"><?php echo esc_textarea( $description ); ?></textarea>
+        </div>
+        <div class="box-100 p-2 b-rad-5 box-shadow">
+            <h4><?php esc_html_e( 'Policy version', 'mini' ); ?></h4>
+            <p class="S grey-text"><?php esc_html_e( 'Changing this value will re-prompt all visitors for consent.', 'mini' ); ?></p>
+            <input type="text" name="mini_gdpr_banner_settings[mini_gdpr_banner_version]" value="<?php echo esc_attr( $version ); ?>" class="regular-text">
+        </div>
+        <div class="box-100 p-2 b-rad-5 box-shadow">
+            <h4><?php esc_html_e( 'Cookie categories', 'mini' ); ?></h4>
+            <p class="S grey-text"><?php esc_html_e( '"Necessary" cookies are always active. Configure optional categories below.', 'mini' ); ?></p>
+            <?php foreach ( [ 'preferences', 'analytics', 'marketing' ] as $cat ) :
+                $c = $cats[ $cat ]; ?>
+            <div style="border:1px solid #ddd;padding:12px;margin:8px 0;border-radius:4px;">
+                <strong><?php echo esc_html( ucfirst( $cat ) ); ?></strong>
+                <table class="form-table" style="margin:0;">
+                    <tr>
+                        <th style="width:120px;"><?php esc_html_e( 'Label', 'mini' ); ?></th>
+                        <td><input type="text" name="mini_gdpr_banner_settings[mini_gdpr_banner_categories][<?php echo esc_attr( $cat ); ?>][label]" value="<?php echo esc_attr( $c['label'] ); ?>" class="regular-text"></td>
+                    </tr>
+                    <tr>
+                        <th><?php esc_html_e( 'Description', 'mini' ); ?></th>
+                        <td><textarea name="mini_gdpr_banner_settings[mini_gdpr_banner_categories][<?php echo esc_attr( $cat ); ?>][desc]" rows="2" class="large-text"><?php echo esc_textarea( $c['desc'] ); ?></textarea></td>
+                    </tr>
+                    <tr>
+                        <th><?php esc_html_e( 'Script handles', 'mini' ); ?></th>
+                        <td>
+                            <textarea name="mini_gdpr_banner_settings[mini_gdpr_banner_categories][<?php echo esc_attr( $cat ); ?>][handles]" rows="3" class="large-text" placeholder="facebook-pixel"><?php echo esc_textarea( $c['handles'] ); ?></textarea>
+                            <p class="description"><?php esc_html_e( 'One WP script handle per line. These scripts will be blocked until the user consents.', 'mini' ); ?></p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <?php
+}
+
+/* --- Front-end enqueue --- */
+
+function mini_gdpr_banner_enqueue() {
+    if ( ! is_mini_option_enabled( 'mini_gdpr_banner_settings', 'mini_gdpr_banner_enabled' ) || is_admin() ) {
+        return;
+    }
+    $opts    = get_option( 'mini_gdpr_banner_settings', [] );
+    $version = $opts['mini_gdpr_banner_version'] ?? '1';
+    $cats    = $opts['mini_gdpr_banner_categories'] ?? [];
+
+    $cat_defaults = [
+        'preferences' => [ 'label' => __( 'Preferences', 'mini' ), 'desc' => __( 'Preference cookies remember your settings and choices on this site.', 'mini' ) ],
+        'analytics'   => [ 'label' => __( 'Analytics', 'mini' ),   'desc' => __( 'Analytics cookies help us understand how visitors interact with this website.', 'mini' ) ],
+        'marketing'   => [ 'label' => __( 'Marketing', 'mini' ),   'desc' => __( 'Marketing cookies are used to deliver relevant advertisements.', 'mini' ) ],
+    ];
+    foreach ( $cat_defaults as $key => $defaults ) {
+        $cats[ $key ] = array_merge( $defaults, (array) ( $cats[ $key ] ?? [] ) );
+    }
+
+    $js_cats = [];
+    foreach ( $cats as $key => $c ) {
+        $js_cats[ $key ] = [ 'label' => $c['label'], 'desc' => $c['desc'] ];
+    }
+
+    $plugin_file = dirname( __DIR__ ) . '/mini-plugin.php';
+    wp_enqueue_style( 'mini-cookie-consent',  plugins_url( 'css/cookie-consent.css', $plugin_file ), [], $version );
+    wp_enqueue_script( 'mini-cookie-consent', plugins_url( 'js/cookie-consent.js',   $plugin_file ), [], $version, true );
+    wp_localize_script( 'mini-cookie-consent', 'miniCCData', [
+        'version'    => $version,
+        'categories' => $js_cats,
+    ] );
+}
+add_action( 'wp_enqueue_scripts', 'mini_gdpr_banner_enqueue' );
+
+/* --- Banner HTML output --- */
+
+function mini_gdpr_banner_output() {
+    if ( ! is_mini_option_enabled( 'mini_gdpr_banner_settings', 'mini_gdpr_banner_enabled' ) ) {
+        return;
+    }
+    $opts            = get_option( 'mini_gdpr_banner_settings', [] );
+    $cats            = $opts['mini_gdpr_banner_categories'] ?? [];
+    $cookie_opts     = get_option( 'mini_gdpr_cookie_settings', [] );
+    $cookie_page_id  = (int) ( $cookie_opts['mini_gdpr_cookie_page_id'] ?? 0 );
+    $privacy_page_id = (int) get_option( 'wp_page_for_privacy_policy' );
+
+    // Don't obscure the policy pages — users need to read them to consent.
+    if ( is_page() ) {
+        $current_id = (int) get_queried_object_id();
+        $policy_ids = array_filter( [ $privacy_page_id, $cookie_page_id ] );
+        if ( $current_id && in_array( $current_id, $policy_ids, true ) ) {
+            return;
+        }
+    }
+    $privacy_url = get_privacy_policy_url();
+    $cookie_url  = $cookie_page_id ? get_permalink( $cookie_page_id ) : '';
+    $description    = trim( (string) ( $opts['mini_gdpr_banner_description'] ?? '' ) );
+    if ( $description === '' ) {
+        $description = mini_gdpr_banner_default_description();
+    }
+
+    $cat_defaults = [
+        'preferences' => [ 'label' => __( 'Preferences', 'mini' ), 'desc' => __( 'Preference cookies remember your settings and choices on this site.', 'mini' ) ],
+        'analytics'   => [ 'label' => __( 'Analytics', 'mini' ),   'desc' => __( 'Analytics cookies help us understand how visitors interact with this website.', 'mini' ) ],
+        'marketing'   => [ 'label' => __( 'Marketing', 'mini' ),   'desc' => __( 'Marketing cookies are used to deliver relevant advertisements.', 'mini' ) ],
+    ];
+    foreach ( $cat_defaults as $key => $defaults ) {
+        $cats[ $key ] = array_merge( $defaults, (array) ( $cats[ $key ] ?? [] ) );
+    }
+    ?>
+    <!-- Cookie Consent Banner -->
+    <div id="black-layer" hidden aria-hidden="true"></div>
+    <div id="consent-banner" class="mini" hidden role="dialog" aria-label="<?php esc_attr_e( 'Cookie consent', 'mini' ); ?>">
+        <p class="cookie-icon" aria-hidden="true">🍪</p>
+        <a class="close-cookie-banner" role="button" tabindex="0" aria-label="<?php esc_attr_e( 'Close banner', 'mini' ); ?>">&#x2715;</a>
+        <div class="cookie-banner-content">
+            <div class="consent-label">
+                <p class="cookie-desc wh-text L"><?php esc_html_e( 'Utilizziamo dei cookie', 'mini' ); ?></p>
+                <p class="cookie-desc wh-text S">
+                    <?php echo esc_html( $description ); ?><br/>
+                    <?php if ( $privacy_url || $cookie_url ) : ?>
+                        <?php esc_html_e( 'Maggiori informazioni nella', 'mini' ); ?>
+                        <?php if ( $privacy_url ) : ?><a href="<?php echo esc_url( $privacy_url ); ?>"><?php esc_html_e( 'privacy policy', 'mini' ); ?></a><?php endif; ?>
+                        <?php if ( $privacy_url && $cookie_url ) : ?> <?php esc_html_e( 'e nella', 'mini' ); ?> <?php endif; ?>
+                        <?php if ( $cookie_url ) : ?><a href="<?php echo esc_url( $cookie_url ); ?>"><?php esc_html_e( 'cookie policy', 'mini' ); ?></a><?php endif; ?>.
+                    <?php endif; ?>
+                </p>
+            </div>
+            <div class="consent-buttons">
+                <button class="cc-accept-all btn white-btn"><?php esc_html_e( 'Accetta tutto', 'mini' ); ?></button>
+                <button class="cc-reject btn white-btn-invert transp-bg"><?php esc_html_e( 'Solo tecnici', 'mini' ); ?></button>
+                <button class="cc-manage btn light-grey-btn-invert transp-bg"><?php esc_html_e( 'Gestisci preferenze', 'mini' ); ?></button>
+            </div>
+            <p class="consent-status"></p>
+        </div>
+    </div>
+
+    <div id="consent-modal" hidden role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Cookie preferences', 'mini' ); ?>">
+        <div class="consent-modal-overlay"></div>
+        <div class="consent-modal-inner">
+            <h2 class="consent-modal-title"><?php esc_html_e( 'Preferenze cookie', 'mini' ); ?></h2>
+            <div class="cc-categories">
+                <div class="cc-category">
+                    <div class="cc-category-header">
+                        <span class="cc-category-label"><?php esc_html_e( 'Necessari', 'mini' ); ?></span>
+                        <span class="cc-always-on"><?php esc_html_e( 'sempre attivi', 'mini' ); ?></span>
+                    </div>
+                    <p class="cc-category-desc"><?php esc_html_e( 'Cookie tecnici necessari al funzionamento del sito. Non possono essere disabilitati.', 'mini' ); ?></p>
+                </div>
+                <?php foreach ( [ 'preferences', 'analytics', 'marketing' ] as $cat ) :
+                    $c = $cats[ $cat ]; ?>
+                <div class="cc-category" data-cc-cat="<?php echo esc_attr( $cat ); ?>">
+                    <div class="cc-category-header">
+                        <label class="cc-category-label" for="cc-toggle-<?php echo esc_attr( $cat ); ?>"><?php echo esc_html( $c['label'] ); ?></label>
+                        <label class="cc-switch">
+                            <input type="checkbox" id="cc-toggle-<?php echo esc_attr( $cat ); ?>" data-cc-toggle="<?php echo esc_attr( $cat ); ?>" class="cc-toggle">
+                            <span class="cc-slider"></span>
+                        </label>
+                    </div>
+                    <?php if ( ! empty( $c['desc'] ) ) : ?>
+                    <p class="cc-category-desc"><?php echo esc_html( $c['desc'] ); ?></p>
+                    <?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="consent-modal-buttons">
+                <button class="cc-save-prefs btn"><?php esc_html_e( 'Salva preferenze', 'mini' ); ?></button>
+                <button class="cc-accept-all btn btn-invert"><?php esc_html_e( 'Accetta tutti', 'mini' ); ?></button>
+            </div>
+        </div>
+    </div>
+    <!-- /Cookie Consent Banner -->
+    <?php
+}
+add_action( 'wp_footer', 'mini_gdpr_banner_output', 100 );
+
+/* --- Server-side script blocking --- */
+
+function mini_gdpr_get_banner_consent() {
+    if ( empty( $_COOKIE['mini_cc_consent'] ) ) {
+        return null;
+    }
+    $raw  = sanitize_text_field( wp_unslash( $_COOKIE['mini_cc_consent'] ) );
+    $data = json_decode( $raw, true );
+    return is_array( $data ) ? $data : null;
+}
+
+/**
+ * Whether scripts in $category should be blocked for the current visitor.
+ * Returns false when the banner is disabled (no GDPR gating in effect).
+ */
+function mini_gdpr_category_blocked( $category ) {
+    if ( ! is_mini_option_enabled( 'mini_gdpr_banner_settings', 'mini_gdpr_banner_enabled' ) ) {
+        return false;
+    }
+    $opts    = get_option( 'mini_gdpr_banner_settings', [] );
+    $version = $opts['mini_gdpr_banner_version'] ?? '1';
+    $consent = mini_gdpr_get_banner_consent();
+    if ( ! $consent || ( $consent['v'] ?? '' ) !== $version ) {
+        return true;
+    }
+    return empty( $consent[ $category ] );
+}
+
+/**
+ * Prints type/data-cc-category attributes inside a <script> tag so the GDPR
+ * client unblocks it once the visitor consents to $category. No-op when the
+ * banner is disabled or the category already has consent.
+ */
+function mini_gdpr_script_attrs( $category ) {
+    if ( ! mini_gdpr_category_blocked( $category ) ) {
+        return;
+    }
+    echo ' type="text/plain" data-cc-category="' . esc_attr( $category ) . '"';
+}
+
+function mini_gdpr_banner_script_loader_tag( $tag, $handle, $src ) {
+    static $handle_map = null;
+    if ( $handle_map === null ) {
+        $handle_map = [];
+        $opts       = get_option( 'mini_gdpr_banner_settings', [] );
+        $cats       = $opts['mini_gdpr_banner_categories'] ?? [];
+        foreach ( [ 'preferences', 'analytics', 'marketing' ] as $cat ) {
+            $handles_raw = $cats[ $cat ]['handles'] ?? '';
+            foreach ( array_filter( array_map( 'trim', explode( "\n", $handles_raw ) ) ) as $h ) {
+                $handle_map[ $h ] = $cat;
+            }
+        }
+    }
+    if ( ! isset( $handle_map[ $handle ] ) ) {
+        return $tag;
+    }
+    $category = $handle_map[ $handle ];
+    $opts     = get_option( 'mini_gdpr_banner_settings', [] );
+    $version  = $opts['mini_gdpr_banner_version'] ?? '1';
+    $consent  = mini_gdpr_get_banner_consent();
+    if ( ! $consent || ( $consent['v'] ?? '' ) !== $version || empty( $consent[ $category ] ) ) {
+        // Block: rewrite type to text/plain, add data-cc-category
+        $tag = preg_replace(
+            '/(<script\b[^>]*)\btype=["\']text\/javascript["\']([^>]*>)/i',
+            '$1type="text/plain" data-cc-category="' . esc_attr( $category ) . '"$2',
+            $tag
+        );
+        if ( strpos( $tag, 'data-cc-category' ) === false ) {
+            $tag = preg_replace(
+                '/(<script\b)([^>]*>)/i',
+                '$1 type="text/plain" data-cc-category="' . esc_attr( $category ) . '"$2',
+                $tag, 1
+            );
+        }
+    }
+    return $tag;
+}
+add_filter( 'script_loader_tag', 'mini_gdpr_banner_script_loader_tag', 10, 3 );
+
+/* END - GDPR Consent Banner */
