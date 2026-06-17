@@ -691,8 +691,8 @@ msgid ""
 "Brief description of the author's expertise. Leave empty to use user profile "
 "bio."
 msgstr ""
-"Decrizione mirata dell'expertise dellautore. Lasciare vuoto per utilizzare "
-"la bio del profilo utente."
+"Descrizione mirata dell'expertise dell'autore. Lasciare vuoto per "
+"utilizzare la bio del profilo utente."
 
 #: inc/seo.php:823
 msgid "Job Title"
@@ -713,10 +713,8 @@ msgid ""
 "Author's personal or professional website. Leave empty to use user profile "
 "website."
 msgstr ""
-"Sito web personale o professionale dell'autore. Lasciare vuoto per usare il "
-"sito indicato nel profilo utente.Sito web personale o professionale "
-"dell'autore. Lasciare vuoto per utilizzare il sito indicato nel profilo "
-"utente."
+"Sito web personale o professionale dell'autore. Lasciare vuoto per "
+"utilizzare il sito indicato nel profilo utente."
 
 #: inc/seo.php:831
 msgid "Twitter Handle"
@@ -1014,7 +1012,7 @@ msgstr "Abilita gli \"Eventi\" per gestire gli <u>eventi</u>."
 #: mini-plugin.php:228
 msgid ""
 "Enable \"Course\" content type to manage <u>courses</u> and <u>lessons</u>"
-msgstr "Abilita i \"Corsi\" per gestire <u>corsi</u> and <u>lezioni</u>"
+msgstr "Abilita i \"Corsi\" per gestire <u>corsi</u> e <u>lezioni</u>"
 
 #: mini-plugin.php:242
 msgid "Enable \"Match\" content type to manage sport <u>events</u>"
@@ -1093,12 +1091,12 @@ msgstr "Gestisci le impostazioni SEO e l'ottimizzazione di %s."
 #: mini-plugin.php:943
 #, php-format
 msgid "%s general settings."
-msgstr "%s impostazioni generali."
+msgstr "Impostazioni generali di %s."
 
 #: mini-plugin.php:950
 #, php-format
 msgid "Manage %s security settings."
-msgstr "Gestisci le %s impostazioni relative all'utente."
+msgstr "Gestisci le %s impostazioni di sicurezza."
 
 #: mini-plugin.php:964
 #, php-format
