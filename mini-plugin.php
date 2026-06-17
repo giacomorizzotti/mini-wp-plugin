@@ -143,8 +143,10 @@ function mini_register_seo_expert_role() {
     }
 }
 register_activation_hook( __FILE__, 'mini_register_seo_expert_role' );
-add_action( 'init', 'mini_register_seo_expert_role' ); // Ensure role and caps are always up to date
+// Run on admin requests only — avoids redundant cap writes on every frontend page load.
+add_action( 'admin_init', 'mini_register_seo_expert_role' );
 /* END - SEO Expert role */
+
 
 /* START - content settings */
 function mini_content_settings_init() {
@@ -398,6 +400,15 @@ function mini_plugin_settings_pages() {
         'manage_options',
         'mini-pwa',
         'mini_pwa_page_html',
+        9
+    );
+    add_submenu_page(
+        'mini',
+        'mini plugin - AI',
+        'AI',
+        'manage_options',
+        'mini-ai',
+        'mini_ai_page_html',
         9
     );
     add_submenu_page(
@@ -1041,6 +1052,13 @@ function mini_plugin_main_page_html() {
                     <a href="<?php echo esc_url( admin_url('admin.php?page=mini-company') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'Owner data', 'mini' ); ?></a>
                 </p>
             </div>
+            <div class="box-25 p-2 white-bg b-rad-5 box-shadow mb-2">
+                <h2 class="mb-0 h4"><i class="iconoir-sparks third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'AI settings', 'mini' ); ?></h2>
+                <p class="mt-0"><?php printf( esc_html__( 'Manage %s AI policy and serve an ai.txt file.', 'mini' ), '<i>mini</i>' ); ?></p>
+                <p class="">
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=mini-ai') ); ?>" rel="noopener noreferrer" class="btn fourth-color-btn white-text"><?php esc_html_e( 'AI', 'mini' ); ?></a>
+                </p>
+            </div>
             <div class="sep mb-2 light-grey-border"></div>
             <div class="box-20 p-2 white-bg b-rad-5 box-shadow mb-2">
                 <h3 class="mb-0 h5"><i class="iconoir-spock-hand-gesture third-color-text" width="24px" height="24px" style="vertical-align: text-top;"></i>&nbsp;&nbsp;<?php esc_html_e( 'Credits', 'mini' ); ?></h3>
@@ -1336,6 +1354,7 @@ function add_date_only_box() {
 function date_only_box_html( $post, $meta ){
     $date_value = get_post_meta( $post->ID, 'event_date', true) ?: '';
     $end_date_value = get_post_meta( $post->ID, 'event_end_date', true) ?: '';
+    wp_nonce_field( 'mini_date_box', 'mini_date_box_nonce' );
     ?>
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 1rem;">
         <div style="flex: 1; margin-bottom: 0.5rem;">
@@ -1352,6 +1371,7 @@ function date_only_box_html( $post, $meta ){
 function date_only_save_postdata( $post_id ) {
     if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) { return; }
     if ( ! current_user_can( 'edit_post', $post_id ) ) { return; }
+    if ( ! isset( $_POST['mini_date_box_nonce'] ) || ! wp_verify_nonce( $_POST['mini_date_box_nonce'], 'mini_date_box' ) ) { return; }
     if ( ! isset($_POST['event_date']) ) { return; }
     
     // Sanitize and save date fields
@@ -1382,6 +1402,7 @@ function date_time_box_html( $post, $meta ){
     $end_time_value = get_post_meta( $post->ID, 'event_end_time', true) ?: '';
     $has_end_date = !empty($end_date_value);
     $has_end_time = !empty($end_time_value);
+    wp_nonce_field( 'mini_date_time_box', 'mini_date_time_box_nonce' );
     ?>
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 1rem;">
         <div style="flex: 1; margin-bottom: 0.5rem;">
@@ -1457,6 +1478,7 @@ function date_time_box_html( $post, $meta ){
 function date_time_save_postdata( $post_id ) {
     if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) { return; }
     if ( ! current_user_can( 'edit_post', $post_id ) ) { return; }
+    if ( ! isset( $_POST['mini_date_time_box_nonce'] ) || ! wp_verify_nonce( $_POST['mini_date_time_box_nonce'], 'mini_date_time_box' ) ) { return; }
     if ( ! isset($_POST['event_date']) && ! isset($_POST['event_time']) ) { return; }
     
     // Sanitize and save date/time fields
@@ -1489,6 +1511,7 @@ function add_location_box() {
 function location_box_html( $post, $meta ){
     $location_name_value = get_post_meta( $post->ID, 'location_name', true) ?: '';
     $location_address_value = get_post_meta( $post->ID, 'location_address', true) ?: '';
+    wp_nonce_field( 'mini_location_box', 'mini_location_box_nonce' );
     ?>
     <div style="display: flex; flex-flow: row wrap; margin-bottom: 1rem;">
         <div style="flex: 1;">
@@ -1507,6 +1530,7 @@ function location_box_html( $post, $meta ){
 function location_save_postdata( $post_id ) {
     if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) { return; }
     if ( ! current_user_can( 'edit_post', $post_id ) ) { return; }
+    if ( ! isset( $_POST['mini_location_box_nonce'] ) || ! wp_verify_nonce( $_POST['mini_location_box_nonce'], 'mini_location_box' ) ) { return; }
     if ( ! isset($_POST['location_name']) && ! isset($_POST['location_address']) ) { return; }
     
     // Sanitize and save location fields
@@ -1785,6 +1809,7 @@ if (is_mini_option_enabled('mini_comment_settings', 'mini_disable_comment')) {
     add_action( 'wp_before_admin_bar_render', 'disable_comments_admin_bar' );
     add_action('admin_init', 'disable_comments_admin_menu_redirect');
     add_action('admin_init', 'disable_comments_dashboard');
+    add_filter('comments_array', 'disable_comments_hide_existing_comments', 10, 2);
 }
 function disable_comments_post_types_support() {
     $post_types = get_post_types();
@@ -1803,7 +1828,6 @@ function disable_comments_hide_existing_comments($comments) {
     $comments = array();
     return $comments;
 }
-add_filter('comments_array', 'disable_comments_hide_existing_comments', 10, 2);
 function disable_comments_admin_menu() {
     remove_menu_page('edit-comments.php');
 }
@@ -1952,4 +1976,10 @@ require_once plugin_dir_path(__FILE__) . 'inc/user.php';
 /* START - Translations module include */
 require_once plugin_dir_path(__FILE__) . 'inc/translations.php';
 /* END - Translations module include */
+
+/* START - AI module include */
+require_once plugin_dir_path(__FILE__) . 'inc/ai.php';
+register_activation_hook( __FILE__, 'mini_ai_activation_setup' );
+register_deactivation_hook( __FILE__, 'mini_ai_deactivation_teardown' );
+/* END - AI module include */
 

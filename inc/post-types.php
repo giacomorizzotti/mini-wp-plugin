@@ -12,6 +12,7 @@ if (!defined('ABSPATH')) {
 /**
  * Register a custom post type with mini defaults
  */
+if ( ! function_exists( 'register_mini_post_type' ) ) {
 function register_mini_post_type($type, $singular, $plural, $icon, $has_archive = true, $hierarchical = false) {
     $supports = ['title', 'editor', 'thumbnail', 'excerpt', 'panels'];
     
@@ -44,6 +45,7 @@ function register_mini_post_type($type, $singular, $plural, $icon, $has_archive 
         'supports' => $supports
     ]);
 }
+} // end function_exists guard
 
 /* Register News Post Type */
 if (is_mini_option_enabled('mini_content_settings', 'mini_news')) {

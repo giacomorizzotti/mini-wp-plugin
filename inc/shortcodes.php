@@ -112,14 +112,14 @@ function mini_render_location_box($post_id, $cols=1, $wrapper_class = 'my-0', $n
         <div class="'.$box_class.' '.$wrapper_class.' location-box">';
     
     if (!empty($location_name)) {
-        $output .= '<h4 class="m-0 bold XL py-1 px-15 box-shadow '.$name_box_color_class.'">'.$location_name.'</h4>';
+        $output .= '<h4 class="m-0 bold XL py-1 px-15 box-shadow '.$name_box_color_class.'">'.esc_html($location_name).'</h4>';
     }
-    
+
     if (!empty($location_address)) {
         if (!empty($location_name)) {
             $output .= '<div class="sep"></div>';
         }
-        $output .= '<p class="m-0 p-1 '.$address_box_color_class.'"><i class="iconoir-map-pin"></i>&nbsp;&nbsp;'.$location_address.'</p>';
+        $output .= '<p class="m-0 p-1 '.$address_box_color_class.'"><i class="iconoir-map-pin"></i>&nbsp;&nbsp;'.esc_html($location_address).'</p>';
     }
     
     $output .= '</div>';

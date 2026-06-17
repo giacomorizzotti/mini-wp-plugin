@@ -263,7 +263,9 @@ function mini_gdpr_privacy_section_callback( $args ) {
             </p>
             <script>
             (function(){
-                document.getElementById('mini-gdpr-fetch-privacy').addEventListener('click', function() {
+                var privacyBtn = document.getElementById('mini-gdpr-fetch-privacy');
+                if (!privacyBtn) { return; }
+                privacyBtn.addEventListener('click', function() {
                     var btn    = this;
                     var status = document.getElementById('mini-gdpr-fetch-privacy-status');
                     btn.disabled = true;
@@ -730,7 +732,9 @@ function mini_gdpr_cookie_section_callback( $args ) {
             </p>
             <script>
             (function(){
-                document.getElementById('mini-gdpr-fetch-cookie').addEventListener('click', function() {
+                var cookieBtn = document.getElementById('mini-gdpr-fetch-cookie');
+                if (!cookieBtn) { return; }
+                cookieBtn.addEventListener('click', function() {
                     var btn    = this;
                     var status = document.getElementById('mini-gdpr-fetch-cookie-status');
                     btn.disabled = true;

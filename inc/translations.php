@@ -798,7 +798,7 @@ function mini_translations_lang_redirect() {
     if (!$redirect_url) {
         return;
     }
-    wp_redirect($redirect_url, 302);
+    wp_safe_redirect($redirect_url, 302);
     exit;
 }
 add_action('template_redirect', 'mini_translations_lang_redirect', 5);

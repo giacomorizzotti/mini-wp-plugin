@@ -115,29 +115,6 @@ function mini_smtp_section_callback( $args ) {
     <?php
 }
 
-function mini_smtp_page_html() {
-    if ( ! current_user_can( 'manage_options' ) ) {
-        return;
-    }
-    if ( isset( $_GET['settings-updated'] ) ) {
-        add_settings_error( 'mini_messages', 'mini_message', __( 'Settings Saved', 'mini' ), 'updated' );
-    }
-    settings_errors( 'mini_messages' );
-    ?>
-    <div class="wrap">
-        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-        <br/>
-        <form action="options.php" method="post">
-            <?php
-            settings_fields( 'mini_smtp' );
-            do_settings_sections( 'mini-smtp' );
-            submit_button( 'Save Settings' );
-            ?>
-        </form>
-    </div>
-    <?php
-}
-
 /**
  * Apply SMTP settings to WordPress PHPMailer.
  * This hooks into every email sent by WP and plugins (CF7, WooCommerce, etc.).
