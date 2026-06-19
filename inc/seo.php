@@ -521,8 +521,8 @@ function mini_add_seo_meta_boxes() {
         return;
     }
     
-    // Only show to editors, higher, or SEO experts
-    if ( ! current_user_can( 'edit_others_posts' ) && ! current_user_can( 'mini_manage_seo' ) ) {
+    // Only show to editors and higher
+    if ( ! current_user_can( 'edit_others_posts' ) ) {
         return;
     }
     

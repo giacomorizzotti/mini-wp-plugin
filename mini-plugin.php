@@ -115,37 +115,14 @@ function mini_setup_default_menus() {
 register_activation_hook(__FILE__, 'mini_setup_default_menus');
 /* END - Default menus */
 
-/* START - SEO Expert role */
-function mini_register_seo_expert_role() {
-    $author = get_role( 'author' );
-    $caps   = $author ? $author->capabilities : array( 'read' => true );
-
-    // Allow viewing and editing all content (posts, pages, custom post types)
-    $caps['edit_others_posts']      = true;
-    $caps['edit_published_posts']   = true;
-    $caps['edit_pages']             = true;
-    $caps['edit_others_pages']      = true;
-    $caps['edit_published_pages']   = true;
-    $caps['read_private_posts']     = true;
-    $caps['read_private_pages']     = true;
-
-    // Custom SEO capability
-    $caps['mini_manage_seo'] = true;
-
-    $role = get_role( 'seo_expert' );
-    if ( $role ) {
-        // Update capabilities in case they changed
-        foreach ( $caps as $cap => $grant ) {
-            $role->add_cap( $cap, $grant );
-        }
-    } else {
-        add_role( 'seo_expert', __( 'SEO Expert', 'mini' ), $caps );
+/* START - Remove retired SEO Expert role */
+function mini_remove_seo_expert_role() {
+    if ( get_role( 'seo_expert' ) ) {
+        remove_role( 'seo_expert' );
     }
 }
-register_activation_hook( __FILE__, 'mini_register_seo_expert_role' );
-// Run on admin requests only — avoids redundant cap writes on every frontend page load.
-add_action( 'admin_init', 'mini_register_seo_expert_role' );
-/* END - SEO Expert role */
+add_action( 'admin_init', 'mini_remove_seo_expert_role' );
+/* END - Remove retired SEO Expert role */
 
 
 /* START - content settings */
@@ -280,6 +257,7 @@ function mini_content_page_html() {
         <nav class="nav-tab-wrapper">
             <a href="<?php echo esc_url( $page_url . '&tab=blogging' ); ?>" class="nav-tab <?php echo $current_tab === 'blogging' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Blogging', 'mini' ); ?></a>
             <a href="<?php echo esc_url( $page_url . '&tab=content-types' ); ?>" class="nav-tab <?php echo $current_tab === 'content-types' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Content types', 'mini' ); ?></a>
+            <a href="<?php echo esc_url( $page_url . '&tab=roles' ); ?>" class="nav-tab <?php echo $current_tab === 'roles' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Roles & permissions', 'mini' ); ?></a>
         </nav>
 
         <?php if ( $current_tab === 'blogging' ) : ?>
@@ -298,6 +276,16 @@ function mini_content_page_html() {
                 <?php
                 settings_fields( 'mini_content' );
                 do_settings_sections( 'mini-content' );
+                submit_button( 'Save Settings' );
+                ?>
+            </form>
+
+        <?php elseif ( $current_tab === 'roles' ) : ?>
+
+            <form action="options.php" method="post">
+                <?php
+                settings_fields( 'mini_content_roles' );
+                do_settings_sections( 'mini-content-roles' );
                 submit_button( 'Save Settings' );
                 ?>
             </form>
@@ -1334,9 +1322,18 @@ function mini_user_page_html() {
 }
 /* END - User page */
 
+/* START - Roles & permissions module include */
+require_once plugin_dir_path(__FILE__) . 'inc/roles.php';
+/* END - Roles & permissions module include */
+
 /* START - Content types module include */
 require_once plugin_dir_path(__FILE__) . 'inc/content-types.php';
 /* END - Content types module include */
+
+/* START - Roles & permissions defaults */
+register_activation_hook( __FILE__, 'mini_seed_content_type_role_defaults' );
+add_action( 'admin_init', 'mini_seed_content_type_role_defaults' );
+/* END - Roles & permissions defaults */
 
 
 /* ADD Date-only options for courses */

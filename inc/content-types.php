@@ -1,6 +1,6 @@
 <?php
 /* START - Custom post types - Consolidated */
-function register_mini_post_type($type, $singular, $plural, $icon, $has_archive = true, $hierarchical = false, $page_attributes = true, $show_in_menu = true) {
+function register_mini_post_type($type, $singular, $plural, $icon, $has_archive = true, $hierarchical = false, $page_attributes = true, $show_in_menu = true, $capability_group = null) {
     $supports = ['title', 'editor', 'thumbnail', 'excerpt', 'panels'];
 
     // Add page-attributes support for hierarchical post types (enables parent dropdown and menu_order)
@@ -9,7 +9,7 @@ function register_mini_post_type($type, $singular, $plural, $icon, $has_archive 
         $supports[] = 'page-attributes';
     }
 
-    register_post_type($type, [
+    $args = [
         'labels' => [
             'name' => __($plural, 'mini'),
             'singular_name' => __($singular, 'mini'),
@@ -32,7 +32,17 @@ function register_mini_post_type($type, $singular, $plural, $icon, $has_archive 
         'rewrite' => ['slug' => $type],
         'show_in_rest' => true,
         'supports' => $supports
-    ]);
+    ];
+
+    if ($capability_group && function_exists('mini_get_capability_type')) {
+        $capability_type = mini_get_capability_type($capability_group);
+        if ($capability_type) {
+            $args['capability_type'] = $capability_type;
+            $args['map_meta_cap'] = true;
+        }
+    }
+
+    register_post_type($type, $args);
 }
 
 /**
@@ -88,7 +98,7 @@ function register_mini_tag_taxonomy($slug, $post_types) {
 
 if (is_mini_option_enabled('mini_content_settings', 'mini_news')) {
     add_action('init', function() {
-        register_mini_post_type('news', 'News', 'News', 'dashicons-text-page');
+        register_mini_post_type('news', 'News', 'News', 'dashicons-text-page', true, false, true, true, 'news');
         register_mini_taxonomy('news_category', 'Category', 'Categories', 'news');
         register_mini_tag_taxonomy('news_tag', 'news');
     });
@@ -97,12 +107,13 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_news')) {
 /* START - Custom post type - SLIDESHOW */
 if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
     add_action('init', function() {
-        register_mini_post_type('slideshow', 'Slideshow', 'Slideshows', 'dashicons-images-alt2');
+        register_mini_post_type('slideshow', 'Slideshow', 'Slideshows', 'dashicons-images-alt2', true, false, true, true, 'slideshow');
 
         // Slide is hierarchical for post_parent storage, but uses a custom parent meta box
         // (page_attributes=false) so we control the parent dropdown ourselves
         // show_in_menu=false hides the top-level entry; it's nested under Slideshows instead
-        register_mini_post_type('slide', 'Slide', 'Slides', 'dashicons-slides', false, true, false, false);
+        // Shares the 'slideshow' capability group so one permission setting covers both
+        register_mini_post_type('slide', 'Slide', 'Slides', 'dashicons-slides', false, true, false, false, 'slideshow');
     });
 
     // Remove "Add New Slideshow" from the submenu; slides appear embedded in the list
@@ -183,7 +194,7 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
     // AJAX: persist slide order after drag/drop
     add_action('wp_ajax_mini_save_slide_order', function() {
         check_ajax_referer('mini_slide_order', 'nonce');
-        if ( ! current_user_can('edit_posts') ) wp_send_json_error('Unauthorized', 403);
+        if ( ! current_user_can('edit_mini_slides') ) wp_send_json_error('Unauthorized', 403);
         $order = isset($_POST['order']) ? array_map('absint', (array) $_POST['order']) : [];
         foreach ( $order as $menu_order => $post_id ) {
             if ( $post_id ) {
@@ -196,7 +207,7 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
     // AJAX: assign a slide to a slideshow (set post_parent)
     add_action('wp_ajax_mini_assign_slide_parent', function() {
         check_ajax_referer('mini_slide_order', 'nonce');
-        if ( ! current_user_can('edit_posts') ) wp_send_json_error('Unauthorized', 403);
+        if ( ! current_user_can('edit_mini_slides') ) wp_send_json_error('Unauthorized', 403);
         $slide_id     = isset($_POST['slide_id'])     ? absint($_POST['slide_id'])     : 0;
         $slideshow_id = isset($_POST['slideshow_id']) ? absint($_POST['slideshow_id']) : 0;
         if ( ! $slide_id || get_post_type($slide_id) !== 'slide' ) wp_send_json_error('Invalid slide', 400);
@@ -431,7 +442,7 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
 /* START - Custom post type - EVENT */
 if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
     add_action('init', function() {
-        register_mini_post_type('event', 'Event', 'Events', 'dashicons-calendar');
+        register_mini_post_type('event', 'Event', 'Events', 'dashicons-calendar', true, false, true, true, 'event');
         register_mini_taxonomy('event_category', 'Category', 'Categories', 'event');
         register_mini_tag_taxonomy('event_tag', 'event');
     });
@@ -493,7 +504,7 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
 /* START - Custom post type - MATCH */
 if (is_mini_option_enabled('mini_content_settings', 'mini_match')) {
     add_action('init', function() {
-        register_mini_post_type('match', 'Match', 'Matches', 'dashicons-superhero');
+        register_mini_post_type('match', 'Match', 'Matches', 'dashicons-superhero', true, false, true, true, 'match');
         register_mini_taxonomy('match_category', 'Category', 'Categories', 'match');
         register_mini_tag_taxonomy('match_tag', 'match');
     });
@@ -502,10 +513,11 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_match')) {
 /* START - Custom post type - COURSE */
 if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
     add_action('init', function() {
-        register_mini_post_type('course', 'Course', 'Courses', 'dashicons-welcome-learn-more');
+        register_mini_post_type('course', 'Course', 'Courses', 'dashicons-welcome-learn-more', true, false, true, true, 'course');
 
         // Lesson uses post_parent for course relationship (admin UI only), not for hierarchical URLs
-        register_mini_post_type('lesson', 'Lesson', 'Lessons', 'dashicons-book', false, false, false);
+        // Shares the 'course' capability group so one permission setting covers both
+        register_mini_post_type('lesson', 'Lesson', 'Lessons', 'dashicons-book', false, false, false, true, 'course');
 
         register_mini_taxonomy('course_category', 'Category', 'Categories', ['course', 'lesson']);
         register_mini_tag_taxonomy('course_tag', ['course', 'lesson']);
@@ -931,7 +943,7 @@ add_action( 'update_option_mini_content_settings', function( $old_value, $new_va
 /* START - Custom post type - LANDING PAGE */
 if (is_mini_option_enabled('mini_content_settings', 'mini_landing_page')) {
     add_action('init', function() {
-        register_post_type('landing_page', [
+        $args = [
             'labels' => [
                 'name'          => __('Landing Pages', 'mini'),
                 'singular_name' => __('Landing Page', 'mini'),
@@ -951,7 +963,17 @@ if (is_mini_option_enabled('mini_content_settings', 'mini_landing_page')) {
             'rewrite'       => ['slug' => 'lp', 'with_front' => false],
             'show_in_rest'  => true,
             'supports'      => ['title', 'editor', 'thumbnail', 'excerpt', 'page-attributes', 'panels'],
-        ]);
+        ];
+
+        if (function_exists('mini_get_capability_type')) {
+            $capability_type = mini_get_capability_type('landing_page');
+            if ($capability_type) {
+                $args['capability_type'] = $capability_type;
+                $args['map_meta_cap'] = true;
+            }
+        }
+
+        register_post_type('landing_page', $args);
     });
 }
 /* END - Custom post type - LANDING PAGE */
