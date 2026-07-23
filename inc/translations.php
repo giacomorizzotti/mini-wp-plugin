@@ -526,9 +526,17 @@ function mini_translations_rewrite_rules() {
         return;
     }
     foreach (mini_translations_get_languages() as $lang) {
+        $code = preg_quote($lang['code'], '/');
         add_rewrite_rule(
-            '^' . preg_quote($lang['code'], '/') . '/(.+?)/?$',
+            '^' . $code . '/(.+?)/?$',
             'index.php?mini_lang=' . $lang['code'] . '&mini_lang_path=$matches[1]',
+            'top'
+        );
+        // Bare /lang/ with no slug (e.g. /it/ when the home page is Italian).
+        // The request filter will redirect this to the site home page.
+        add_rewrite_rule(
+            '^' . $code . '/?$',
+            'index.php?mini_lang=' . $lang['code'],
             'top'
         );
     }
@@ -554,10 +562,11 @@ function mini_translations_maybe_flush_rules() {
     }
     $cached = (array) get_option('rewrite_rules');
     foreach ($languages as $lang) {
-        $expected = '^' . preg_quote($lang['code'], '/') . '/(.+?)/?$';
-        if (!array_key_exists($expected, $cached)) {
+        $code = preg_quote($lang['code'], '/');
+        if (!array_key_exists('^' . $code . '/(.+?)/?$', $cached) ||
+            !array_key_exists('^' . $code . '/?$', $cached)) {
             flush_rewrite_rules(false);
-            return; // one flush is enough for all languages
+            return; // one flush covers all languages
         }
     }
 }
@@ -579,38 +588,70 @@ add_filter('query_vars', 'mini_translations_register_query_vars');
  * and replace the query vars with the matching post's standard vars.
  */
 function mini_translations_resolve_request($query_vars) {
+    // Bare /lang/ URL with no post slug (e.g. /it/ when the home page is in Italian).
+    // Redirect to the site home page rather than letting WordPress 404.
+    if (!empty($query_vars['mini_lang']) && !isset($query_vars['mini_lang_path'])) {
+        add_action('template_redirect', function () {
+            wp_safe_redirect(home_url('/'), 302);
+            exit;
+        }, 0);
+        return $query_vars;
+    }
+
     if (empty($query_vars['mini_lang_path'])) {
         return $query_vars;
     }
 
     $path = sanitize_text_field(urldecode($query_vars['mini_lang_path']));
 
-    // url_to_postid() lets WordPress's own rewrite rules handle all URL
-    // structures, including custom post types that have a rewrite base
-    // (e.g. /news/my-slug). get_page_by_path() alone cannot resolve those
-    // because the captured path includes the base prefix.
+    $post_types = ['post', 'page'];
+    if (is_mini_option_enabled('mini_content_settings', 'mini_news'))         $post_types[] = 'news';
+    if (is_mini_option_enabled('mini_content_settings', 'mini_event'))        $post_types[] = 'event';
+    if (is_mini_option_enabled('mini_content_settings', 'mini_match'))        $post_types[] = 'match';
+    if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
+        $post_types[] = 'course';
+        $post_types[] = 'lesson';
+    }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_landing_page')) $post_types[] = 'landing_page';
+
+    // Temporarily remove our permalink filters so url_to_postid() sees the
+    // canonical (un-prefixed) URLs when matching against rewrite rules.
+    remove_filter('post_link',      'mini_translations_filter_permalink',      10);
+    remove_filter('post_type_link', 'mini_translations_filter_permalink',      10);
+    remove_filter('page_link',      'mini_translations_filter_page_permalink', 10);
     $post_id = url_to_postid(home_url('/' . $path));
-    $post    = $post_id ? get_post($post_id) : null;
+    add_filter('post_link',      'mini_translations_filter_permalink',      10, 2);
+    add_filter('post_type_link', 'mini_translations_filter_permalink',      10, 2);
+    add_filter('page_link',      'mini_translations_filter_page_permalink', 10, 2);
 
-    // Fallback: get_page_by_path covers hierarchical pages and simple slugs
-    // in cases where url_to_postid returns 0.
+    $post = $post_id ? get_post($post_id) : null;
+
+    // Fallback: get_page_by_path covers hierarchical pages and simple slugs.
     if (!$post) {
-        $post_types = ['post', 'page'];
-        if (is_mini_option_enabled('mini_content_settings', 'mini_news'))         $post_types[] = 'news';
-        if (is_mini_option_enabled('mini_content_settings', 'mini_event'))        $post_types[] = 'event';
-        if (is_mini_option_enabled('mini_content_settings', 'mini_match'))        $post_types[] = 'match';
-        if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
-            $post_types[] = 'course';
-            $post_types[] = 'lesson';
-        }
-        if (is_mini_option_enabled('mini_content_settings', 'mini_landing_page')) $post_types[] = 'landing_page';
-
         $post = get_page_by_path($path, OBJECT, $post_types);
+    }
+
+    // Second fallback: direct name query for non-hierarchical CPTs that
+    // get_page_by_path can miss when the path includes a rewrite-base prefix.
+    if (!$post) {
+        $slug = basename(rtrim($path, '/'));
+        $q    = new WP_Query([
+            'name'           => $slug,
+            'post_type'      => $post_types,
+            'post_status'    => 'publish',
+            'posts_per_page' => 1,
+            'no_found_rows'  => true,
+        ]);
+        $post = !empty($q->posts) ? $q->posts[0] : null;
     }
 
     if (!$post) {
         return $query_vars;
     }
+
+    // Prevent redirect_canonical from sending the visitor back to the
+    // un-prefixed URL before our permalink filter applies.
+    add_filter('redirect_canonical', '__return_false');
 
     unset($query_vars['mini_lang_path'], $query_vars['mini_lang']);
 
@@ -646,11 +687,21 @@ function mini_translations_filter_permalink($url, $post) {
     if ($lang === '') {
         return $url;
     }
-    $home = home_url('/');
-    if (strpos($url, $home) === 0) {
-        return $home . $lang . '/' . substr($url, strlen($home));
+    $home      = home_url('/');
+    $slug_part = substr($url, strlen($home));
+    // URL is not under this site — leave it alone.
+    if (strpos($url, $home) !== 0) {
+        return $url;
     }
-    return $url;
+    // Home page has an empty slug — never prefix it (would produce /lang/ with no slug).
+    if ($slug_part === '' || rtrim($slug_part, '/') === '') {
+        return $url;
+    }
+    // Already prefixed — avoid doubling.
+    if (strpos($slug_part, $lang . '/') === 0) {
+        return $url;
+    }
+    return $home . $lang . '/' . $slug_part;
 }
 add_filter('post_link',      'mini_translations_filter_permalink', 10, 2);
 add_filter('post_type_link', 'mini_translations_filter_permalink', 10, 2);
@@ -663,11 +714,18 @@ function mini_translations_filter_page_permalink($url, $post_id) {
     if ($lang === '') {
         return $url;
     }
-    $home = home_url('/');
-    if (strpos($url, $home) === 0) {
-        return $home . $lang . '/' . substr($url, strlen($home));
+    $home      = home_url('/');
+    $slug_part = substr($url, strlen($home));
+    if (strpos($url, $home) !== 0) {
+        return $url;
     }
-    return $url;
+    if ($slug_part === '' || rtrim($slug_part, '/') === '') {
+        return $url;
+    }
+    if (strpos($slug_part, $lang . '/') === 0) {
+        return $url;
+    }
+    return $home . $lang . '/' . $slug_part;
 }
 add_filter('page_link', 'mini_translations_filter_page_permalink', 10, 2);
 
@@ -732,6 +790,10 @@ add_action('template_redirect', 'mini_translations_handle_set_lang', 0);
  * Runs at priority 1 so the cookie is updated before the redirect check.
  */
 function mini_translations_set_lang_cookie() {
+    // Don't overwrite a cookie the visitor just explicitly set via ?set_lang=.
+    if (!empty($_GET['set_lang'])) {
+        return;
+    }
     if (!is_mini_option_enabled('mini_translations_settings', 'mini_enable_translations') || !is_singular()) {
         return;
     }
