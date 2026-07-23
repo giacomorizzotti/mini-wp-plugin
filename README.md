@@ -1,158 +1,104 @@
-# Mini WordPress Plugin
+# mini WordPress Plugin
 
-A comprehensive WordPress plugin that extends WordPress functionality with custom content types, shortcodes, SEO tools, and enhanced media support.
+A WordPress plugin that extends WordPress with custom content types, multilingual support, SEO tooling, shortcodes, and a collection of site-management utilities. It is the companion plugin to the [mini WordPress theme](https://mini.uwa.agency/).
 
 ## Features
 
-### 🎯 Custom Content Types
-Enable and manage various content types to extend your WordPress site's capabilities:
+### Custom Content Types
 
-- **Slides**: Create and manage slideshow content with the included slider.js library
-- **News**: Manage news articles as a separate content type
-- **Events**: Organize events with date, time, and location information
-- **Matches**: Handle sports events and match scheduling
-- **Courses**: Structure educational content with lessons and course management
+Each type is individually toggleable under **mini → Contents**:
 
-### 🎨 Default Menus
-Automatically creates and registers essential navigation menus:
-- Main Menu
-- Footer Menu
-- User Menu
+| Type | Description |
+|------|-------------|
+| **Slideshows / Slides** | Slideshow and slide management; loads `slider.js`. Use `[slideshow slideshow="slug"]` to embed. |
+| **News** | News articles with their own archive. |
+| **Events** | Events with date, end date, time, end time, and location meta boxes. |
+| **Matches** | Sports matches with team names, logos, and scores. |
+| **Courses / Lessons** | Hierarchical course content. |
+| **Landing Pages** | Dedicated landing pages with optional header/nav suppression per page. |
 
-### ⚡ Shortcodes
-Use these shortcodes to display dynamic content on your pages and posts:
+### Multilingual Support (Translations)
 
-#### Event Shortcodes
-- `[next_event]` - Display the next upcoming event
-- `[next_events]` - Display next 3 events in a 3-column layout
-- `[next_3_events]` - Display next 3 events
-- `[next_4_events]` - Display next 4 events in a 2-column layout
+A complete multilingual system without requiring a third-party plugin:
 
-#### Match Shortcodes
-- `[next_match]` - Display the next upcoming match
-- `[next_matches]` - Display next 3 matches in a 3-column layout
-- `[next_3_matches]` - Display next 3 matches
-- `[next_4_matches]` - Display next 4 matches in a 2-column layout
+- **Language tagging** — assign a language to any post, page, or custom post type via a sidebar meta box in the editor.
+- **Translation linking** — link posts to their translations in other languages (bidirectional, stored as post meta).
+- **Language-prefixed URLs** — pages are served at `/{lang}/slug/` (e.g. `/it/chi-siamo/`). Rewrite rules are flushed automatically when the language list changes.
+- **hreflang + og:locale** — correct tags output automatically in `<head>`.
+- **Language switcher** — rendered by the mini theme in the site header; switches the visitor to the same page in their chosen language.
+- **Language-aware nav menus** — menu items automatically point to the current language's translation. Items with no translation can be hidden (default) or shown in their original language — configurable under **mini → Translations**.
+- **Language-aware `[slideshow]` shortcode** — when embedded on a translated page, the shortcode automatically shows the slideshow in the current language.
 
-#### Content Shortcodes
-- `[latest_news]` - Display latest news articles
-- `[mini_posts]` - Display posts with customizable parameters
+Configure under **mini → Translations**. Supported post types: posts, pages, news, events, matches, courses, lessons, landing pages, slideshows, and slides.
 
-### 🔍 SEO Enhancement
-Built-in SEO tools for better search engine optimization:
-- Meta title and description management
-- Open Graph tags for social media sharing
-- Twitter Card support
-- Character counters for optimal title/description lengths
-- Custom SEO image selection per post/page
+### SEO
 
-### 📁 Media Upload Support
-Enhanced media library with support for:
-- `.af` file format uploads
-- Custom MIME type handling
-- Improved file type validation
+Per-post SEO meta box with:
+- Custom meta title and description with character counters
+- Open Graph tags (og:title, og:description, og:image, og:locale)
+- Twitter Card tags
+- Custom SEO image per post/page (with dimension feedback for optimal 1200×630 px)
+- Keyword analysis tool
 
-### 🛠️ Utility Functions
-Helper functions for developers:
-- Italian date formatting with proper localization
-- Option management utilities
-- Checkbox option rendering
-- Variable retrieval functions
+Configure global defaults under **mini → SEO**.
+
+### Shortcodes
+
+| Shortcode | Output |
+|-----------|--------|
+| `[slideshow slideshow="slug"]` | Embeds the named slideshow (language-aware) |
+| `[next_event]` | Next upcoming event |
+| `[next_events]` | Next 3 events, 3-column layout |
+| `[next_3_events]` | Next 3 events |
+| `[next_4_events]` | Next 4 events, 2-column layout |
+| `[next_match]` | Next upcoming match |
+| `[next_matches]` | Next 3 matches, 3-column layout |
+| `[next_3_matches]` | Next 3 matches |
+| `[next_4_matches]` | Next 4 matches, 2-column layout |
+| `[latest_news]` | Latest news articles |
+| `[mini_posts]` | Posts with customizable parameters |
+
+### Media Uploads
+
+- `.af` file format support (custom proprietary format)
+- SVG upload support — restricted to administrators (`manage_options`) to prevent XSS from untrusted users
+
+### Navigation Menus
+
+Automatically registers three menu locations on activation:
+- **Main Menu**
+- **Footer Menu**
+- **User Menu**
+
+### Site Management Utilities
+
+- **Email / SMTP** — custom SMTP configuration (**mini → Email**)
+- **Login** — login page customization
+- **Backoffice** — admin UI tweaks, Gutenberg block settings, legacy editor settings
+- **GDPR** — privacy policy, cookie policy, and consent banner management
+- **Security** — security hardening options
+- **PWA** — Progressive Web App manifest and service worker hooks
+- **Comments** — global comment disabling toggle
+
+### Developer Utilities
+
+- `is_mini_option_enabled($group, $option)` — check a plugin option
+- `get_variable($group, $option)` — retrieve a plugin option value
+- `get_italian_date_formatters()` — locale-aware `IntlDateFormatter` instances (reads WP site locale and timezone, despite the legacy name)
+- `mini_get_post_lang($post_id)`, `mini_get_translations($post_id)`, `mini_get_all_translation_urls($post_id)` — translation helpers
 
 ## Installation
 
-1. Download the plugin files
-2. Upload the `mini-plugin` folder to `/wp-content/plugins/`
-3. Activate the plugin through the WordPress admin dashboard
-4. Configure settings under the "mini" menu in the admin panel
+This plugin is distributed by filesystem symlink — it is not published on wordpress.org. To install on a new site, symlink the canonical source into `wp-content/plugins/`.
 
-## Configuration
-
-### Content Types Setup
-1. Navigate to **mini → Contents** in the admin menu
-2. Check the content types you want to enable:
-   - Slides (loads slider.js library)
-   - News
-   - Events
-   - Matches
-   - Courses
-3. Save your settings
-
-### SEO Configuration
-1. Go to **mini → SEO** in the admin menu
-2. Configure default SEO settings
-3. Set fallback images for social sharing
-
-### Email Settings
-1. Access **mini → Email** for email configuration options
-
-## Usage
-
-### Creating Content
-After enabling content types, you'll see new menu items in your admin dashboard:
-- **Slides** - Create slideshow content
-- **News** - Write news articles
-- **Events** - Schedule and manage events
-- **Matches** - Organize sports matches
-- **Courses** - Build course content
-
-### Using Shortcodes
-Add shortcodes to any post, page, or custom post type:
-
-```
-[next_events]
-```
-
-This will display the next 3 upcoming events in a responsive grid layout.
-
-### SEO Optimization
-For each post/page, you'll find a "Mini SEO" meta box where you can:
-- Set custom meta titles and descriptions
-- Configure Open Graph and Twitter Card data
-- Upload or select custom social sharing images
-
-## File Structure
-
-```
-mini-plugin/
-├── mini-plugin.php          # Main plugin file
-├── inc/
-│   └── shortcodes.php       # Shortcode definitions
-├── media-upload/
-│   ├── media-upload.css     # Media upload styles
-│   └── media-upload.js      # Media upload scripts
-├── img/                     # Plugin assets and icons
-├── LICENSE                  # Plugin license
-└── README.md               # This documentation
-```
+After activating, configure each feature area under the **mini** top-level menu in wp-admin.
 
 ## Requirements
 
-- WordPress 5.0 or higher
-- PHP 7.4 or higher
-- MySQL 5.6 or higher
-
-## Support
-
-For support and feature requests, please visit: [https://mini.uwa.agency/](https://mini.uwa.agency/)
+- WordPress 5.0+
+- PHP 7.4+
+- `intl` PHP extension (for locale-aware date formatting)
 
 ## Author
 
-**Giacomo Rizzotti**
-- Website: [https://www.giacomorizzotti.com/](https://www.giacomorizzotti.com/)
-- Plugin URI: [https://mini.uwa.agency/](https://mini.uwa.agency/)
-
-## License
-
-This plugin is licensed under the terms included in the LICENSE file.
-
-## Changelog
-
-### Version 0.1
-- Initial release
-- Custom content types (Slides, News, Events, Matches, Courses)
-- Shortcode system
-- SEO meta box functionality
-- Default menu creation
-- Media upload enhancements
-- Italian date formatting utilities
+**Giacomo Rizzotti** — [giacomorizzotti.com](https://www.giacomorizzotti.com/) · [mini.uwa.agency](https://mini.uwa.agency/)

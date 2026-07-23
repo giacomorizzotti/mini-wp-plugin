@@ -339,6 +339,28 @@ function get_slides_callback( $atts = [] ) {
             return '';
         }
 
+        // Swap to the translated slideshow when the current page has a different language.
+        if ( function_exists('mini_get_post_lang') &&
+             is_mini_option_enabled('mini_translations_settings', 'mini_enable_translations') ) {
+            $current_lang = '';
+            $queried_id   = get_queried_object_id();
+            if ( $queried_id ) {
+                $current_lang = mini_get_post_lang( $queried_id );
+            }
+            if ( $current_lang === '' && function_exists('mini_get_lang_preference') ) {
+                $current_lang = mini_get_lang_preference();
+            }
+            if ( $current_lang !== '' && mini_get_post_lang( $slideshow_post->ID ) !== $current_lang ) {
+                $translations = mini_get_translations( $slideshow_post->ID );
+                if ( ! empty( $translations[ $current_lang ] ) ) {
+                    $translated = get_post( (int) $translations[ $current_lang ] );
+                    if ( $translated && get_post_status( $translated->ID ) === 'publish' ) {
+                        $slideshow_post = $translated;
+                    }
+                }
+            }
+        }
+
         $prev_post           = $GLOBALS['post'] ?? null;
         $GLOBALS['post']     = $slideshow_post;
         setup_postdata( $slideshow_post );

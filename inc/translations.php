@@ -252,6 +252,10 @@ function mini_add_translations_meta_boxes() {
     if (is_mini_option_enabled('mini_content_settings', 'mini_landing_page')) {
         $post_types[] = 'landing_page';
     }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
+        $post_types[] = 'slideshow';
+        $post_types[] = 'slide';
+    }
 
     foreach ($post_types as $post_type) {
         add_meta_box(
@@ -630,6 +634,7 @@ function mini_translations_resolve_request($query_vars) {
         $post_types[] = 'lesson';
     }
     if (is_mini_option_enabled('mini_content_settings', 'mini_landing_page')) $post_types[] = 'landing_page';
+    if (is_mini_option_enabled('mini_content_settings', 'mini_slide'))        $post_types[] = 'slideshow';
 
     // Temporarily remove our permalink filters so url_to_postid() sees the
     // canonical (un-prefixed) URLs when matching against rewrite rules.
