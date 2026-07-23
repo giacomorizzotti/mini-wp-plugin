@@ -20,6 +20,8 @@ if (!defined('ABSPATH')) {
  * Each entry: ['code' => 'en', 'label' => 'English']
  */
 function mini_translations_get_languages() {
+    static $cache = null;
+    if ($cache !== null) { return $cache; }
     $options = get_option('mini_translations_settings');
     $raw = is_array($options) && !empty($options['languages']) ? $options['languages'] : '';
     $languages = [];
@@ -35,7 +37,8 @@ function mini_translations_get_languages() {
             $languages[] = ['code' => $code, 'label' => $label];
         }
     }
-    return $languages;
+    $cache = $languages;
+    return $cache;
 }
 
 /**
@@ -115,7 +118,8 @@ function mini_translations_settings_sanitize($input) {
     $input     = is_array($input) ? $input : [];
     $sanitized = [];
 
-    $sanitized['mini_enable_translations'] = !empty($input['mini_enable_translations']) ? '1' : '0';
+    $sanitized['mini_enable_translations']    = !empty($input['mini_enable_translations']) ? '1' : '0';
+    $sanitized['mini_nav_show_untranslated']  = !empty($input['mini_nav_show_untranslated']) ? '1' : '0';
 
     if (isset($input['languages'])) {
         $lines       = preg_split('/\r?\n/', $input['languages']);
@@ -149,9 +153,10 @@ function mini_translations_page_html() {
 
     settings_errors('mini_messages');
 
-    $enabled       = is_mini_option_enabled('mini_translations_settings', 'mini_enable_translations');
-    $options       = get_option('mini_translations_settings');
-    $languages_raw = is_array($options) && isset($options['languages']) ? $options['languages'] : "en:English\nit:Italian";
+    $enabled            = is_mini_option_enabled('mini_translations_settings', 'mini_enable_translations');
+    $show_untranslated  = is_mini_option_enabled('mini_translations_settings', 'mini_nav_show_untranslated');
+    $options            = get_option('mini_translations_settings');
+    $languages_raw      = is_array($options) && isset($options['languages']) ? $options['languages'] : "en:English\nit:Italian";
     ?>
     <div class="wrap">
         <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
@@ -198,6 +203,19 @@ function mini_translations_page_html() {
                     </p>
                 </div>
 
+                <div class="box-100 p-2 white-bg b-rad-5 box-shadow">
+                    <h4><?php esc_html_e('Navigation menu behaviour', 'mini'); ?></h4>
+                    <label>
+                        <input type="checkbox"
+                               name="mini_translations_settings[mini_nav_show_untranslated]"
+                               value="1"
+                               <?php checked($show_untranslated, true); ?>>
+                        <?php esc_html_e('Show menu items in their original language when no translation exists', 'mini'); ?>
+                    </label>
+                    <p class="S grey-text mt-05">
+                        <?php esc_html_e('When unchecked (default), menu items with no translation in the active language are hidden.', 'mini'); ?>
+                    </p>
+                </div>
 
             </div>
 
@@ -543,9 +561,13 @@ function mini_translations_rewrite_rules() {
 }
 add_action('init', 'mini_translations_rewrite_rules');
 
+function mini_translations_lang_hash() {
+    return md5(wp_json_encode(array_column(mini_translations_get_languages(), 'code')));
+}
+
 /**
- * Auto-flush rewrite rules when any language prefix rule is missing from
- * the cached rule set (e.g. after deploying the feature or adding a new language).
+ * Auto-flush rewrite rules when the language set changes.
+ * Uses a stored hash instead of scanning the full rewrite_rules array.
  * Skipped on AJAX and REST API requests to avoid unnecessary DB writes on
  * high-frequency endpoints.
  */
@@ -556,18 +578,13 @@ function mini_translations_maybe_flush_rules() {
     if (!is_mini_option_enabled('mini_translations_settings', 'mini_enable_translations')) {
         return;
     }
-    $languages = mini_translations_get_languages();
-    if (empty($languages)) {
+    if (empty(mini_translations_get_languages())) {
         return;
     }
-    $cached = (array) get_option('rewrite_rules');
-    foreach ($languages as $lang) {
-        $code = preg_quote($lang['code'], '/');
-        if (!array_key_exists('^' . $code . '/(.+?)/?$', $cached) ||
-            !array_key_exists('^' . $code . '/?$', $cached)) {
-            flush_rewrite_rules(false);
-            return; // one flush covers all languages
-        }
+    $current = mini_translations_lang_hash();
+    if (get_option('mini_translations_lang_hash') !== $current) {
+        flush_rewrite_rules(false);
+        update_option('mini_translations_lang_hash', $current, false);
     }
 }
 add_action('init', 'mini_translations_maybe_flush_rules', 99);
@@ -649,9 +666,17 @@ function mini_translations_resolve_request($query_vars) {
         return $query_vars;
     }
 
-    // Prevent redirect_canonical from sending the visitor back to the
-    // un-prefixed URL before our permalink filter applies.
-    add_filter('redirect_canonical', '__return_false');
+    // Only block redirect_canonical when it would strip the lang prefix
+    // (e.g. /it/my-page/ → /my-page/). Allow other canonical redirects through.
+    $current_lang = $query_vars['mini_lang'];
+    add_filter('redirect_canonical', function($redirect_url, $requested_url) use ($current_lang) {
+        if ($redirect_url
+            && strpos($requested_url, '/' . $current_lang . '/') !== false
+            && strpos($redirect_url,  '/' . $current_lang . '/') === false) {
+            return false;
+        }
+        return $redirect_url;
+    }, 10, 2);
 
     unset($query_vars['mini_lang_path'], $query_vars['mini_lang']);
 
@@ -672,6 +697,7 @@ add_filter('request', 'mini_translations_resolve_request');
  */
 function mini_translations_flush_on_save() {
     flush_rewrite_rules();
+    update_option('mini_translations_lang_hash', mini_translations_lang_hash(), false);
 }
 add_action('update_option_mini_translations_settings', 'mini_translations_flush_on_save');
 
@@ -938,8 +964,11 @@ function mini_translations_nav_menu_objects($items, $args) {
                     $filtered[]  = $item;
                 }
             }
+        } elseif (is_mini_option_enabled('mini_translations_settings', 'mini_nav_show_untranslated')) {
+            // No translation found — show item in its original language if toggled on.
+            $filtered[] = $item;
         }
-        // No translation → item is silently dropped.
+        // else: item is silently dropped (default).
     }
 
     return $filtered;
