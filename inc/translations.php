@@ -609,11 +609,35 @@ add_filter('query_vars', 'mini_translations_register_query_vars');
  * and replace the query vars with the matching post's standard vars.
  */
 function mini_translations_resolve_request($query_vars) {
-    // Bare /lang/ URL with no post slug (e.g. /it/ when the home page is in Italian).
-    // Redirect to the site home page rather than letting WordPress 404.
+    // Bare /lang/ URL with no post slug (e.g. /en/ or /it/).
+    // Try to redirect to the language-tagged equivalent of the front page; fall back to home.
     if (!empty($query_vars['mini_lang']) && !isset($query_vars['mini_lang_path'])) {
-        add_action('template_redirect', function () {
-            wp_safe_redirect(home_url('/'), 302);
+        $lang         = $query_vars['mini_lang'];
+        $redirect_url = home_url('/');
+
+        if (get_option('show_on_front') === 'page') {
+            $front_id   = (int) get_option('page_on_front');
+            $front_lang = $front_id ? mini_get_post_lang($front_id) : '';
+
+            if ($front_id && $front_lang !== $lang) {
+                // Front page isn't in the requested language — look for its translation.
+                $translations = mini_get_translations($front_id);
+                if (!empty($translations[$lang])) {
+                    $translated_id = (int) $translations[$lang];
+                    if (get_post_status($translated_id) === 'publish') {
+                        $url = get_permalink($translated_id);
+                        if ($url) {
+                            $redirect_url = $url;
+                        }
+                    }
+                }
+            }
+            // If the front page IS already in the requested language, home_url('/') is correct
+            // (WordPress serves the front page at the site root, not at its slug).
+        }
+
+        add_action('template_redirect', function () use ($redirect_url) {
+            wp_safe_redirect($redirect_url, 302);
             exit;
         }, 0);
         return $query_vars;
@@ -1038,4 +1062,177 @@ function mini_translations_filter_query(WP_Query $query) {
 add_action('pre_get_posts', 'mini_translations_filter_query');
 
 /* END - Language-aware content filtering */
+
+/* START - Translation completeness admin columns */
+
+function mini_translations_register_admin_columns() {
+    if (!is_mini_option_enabled('mini_translations_settings', 'mini_enable_translations')) {
+        return;
+    }
+
+    $post_types = ['post', 'page'];
+    if (is_mini_option_enabled('mini_content_settings', 'mini_news')) {
+        $post_types[] = 'news';
+    }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_event')) {
+        $post_types[] = 'event';
+    }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_match')) {
+        $post_types[] = 'match';
+    }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_slide')) {
+        $post_types[] = 'slideshow';
+        $post_types[] = 'slide';
+    }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_course')) {
+        $post_types[] = 'course';
+        $post_types[] = 'lesson';
+    }
+    if (is_mini_option_enabled('mini_content_settings', 'mini_landing_page')) {
+        $post_types[] = 'landing_page';
+    }
+
+    foreach ($post_types as $post_type) {
+        add_filter("manage_{$post_type}_posts_columns", 'mini_translations_add_column');
+        add_action("manage_{$post_type}_posts_custom_column", 'mini_translations_column_content', 10, 2);
+    }
+}
+add_action('admin_init', 'mini_translations_register_admin_columns');
+
+function mini_translations_add_column($columns) {
+    $columns['mini_translations'] = __('Languages', 'mini');
+    return $columns;
+}
+
+function mini_translations_column_content($column, $post_id) {
+    if ($column !== 'mini_translations') {
+        return;
+    }
+
+    $languages = mini_translations_get_languages();
+    if (empty($languages)) {
+        return;
+    }
+
+    $post_lang    = mini_get_post_lang($post_id);
+    $translations = mini_get_translations($post_id);
+
+    if ($post_lang === '') {
+        echo '<span style="color:#999;font-size:11px;">—</span>';
+        return;
+    }
+
+    foreach ($languages as $lang) {
+        $code  = $lang['code'];
+        $label = esc_html(strtoupper($code));
+
+        if ($code === $post_lang) {
+            printf(
+                '<span style="display:inline-block;padding:1px 6px;margin:1px;border-radius:3px;font-size:11px;font-weight:bold;background:#0073aa;color:#fff;" title="%s">%s</span>',
+                esc_attr($lang['label']),
+                $label
+            );
+        } elseif (!empty($translations[$code])) {
+            $translated_id = (int) $translations[$code];
+            $status        = get_post_status($translated_id);
+            $edit_url      = get_edit_post_link($translated_id);
+            if ($status === 'publish') {
+                printf(
+                    '<a href="%s" style="display:inline-block;padding:1px 6px;margin:1px;border-radius:3px;font-size:11px;background:#d4edda;color:#155724;text-decoration:none;" title="%s">%s</a>',
+                    esc_url((string) $edit_url),
+                    esc_attr($lang['label'] . ' — ' . __('published', 'mini')),
+                    $label
+                );
+            } else {
+                printf(
+                    '<a href="%s" style="display:inline-block;padding:1px 6px;margin:1px;border-radius:3px;font-size:11px;background:#fff3cd;color:#856404;text-decoration:none;" title="%s">%s</a>',
+                    esc_url((string) $edit_url),
+                    esc_attr($lang['label'] . ' — ' . __('draft', 'mini')),
+                    $label
+                );
+            }
+        } else {
+            $action_url = wp_nonce_url(
+                add_query_arg(
+                    [
+                        'action'  => 'mini_create_translation',
+                        'post_id' => $post_id,
+                        'lang'    => $code,
+                    ],
+                    admin_url('admin-post.php')
+                ),
+                'mini_create_translation_' . $post_id . '_' . $code
+            );
+            printf(
+                '<a href="%s" style="display:inline-block;padding:1px 6px;margin:1px;border-radius:3px;font-size:11px;background:#fff;color:#0073aa;border:1px dashed #0073aa;text-decoration:none;" title="%s">%s&thinsp;+</a>',
+                esc_url($action_url),
+                esc_attr($lang['label'] . ' — ' . __('create translation', 'mini')),
+                $label
+            );
+        }
+    }
+}
+
+function mini_create_translation_handler() {
+    $post_id = isset($_GET['post_id']) ? (int) $_GET['post_id'] : 0;
+    $lang    = isset($_GET['lang'])    ? sanitize_key($_GET['lang']) : '';
+
+    if (!$post_id || $lang === '') {
+        wp_die(esc_html__('Invalid request.', 'mini'));
+    }
+
+    check_admin_referer('mini_create_translation_' . $post_id . '_' . $lang);
+
+    $original = get_post($post_id);
+    if (!$original || !current_user_can('edit_post', $post_id)) {
+        wp_die(esc_html__('Post not found or access denied.', 'mini'));
+    }
+
+    // Create a linked draft in the target language.
+    $new_id = wp_insert_post([
+        'post_type'   => $original->post_type,
+        'post_status' => 'draft',
+        'post_title'  => $original->post_title,
+        'post_author' => get_current_user_id(),
+    ]);
+
+    if (is_wp_error($new_id)) {
+        wp_die(esc_html($new_id->get_error_message()));
+    }
+
+    update_post_meta($new_id, '_mini_lang', $lang);
+
+    // Build this post's translation map from the original's existing links.
+    $original_lang         = mini_get_post_lang($post_id);
+    $original_translations = mini_get_translations($post_id);
+
+    $new_translations = [];
+    if ($original_lang !== '') {
+        $new_translations[$original_lang] = $post_id;
+    }
+    foreach ($original_translations as $tl => $tid) {
+        $new_translations[$tl] = $tid;
+    }
+    update_post_meta($new_id, '_mini_translations', $new_translations);
+
+    // Point the original (and all its siblings) at the new post.
+    $original_translations[$lang] = $new_id;
+    update_post_meta($post_id, '_mini_translations', $original_translations);
+
+    foreach ($original_translations as $tl => $tid) {
+        $tid = (int) $tid;
+        if ($tid === $new_id) {
+            continue;
+        }
+        $sibling = mini_get_translations($tid);
+        $sibling[$lang] = $new_id;
+        update_post_meta($tid, '_mini_translations', $sibling);
+    }
+
+    wp_safe_redirect(admin_url('post.php?post=' . $new_id . '&action=edit'));
+    exit;
+}
+add_action('admin_post_mini_create_translation', 'mini_create_translation_handler');
+
+/* END - Translation completeness admin columns */
 

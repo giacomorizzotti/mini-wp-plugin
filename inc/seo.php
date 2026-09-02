@@ -1154,7 +1154,16 @@ function mini_output_schema_markup($post, $canonical_url, $seo_title, $seo_descr
     }
 
     $post_type = get_post_type($post);
-    $schema_type = ($post_type === 'post') ? 'Article' : 'WebPage';
+    $type_map  = [
+        'post'         => 'Article',
+        'news'         => 'NewsArticle',
+        'event'        => 'Event',
+        'match'        => 'SportsEvent',
+        'course'       => 'Course',
+        'lesson'       => 'LearningResource',
+        'landing_page' => 'WebPage',
+    ];
+    $schema_type = isset($type_map[$post_type]) ? $type_map[$post_type] : 'WebPage';
 
     $headline = !empty($seo_title) ? $seo_title : get_the_title($post);
     $description = !empty($seo_description) ? $seo_description : '';
@@ -1194,7 +1203,7 @@ function mini_output_schema_markup($post, $canonical_url, $seo_title, $seo_descr
         ];
     }
 
-    if ($schema_type === 'Article') {
+    if (in_array($schema_type, ['Article', 'NewsArticle'], true)) {
         $schema['datePublished'] = get_the_date('c', $post);
 
         $publisher = [
@@ -1259,6 +1268,66 @@ function mini_output_schema_markup($post, $canonical_url, $seo_title, $seo_descr
     }
     
     $schema['author'] = $author_data;
+
+    // Add type-specific fields for custom post types
+    switch ($post_type) {
+        case 'event':
+        case 'match':
+            $event_date = get_post_meta($post->ID, 'event_date', true);
+            $event_time = get_post_meta($post->ID, 'event_time', true);
+            $end_date   = get_post_meta($post->ID, 'event_end_date', true);
+            $end_time   = get_post_meta($post->ID, 'event_end_time', true);
+
+            if (!empty($event_date)) {
+                $schema['startDate'] = $event_date . (!empty($event_time) ? 'T' . $event_time . ':00' : '');
+            }
+            if (!empty($end_date)) {
+                $schema['endDate'] = $end_date . (!empty($end_time) ? 'T' . $end_time . ':00' : '');
+            }
+
+            $location_name    = get_post_meta($post->ID, 'location_name', true);
+            $location_address = get_post_meta($post->ID, 'location_address', true);
+            if (!empty($location_name) || !empty($location_address)) {
+                $place = ['@type' => 'Place'];
+                if (!empty($location_name)) {
+                    $place['name'] = $location_name;
+                }
+                if (!empty($location_address)) {
+                    $place['address'] = $location_address;
+                }
+                $schema['location'] = $place;
+            }
+
+            if ($post_type === 'match') {
+                $competitors = [];
+                $team_1      = get_post_meta($post->ID, 'team_1', true);
+                $team_2      = get_post_meta($post->ID, 'team_2', true);
+                if (!empty($team_1)) {
+                    $competitors[] = ['@type' => 'SportsTeam', 'name' => $team_1];
+                }
+                if (!empty($team_2)) {
+                    $competitors[] = ['@type' => 'SportsTeam', 'name' => $team_2];
+                }
+                if (!empty($competitors)) {
+                    $schema['competitor'] = $competitors;
+                }
+            } else {
+                $schema['organizer'] = [
+                    '@type' => 'Organization',
+                    'name'  => get_bloginfo('name'),
+                    'url'   => home_url('/'),
+                ];
+            }
+            break;
+
+        case 'course':
+            $schema['provider'] = [
+                '@type' => 'Organization',
+                'name'  => get_bloginfo('name'),
+                'url'   => home_url('/'),
+            ];
+            break;
+    }
 
     $schema = array_filter($schema, function($value) {
         return $value !== '' && $value !== null;
@@ -1522,7 +1591,10 @@ function mini_sitemap_build_post_type_xml($post_type) {
 
     $xml = [];
     $xml[] = '<?xml version="1.0" encoding="UTF-8"?>';
-    $xml[] = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">';
+    $xml[] = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml">';
+
+    $translations_enabled = function_exists('mini_get_post_lang') &&
+                            is_mini_option_enabled('mini_translations_settings', 'mini_enable_translations');
 
     foreach ($posts as $post) {
         if (!is_object($post)) {
@@ -1545,6 +1617,24 @@ function mini_sitemap_build_post_type_xml($post_type) {
             $xml[] = '    <image:image>';
             $xml[] = '      <image:loc>' . mini_sitemap_xml_escape($image_url) . '</image:loc>';
             $xml[] = '    </image:image>';
+        }
+
+        if ($translations_enabled) {
+            $post_lang    = mini_get_post_lang($post->ID);
+            $translations = mini_get_translations($post->ID);
+            if ($post_lang !== '' && !empty($translations)) {
+                $xml[] = '    <xhtml:link rel="alternate" hreflang="' . mini_sitemap_xml_escape($post_lang) . '" href="' . mini_sitemap_xml_escape($loc) . '"/>';
+                foreach ($translations as $lang => $translated_id) {
+                    $translated_id = (int) $translated_id;
+                    if (get_post_status($translated_id) !== 'publish') {
+                        continue;
+                    }
+                    $translated_url = get_permalink($translated_id);
+                    if ($translated_url) {
+                        $xml[] = '    <xhtml:link rel="alternate" hreflang="' . mini_sitemap_xml_escape((string) $lang) . '" href="' . mini_sitemap_xml_escape($translated_url) . '"/>';
+                    }
+                }
+            }
         }
 
         $xml[] = '  </url>';
