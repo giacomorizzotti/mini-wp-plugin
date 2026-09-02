@@ -58,6 +58,13 @@ Events: `[next_event]`, `[next_events]`, `[next_3_events]`, `[next_4_events]`.
 Matches: `[next_match]`, `[next_matches]`, `[next_3_matches]`, `[next_4_matches]`.
 Content: `[latest_news]`, `[mini_posts]`.
 
+## Cross-file interfaces consumed by mini-theme
+
+These functions are defined here but called from `mini-theme/header.php`:
+
+- **`mini_gdpr_script_attrs( $category )`** (`inc/gdpr.php`, line ~1210) — echoes consent-mode HTML attributes (`type="text/plain"`, `data-category="..."`, etc.) onto a `<script>` tag so a cookie-consent plugin can block it until the user consents. Called on every analytics script tag in `header.php` (GA, Umami); always wrapped in `if ( function_exists( 'mini_gdpr_script_attrs' ) )` so the theme degrades gracefully when the plugin is absent.
+- **`mini_translations_get_languages()`**, **`mini_get_all_translation_urls()`**, **`mini_get_post_lang()`** (`inc/translations.php`) — power the language switcher `<nav id="lang-menu">` in `header.php`.
+
 ## Notes
 
 - Enabling a content type (Slides/News/Events/Matches/Courses/Landing Pages) is a per-site admin toggle under **mini → Contents**, not a code change — check whether a "missing" custom post type is actually just disabled in that site's settings before assuming it needs implementing.
