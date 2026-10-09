@@ -245,9 +245,20 @@ add_shortcode( 'posts', 'mini_posts_shortcode' );
  *        [post_grid number="4" cols="2" category="5" highlight_first="1"]
  */
 function mini_post_grid_callback( $num = 6, $cols = 3, $opts = [] ) {
-    $category_id     = isset( $opts['categoryId'] )     ? absint( $opts['categoryId'] )     : 0;
-    $order           = isset( $opts['order'] ) && strtoupper( $opts['order'] ) === 'ASC' ? 'ASC' : 'DESC';
-    $highlight_first = isset( $opts['highlightFirst'] ) ? (bool) $opts['highlightFirst']    : false;
+    $category_id     = isset( $opts['categoryId'] )     ? absint( $opts['categoryId'] )  : 0;
+    $highlight_first = isset( $opts['highlightFirst'] ) ? (bool) $opts['highlightFirst'] : false;
+    $show_date       = isset( $opts['showDate'] )       ? (bool) $opts['showDate']       : true;
+    $show_categories = isset( $opts['showCategories'] ) ? (bool) $opts['showCategories'] : true;
+    $show_tags       = isset( $opts['showTags'] )       ? (bool) $opts['showTags']       : true;
+
+    $order_raw = isset( $opts['order'] ) ? strtoupper( $opts['order'] ) : 'DESC';
+    if ( $order_raw === 'ALPHA' ) {
+        $orderby = 'title';
+        $order   = 'ASC';
+    } else {
+        $orderby = 'post_date';
+        $order   = ( $order_raw === 'ASC' ) ? 'ASC' : 'DESC';
+    }
 
     switch ( (int) $cols ) {
         case 1:  $box_class = 'box-100'; break;
@@ -261,7 +272,7 @@ function mini_post_grid_callback( $num = 6, $cols = 3, $opts = [] ) {
 
     $args = [
         'posts_per_page'         => absint( $num ),
-        'orderby'                => 'post_date',
+        'orderby'                => $orderby,
         'order'                  => $order,
         'post_type'              => 'post',
         'post_status'            => 'publish',
@@ -288,7 +299,12 @@ function mini_post_grid_callback( $num = 6, $cols = 3, $opts = [] ) {
         $query->the_post();
         $item_class = ( $highlight_first && $n === 0 ) ? 'box-100' : $box_class;
         echo '<div class="' . esc_attr( $item_class ) . ' p-0">';
-        get_template_part( 'template-parts/content', 'post', [ 'is_shortcode' => true ] );
+        get_template_part( 'template-parts/content', 'post', [
+            'is_shortcode'   => true,
+            'showDate'       => $show_date,
+            'showCategories' => $show_categories,
+            'showTags'       => $show_tags,
+        ] );
         echo '</div>';
         $n++;
     }
