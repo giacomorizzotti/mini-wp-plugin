@@ -46,7 +46,7 @@ Configure global defaults under **mini → SEO**.
 
 | Shortcode | Output |
 |-----------|--------|
-| `[slideshow slideshow="slug"]` | Embeds the named slideshow (language-aware) |
+| `[slideshow slideshow="slug"]` or `[slider slideshow="slug"]` | Embeds the named slideshow (language-aware) |
 | `[next_event]` | Next upcoming event |
 | `[next_events]` | Next 3 events, 3-column layout |
 | `[next_3_events]` | Next 3 events |
@@ -55,8 +55,12 @@ Configure global defaults under **mini → SEO**.
 | `[next_matches]` | Next 3 matches, 3-column layout |
 | `[next_3_matches]` | Next 3 matches |
 | `[next_4_matches]` | Next 4 matches, 2-column layout |
-| `[latest_news]` | Latest news articles |
-| `[mini_posts]` | Posts with customizable parameters |
+| `[courses]` | 3 courses, 3-column layout |
+| `[courses_2]` | 2 courses, 2-column layout |
+| `[courses_4]` | 4 courses, 2-column layout |
+| `[latest_news]` | Latest news articles (`number`, `cols`, `highlight_first`) |
+| `[posts]` | List of posts of any type (`number`, `type`) |
+| `[post_grid]` | Grid of blog posts (`number`, `cols`, `order`, `category`, `highlight_first`) |
 
 ### Media Uploads
 
@@ -78,6 +82,9 @@ Automatically registers three menu locations on activation:
 - **GDPR** — privacy policy, cookie policy, and consent banner management
 - **Security** — security hardening options
 - **PWA** — Progressive Web App manifest and service worker hooks
+- **Contact form** — form shortcode, stored submissions and spam protection
+- **Roles** — which user roles can manage each content type
+- **AI** — per-bot rules for AI crawlers
 - **Comments** — global comment disabling toggle
 
 ### Developer Utilities

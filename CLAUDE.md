@@ -33,7 +33,9 @@ Before editing, run `ls -la` (or `readlink -f`) on the target path if there's an
   - `pwa.php` — Progressive Web App manifest/service worker hooks
   - `dashboard.php` / `backoffice.php` — admin UI: registers the **mini** top-level menu and all sub-pages (Contents, SEO, Email, Backoffice, GDPR, Translations, …)
   - `user.php` — user-related helpers
-  - `ai.php` — AI integration helpers
+  - `roles.php` — capability groups and per-role access tiers for the content types
+  - `ai.php` — AI crawler settings (per-bot allow/disallow rules)
+  - `post-types.php` — a leftover: nothing loads it, and `content-types.php` holds the live `register_mini_post_type()`
 - `media-upload/` — `.af` file format + custom MIME type support assets (`media-upload.css`/`.js`).
 
 ## Translations module (`inc/translations.php`)
@@ -56,7 +58,8 @@ A complete multilingual system for posts, pages, and custom post types:
 Slideshows: `[slideshow slideshow="slug"]` / `[slider slideshow="slug"]` — language-aware (auto-swaps to translated slideshow).
 Events: `[next_event]`, `[next_events]`, `[next_3_events]`, `[next_4_events]`.
 Matches: `[next_match]`, `[next_matches]`, `[next_3_matches]`, `[next_4_matches]`.
-Content: `[latest_news]`, `[mini_posts]`.
+Courses: `[courses]`, `[courses_2]`, `[courses_4]`.
+Content: `[latest_news]`, `[posts]`, `[post_grid]`.
 
 ## Cross-file interfaces consumed by mini-theme
 
