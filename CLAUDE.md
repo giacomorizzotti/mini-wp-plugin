@@ -35,7 +35,6 @@ Before editing, run `ls -la` (or `readlink -f`) on the target path if there's an
   - `user.php` — user-related helpers
   - `roles.php` — capability groups and per-role access tiers for the content types
   - `ai.php` — AI crawler settings (per-bot allow/disallow rules)
-  - `post-types.php` — a leftover: nothing loads it, and `content-types.php` holds the live `register_mini_post_type()`
 - `media-upload/` — `.af` file format + custom MIME type support assets (`media-upload.css`/`.js`).
 
 ## Translations module (`inc/translations.php`)
